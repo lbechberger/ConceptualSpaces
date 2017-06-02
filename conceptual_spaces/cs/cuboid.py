@@ -53,3 +53,34 @@ class Cuboid:
                 return z
         
         return map(helper, self._p_min, point, self._p_max)
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self._p_min == other._p_min and self._p_max == other._p_max
+        return False
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return "c({},{})".format(self._p_min, self._p_max)
+    
+    def intersect(self, other):
+        """Intersects this cuboid with another one and returns the result as a new cuboid. Returns None if intersection is empty"""
+
+        if not isinstance(other, self.__class__):
+            raise Exception("can only intersect with other cuboids")
+        
+        if not len(other._p_min) == len(self._p_min):
+            raise Exception("different dimensionality")
+
+        p_min = []
+        p_max = []
+
+        for i in range(len(self._p_min)):
+            if other._p_max[i] < self._p_min[i] or other._p_min[i] > self._p_max[i]:
+                return None # no overlap in dimension i
+            p_min.append(max(self._p_min[i], other._p_min[i]))
+            p_max.append(min(self._p_max[i], other._p_max[i]))
+        
+        return Cuboid(p_min, p_max)

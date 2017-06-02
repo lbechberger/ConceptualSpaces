@@ -86,6 +86,106 @@ class TestCuboid(unittest.TestCase):
         c = Cuboid([1,2,3],[7,8,9])
         p = [12,-2,7]
         self.assertEqual(c._find_closest_point(p), [7,2,7])
+    
+    # __eq__()
+    def test_eq_identity(self):
+         c = Cuboid([1,2,3],[7,8,9])
+         self.assertEqual(c,c)
 
+    def test_eq_same(self):
+         c1 = Cuboid([1,2,3],[7,8,9])
+         c2 = Cuboid([1,2,3],[7,8,9])
+         self.assertEqual(c1,c2)
+
+    def test_eq_different_cuboids(self):
+         c1 = Cuboid([1,2,3],[7,8,9])
+         c2 = Cuboid([1,2,3],[7,8,8])
+         self.assertFalse(c1 == c2)
+
+    def test_eq_different_types(self):
+         c1 = Cuboid([1,2,3],[7,8,9])
+         x = 42
+         self.assertFalse(c1 == x)
+
+    def test_eq_None(self):
+         c1 = Cuboid([1,2,3],[7,8,9])
+         x = None
+         self.assertFalse(c1 == x)
+
+    # __ne__()    
+    def test_ne_identity(self):
+         c = Cuboid([1,2,3],[7,8,9])
+         self.assertFalse(c != c)
+
+    def test_ne_same(self):
+         c1 = Cuboid([1,2,3],[7,8,9])
+         c2 = Cuboid([1,2,3],[7,8,9])
+         self.assertFalse(c1 != c2)
+
+    def test_ne_different_cuboids(self):
+         c1 = Cuboid([1,2,3],[7,8,9])
+         c2 = Cuboid([1,2,3],[7,8,8])
+         self.assertTrue(c1 != c2)
+
+    def test_ne_different_types(self):
+         c1 = Cuboid([1,2,3],[7,8,9])
+         x = 42
+         self.assertTrue(c1 != x)
+
+    def test_ne_None(self):
+         c1 = Cuboid([1,2,3],[7,8,9])
+         x = None
+         self.assertTrue(c1 != x)
+    
+    # intersect()
+    def test_intersect_identity(self):
+        c = Cuboid([1,2,3],[7,8,9])
+        self.assertEqual(c.intersect(c),c)
+
+    def test_intersect_empty(self):
+        c1 = Cuboid([0,0,0],[1,1,1])
+        c2 = Cuboid([2,2,2],[3,3,3])
+        self.assertEqual(c1.intersect(c2), None)
+    
+    def test_intersect_3d(self):
+        c1 = Cuboid([0,0,0],[2,2,2])
+        c2 = Cuboid([1,1,1],[3,3,3])
+        c3 = Cuboid([1,1,1],[2,2,2])
+        self.assertEqual(c1.intersect(c2), c3)
+
+    def test_intersect_2d(self):
+        c1 = Cuboid([0,0,0],[2,2,2])
+        c2 = Cuboid([2,1,1],[3,3,3])
+        c3 = Cuboid([2,1,1],[2,2,2])
+        self.assertEqual(c1.intersect(c2), c3)
+
+    def test_intersect_1d(self):
+        c1 = Cuboid([0,0,0],[2,2,2])
+        c2 = Cuboid([2,2,1],[3,3,3])
+        c3 = Cuboid([2,2,1],[2,2,2])
+        self.assertEqual(c1.intersect(c2), c3)
+
+    def test_intersect_0d(self):
+        c1 = Cuboid([0,0,0],[2,2,2])
+        c2 = Cuboid([2,2,2],[3,3,3])
+        c3 = Cuboid([2,2,2],[2,2,2])
+        self.assertEqual(c1.intersect(c2), c3)
+
+    def test_intersect_commutative(self):
+        c1 = Cuboid([0,0,0],[2,2,2])
+        c2 = Cuboid([1,1,1],[3,3,3])
+        self.assertEqual(c1.intersect(c2), c2.intersect(c1))
+
+    def test_intersect_other_object(self):
+        c1 = Cuboid([0,0,0],[2,2,2])
+        x = 42
+        with self.assertRaises(Exception):
+            c1.intersect(x)
+    
+    def test_intersect_different_length(self):
+        c1 = Cuboid([0,0,0],[2,2,2])
+        c2 = Cuboid([0,0,0,0],[2,2,2,2])
+        with self.assertRaises(Exception):
+            c1.intersect(c2)
 
 unittest.main()
