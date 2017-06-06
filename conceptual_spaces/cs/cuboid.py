@@ -26,7 +26,7 @@ class Cuboid:
         p_max = p_max if (not p_max == None) else self._p_max
         
         if not len(p_min) == len(p_max):
-            raise Exception("p_min and p_max are of different legnth")
+            raise Exception("p_min and p_max are of different length")
         
         return reduce(lambda x, y: x and y, map(lambda y,z: y <= z, p_min, p_max))
     
