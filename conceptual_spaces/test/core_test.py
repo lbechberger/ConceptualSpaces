@@ -64,6 +64,7 @@ class TestCore(unittest.TestCase):
         s = Core([c1])
         self.assertFalse(s._check(l))
     
+    # add_cuboid
     def test_add_cuboid_true(self):
         c1 = Cuboid([1,2,3],[4,5,6])
         c2 = Cuboid([2,3,4],[5,6,7])

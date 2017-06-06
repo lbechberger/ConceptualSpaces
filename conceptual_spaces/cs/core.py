@@ -7,7 +7,9 @@ Created on Tue Jun  6 10:50:58 2017
 from cuboid import Cuboid
 
 class Core:
-    """A concept's core, consisting of a set of cuboids with nonempty intersection"""
+    """A concept's core, consisting of a set of cuboids with nonempty intersection.
+    
+    Implementation of the crisp Simple Star-Shaped Set (SSSS)"""
     
     def __init__(self, cuboids):
         """Initializes the concept's core.
@@ -53,3 +55,6 @@ class Core:
         else:
             return False
     
+    def __str__(self):
+        
+        return "s({})".format(', '.join(str(x) for x in self._cuboids))
