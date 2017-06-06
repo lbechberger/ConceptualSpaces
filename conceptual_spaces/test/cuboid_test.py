@@ -61,31 +61,31 @@ class TestCuboid(unittest.TestCase):
         with self.assertRaises(Exception):
             c.contains([0,5,6,3])
      
-    # _find_closest_point()
+    # find_closest_point()
     def test_find_closest_point_too_short(self):
         c = Cuboid([1,2,3],[7,8,9])
         with self.assertRaises(Exception):
-            c._find_closest_point([0,5])
+            c.find_closest_point([0,5])
     
     def test_find_closest_point_too_long(self):
         c = Cuboid([1,2,3],[7,8,9])
         with self.assertRaises(Exception):
-            c._find_closest_point([0,5,6,3])
+            c.find_closest_point([0,5,6,3])
     
     def test_find_closest_point_inside(self):
         c = Cuboid([1,2,3],[7,8,9])
         p = [4,5,6]
-        self.assertEqual(p, c._find_closest_point(p))
+        self.assertEqual(p, c.find_closest_point(p))
     
     def test_find_closest_point_one_difference(self):
         c = Cuboid([1,2,3],[7,8,9])
         p = [4,5,10]
-        self.assertEqual(c._find_closest_point(p), [4,5,9])
+        self.assertEqual(c.find_closest_point(p), [4,5,9])
     
     def test_find_closest_point_two_differences(self):
         c = Cuboid([1,2,3],[7,8,9])
         p = [12,-2,7]
-        self.assertEqual(c._find_closest_point(p), [7,2,7])
+        self.assertEqual(c.find_closest_point(p), [7,2,7])
     
     # __eq__()
     def test_eq_identity(self):

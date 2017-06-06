@@ -38,7 +38,7 @@ class Cuboid:
                 
         return reduce(lambda x, y: x and y, map(lambda x,y,z: x <= y <= z, self._p_min, point, self._p_max))
         
-    def _find_closest_point(self, point):
+    def find_closest_point(self, point):
         """Finds the point in the cuboid that is closest to the given point"""
         
         if not len(self._p_min) == len(point):

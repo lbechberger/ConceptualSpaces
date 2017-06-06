@@ -56,5 +56,9 @@ class Core:
             return False
     
     def __str__(self):
-        
         return "s({})".format(', '.join(str(x) for x in self._cuboids))
+        
+    def find_closest_point_candidates(self, point):
+        """Returns a list that contains for each cuboid the closest point in the cuboid to the given point."""
+        
+        return map(lambda c: c.find_closest_point(point), self._cuboids)

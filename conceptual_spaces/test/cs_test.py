@@ -81,6 +81,7 @@ class TestCore(unittest.TestCase):
         x = [1,2,3,4]
         y = [2,3,2,3]   # distance of 1 wrt each coordinate
         self.assertEqual(cs.distance(x,y,w), 2.0)
+        self.assertEqual(cs.distance(x,y,w), cs.distance(y,x,w))
 
     def test_distance_unit_diff_differently_weighted(self):
         n = 4        
@@ -94,6 +95,7 @@ class TestCore(unittest.TestCase):
         x = [1,2,3,4]
         y = [2,3,2,3]   # distance of 1 wrt each coordinate
         self.assertEqual(cs.distance(x,y,w), 2.0)
+        self.assertEqual(cs.distance(x,y,w), cs.distance(y,x,w))
         
     def test_distance_other_diff_identically_weighted(self):
         n = 4        
@@ -107,6 +109,7 @@ class TestCore(unittest.TestCase):
         x = [1,2,3,4]
         y = [2,0,2,2]   # difference: 1 2 1 2
         self.assertEqual(cs.distance(x,y,w), sqrt(0.5*1 + 0.5*4) + sqrt(0.5*1 + 0.5*4))
+        self.assertEqual(cs.distance(x,y,w), cs.distance(y,x,w))
 
     def test_distance_other_diff_differently_weighted(self):
         n = 4        
@@ -120,5 +123,6 @@ class TestCore(unittest.TestCase):
         x = [1,2,3,4]
         y = [2,0,2,2]   # difference: 1 2 1 2
         self.assertEqual(cs.distance(x,y,w), (4.0/3)*sqrt(0.5*1+0.5*4) + (2.0/3)*sqrt(0.6*1 + 0.4*4))
+        self.assertEqual(cs.distance(x,y,w), cs.distance(y,x,w))
     
 unittest.main()

@@ -95,5 +95,19 @@ class TestCore(unittest.TestCase):
             s.add_cuboid(42)
         self.assertEqual(s._cuboids, [c1])
 
+    # find_closest_point_candidates
+    def test_find_closest_point_candidates_one_cuboid(self):
+        c = Cuboid([1,2,3],[7,8,9])
+        s = Core([c])
+        p = [12,-2,7]
+        self.assertEqual(s.find_closest_point_candidates(p), [[7,2,7]])
+
+    def test_find_closest_point_candidates_two_cuboids(self):
+        c1 = Cuboid([1,2,3],[7,8,9])
+        c2 = Cuboid([4,5,6],[7,7,7])
+        s = Core([c1, c2])
+        p = [12,-2,8]
+        self.assertEqual(s.find_closest_point_candidates(p), [[7,2,8],[7,5,7]])
+
 
 unittest.main()
