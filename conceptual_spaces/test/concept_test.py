@@ -63,6 +63,23 @@ class TestCore(unittest.TestCase):
         with self.assertRaises(Exception):        
             Concept(s, 1.0, 1.0, 42, cs)        
 
+    def test_constructor_same_relevant_dimensions(self):
+        c1 = Cuboid([float("-inf"),2,3],[float("inf"),5,6])
+        c2 = Cuboid([float("-inf"),3,4],[float("inf"),6,7])
+        s = Core([c1, c2])
+        dom = {0:2, 1:1}        
+        dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
+        w = Weights(dom, dim)
+        cs = ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        
+        f = Concept(s, 1.0, 2.0, w, cs)        
+
+        self.assertEqual(f._core, s)
+        self.assertEqual(f._mu, 1.0)
+        self.assertEqual(f._c, 2.0)
+        self.assertEqual(f._weights, w)
+    
+
     # membership()
     def test_membership_inside(self):
         s = Core([Cuboid([1,2,3,4],[3,4,5,6])])
@@ -110,6 +127,39 @@ class TestCore(unittest.TestCase):
 
     def test_membership_outside_two_cuboids(self):
         s = Core([Cuboid([3, 4, 5, 6],[10, 10, 10, 10]), Cuboid([1,2,3,4],[3,4,5,6])])
+        dom = {0:2, 1:1}        
+        dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
+        w = Weights(dom, dim)
+        cs = ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        
+        f = Concept(s, 1.0, 2.0, w, cs)  
+        p = [4, 4, 4, 4]
+        self.assertAlmostEqual(f.membership(p), 0.15173524)
+    
+    def test_membership_inside_infinity(self):
+        s = Core([Cuboid([float("-inf"),2,3,4],[float("inf"),4,5,6])])
+        dom = {0:2, 1:1}        
+        dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
+        w = Weights(dom, dim)
+        cs = ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        
+        f = Concept(s, 1.0, 2.0, w, cs)  
+        p = [1.5, 4, 4, 4]
+        self.assertEqual(f.membership(p), 1.0)
+    
+    def test_membership_outside_one_cuboid_infinity(self):
+        s = Core([Cuboid([1,2,float("-inf"),4],[3,4,float("inf"),6])])
+        dom = {0:2, 1:1}        
+        dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
+        w = Weights(dom, dim)
+        cs = ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        
+        f = Concept(s, 1.0, 2.0, w, cs)  
+        p = [4, 4, 10, 4]
+        self.assertAlmostEqual(f.membership(p), 0.15173524)
+        
+    def test_membership_outside_two_cuboids_infinity(self):
+        s = Core([Cuboid([3, float("-inf"), 5, 6],[10, float("inf"), 10, 10]), Cuboid([1,float("-inf"),3,4],[3,float("inf"),5,6])])
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
         w = Weights(dom, dim)

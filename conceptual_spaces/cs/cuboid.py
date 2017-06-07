@@ -18,6 +18,11 @@ class Cuboid:
         
         self._p_min = p_min
         self._p_max = p_max
+        
+        self._relevant_dimensions = []
+        for i in range(len(p_max)):
+            if p_max[i] != float("inf"):
+                self._relevant_dimensions.append(i)
     
     def _check(self, p_min=None, p_max=None):
         """Asserts that no entry of _p_min is larger than the corresponding entry of _p_max."""

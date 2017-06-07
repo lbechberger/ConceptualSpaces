@@ -47,6 +47,19 @@ class TestCore(unittest.TestCase):
         with self.assertRaises(Exception):
             Core(l)
 
+    def test_constructor_different_relevant_dimensions(self):
+        c1 = Cuboid([float("-inf"),2,3],[float("inf"),5,6])
+        c2 = Cuboid([2,float("-inf"),4],[5,float("inf"),7])
+        with self.assertRaises(Exception):
+            Core([c1, c2])
+
+    def test_constructor_same_relevant_dimensions(self):
+        c1 = Cuboid([float("-inf"),2,3],[float("inf"),5,6])
+        c2 = Cuboid([float("-inf"),3,4],[float("inf"),6,7])
+        s = Core([c1, c2])
+        self.assertEquals(s._cuboids, [c1, c2])
+        
+
     # _check
     def test_check_true(self):
         c1 = Cuboid([1,2,3],[4,5,6])
@@ -94,7 +107,24 @@ class TestCore(unittest.TestCase):
         with self.assertRaises(Exception):
             s.add_cuboid(42)
         self.assertEqual(s._cuboids, [c1])
+    
+    def test_add_cuboid_different_relevant_dimensions(self):
+        c1 = Cuboid([float("-inf"),2,3],[float("inf"),5,6])
+        c2 = Cuboid([2,float("-inf"),4],[5,float("inf"),7])
+        s1 = Core([c1])
+        s2 = Core([c2])
+        self.assertFalse(s1.add_cuboid(c2))
+        self.assertFalse(s2.add_cuboid(c1))
 
+    def test_add_cuboid_same_relevant_dimensions(self):
+        c1 = Cuboid([float("-inf"),2,3],[float("inf"),5,6])
+        c2 = Cuboid([float("-inf"),3,4],[float("inf"),6,7])
+        s1 = Core([c1])
+        s2 = Core([c2])
+        self.assertTrue(s1.add_cuboid(c2))
+        self.assertTrue(s2.add_cuboid(c1))
+        self.assertEqual(s1, s2)
+ 
     # find_closest_point_candidates
     def test_find_closest_point_candidates_one_cuboid(self):
         c = Cuboid([1,2,3],[7,8,9])
@@ -108,6 +138,13 @@ class TestCore(unittest.TestCase):
         s = Core([c1, c2])
         p = [12,-2,8]
         self.assertEqual(s.find_closest_point_candidates(p), [[7,2,8],[7,5,7]])
+
+    def test_find_closest_point_candidates_infinity(self):
+        c1 = Cuboid([float("-inf"),2,3],[float("inf"),8,9])
+        c2 = Cuboid([float("-inf"),5,6],[float("inf"),7,7])
+        s = Core([c1, c2])
+        p = [12,-2,8]
+        self.assertEqual(s.find_closest_point_candidates(p), [[12,2,8],[12,5,7]])   
 
     # __eq__(), __ne__()
     def test_eq_ne_identity(self):
@@ -179,7 +216,24 @@ class TestCore(unittest.TestCase):
         s_result = Core([c1_result, c2_result])
         self.assertEqual(s1.unify(s2), s_result)
         self.assertEqual(s1.unify(s2), s2.unify(s1))
-   
+    
+    def test_unify_not_full_dims_different_dims(self):
+        c1 = Cuboid([1,2,3],[7,8,9])
+        c2 = Cuboid([4,5,float("-inf")],[7,7,float("inf")])
+        s1 = Core([c1])
+        s2 = Core([c2])
+        with self.assertRaises(Exception):
+            s1.unify(s2)
+ 
+    def test_unify_not_full_dims_same_dims(self):
+        c1 = Cuboid([1,2,float("-inf")],[7,8,float("inf")])
+        c2 = Cuboid([4,5,float("-inf")],[7,7,float("inf")])
+        s1 = Core([c1])
+        s2 = Core([c2])
+        s_result = Core([c1, c2])
+        self.assertEqual(s1.unify(s2), s_result)
+        self.assertEqual(s1.unify(s2), s2.unify(s1))
+        
     # cut()
     def test_cut_above(self):
         c1 = Cuboid([1,2,3],[7,8,9])
@@ -218,6 +272,21 @@ class TestCore(unittest.TestCase):
         
         up_c1 = Cuboid([1,2,5],[7,8,9])
         up_c2 = Cuboid([4,5,6],[7,7,7])
+        up_s = Core([up_c1, up_c2])
+        
+        self.assertEqual(s1.cut(2, 5), (low_s, up_s))
+
+    def test_cut_infinity(self):
+        
+        c1 = Cuboid([1,float("-inf"),3],[7,float("inf"),9])
+        c2 = Cuboid([4,float("-inf"),6],[7,float("inf"),7])
+        s1 = Core([c1, c2])
+        
+        low_c1 = Cuboid([1,float("-inf"),3],[7,float("inf"),5])
+        low_s = Core([low_c1])
+        
+        up_c1 = Cuboid([1,float("-inf"),5],[7,float("inf"),9])
+        up_c2 = Cuboid([4,float("-inf"),6],[7,float("inf"),7])
         up_s = Core([up_c1, up_c2])
         
         self.assertEqual(s1.cut(2, 5), (low_s, up_s))

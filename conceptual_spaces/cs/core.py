@@ -17,21 +17,21 @@ class Core:
         The parameter cuboids must be a list of cuboids."""
         
         if not type(cuboids) == list:
-            raise Exception("cuboids is not a list")           
+            raise Exception("'cuboids' is not a list")           
         for c in cuboids:
             if not isinstance(c, Cuboid):
-                raise Exception("cuboids does not only contain cuboids")
+                raise Exception("'cuboids' does not only contain cuboids")
 
-        if not self._check(cuboids):
-            raise Exception("cuboids do not intersect")
-        
         if len(cuboids) == 0:
             raise Exception("empty list of cuboids")
+
+        if not self._check(cuboids):
+            raise Exception("cuboids do not intersect or have different relevant dimensions")
         
         self._cuboids = cuboids
     
     def _check(self, cuboids = None):
-        """Asserts that the intersection of all cuboids is nonempty"""
+        """Asserts that the intersection of all cuboids is nonempty and that they have the same relevant dimensions."""
 
         cuboids = cuboids if (not cuboids == None) else self._cuboids      
         
@@ -39,6 +39,11 @@ class Core:
         for c in cuboids:
             intersection = intersection.intersect(c)
             if intersection == None:
+                return False
+
+        relevant_dimensions = cuboids[0]._relevant_dimensions
+        for c in cuboids:
+            if c._relevant_dimensions != relevant_dimensions:
                 return False
         
         return True

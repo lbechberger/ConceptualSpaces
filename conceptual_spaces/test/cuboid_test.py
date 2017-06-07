@@ -30,17 +30,22 @@ class TestCuboid(unittest.TestCase):
         with self.assertRaises(Exception):
             c._check([],[])
     
-    def test_check_empty_init(self):
+    # constructor()
+    def test_init_empty_init(self):
         with self.assertRaises(Exception):
             Cuboid([], [])
     
-    def test_check_init_different_length(self):
+    def test_init_different_length(self):
         with self.assertRaises(Exception):
             Cuboid([1,2,3],[4,5])
     
-    def test_check_init_different_length_rev(self):
+    def test_init_different_length_rev(self):
         with self.assertRaises(Exception):
             Cuboid([1,2],[4,5,6])
+    
+    def test_init_correct(self):
+        c = Cuboid([1,2,float("-inf"),4,5,float("-inf")],[6,7,float("inf"),8,9,float("inf")])
+        self.assertEqual(c._relevant_dimensions, [0,1,3,4])
     
     # contains()
     def test_contains_true(self):
@@ -60,6 +65,10 @@ class TestCuboid(unittest.TestCase):
         c = Cuboid([1,2,3],[7,8,9])
         with self.assertRaises(Exception):
             c.contains([0,5,6,3])
+    
+    def test_contins_true_infinity(self):
+        c = Cuboid([1,2,float("-inf")], [4,5,float("inf")])
+        self.assertTrue(c.contains([2,3,5]))
      
     # find_closest_point()
     def test_find_closest_point_too_short(self):
@@ -86,6 +95,11 @@ class TestCuboid(unittest.TestCase):
         c = Cuboid([1,2,3],[7,8,9])
         p = [12,-2,7]
         self.assertEqual(c.find_closest_point(p), [7,2,7])
+
+    def test_find_closest_point_infinity(self):
+        c = Cuboid([1,2,float("-inf")],[7,8,float("inf")])
+        p = [4,10,3]
+        self.assertEqual(c.find_closest_point(p), [4,8,3])
     
     # __eq__()
     def test_eq_identity(self):
@@ -187,5 +201,26 @@ class TestCuboid(unittest.TestCase):
         c2 = Cuboid([0,0,0,0],[2,2,2,2])
         with self.assertRaises(Exception):
             c1.intersect(c2)
+    
+    def test_intersect_one_infinity(self):
+        c1 = Cuboid([0,0,float("-inf")],[2,2,float("inf")])
+        c2 = Cuboid([2,1,1],[3,3,3])
+        c3 = Cuboid([2,1,1],[2,2,3])
+        self.assertEqual(c1.intersect(c2), c3)
+        self.assertEqual(c1.intersect(c2), c2.intersect(c1))
+
+    def test_intersect_two_infinity_same(self):
+        c1 = Cuboid([0,0,float("-inf")],[2,2,float("inf")])
+        c2 = Cuboid([2,1,float("-inf")],[3,3,float("inf")])
+        c3 = Cuboid([2,1,float("-inf")],[2,2,float("inf")])
+        self.assertEqual(c1.intersect(c2), c3)
+        self.assertEqual(c1.intersect(c2), c2.intersect(c1))
+
+    def test_intersect_two_infinity_different(self):
+        c1 = Cuboid([0,0,float("-inf")],[2,2,float("inf")])
+        c2 = Cuboid([2,float("-inf"),1],[3,float("inf"),3])
+        c3 = Cuboid([2,0,1],[2,2,3])
+        self.assertEqual(c1.intersect(c2), c3)
+        self.assertEqual(c1.intersect(c2), c2.intersect(c1))
 
 unittest.main()
