@@ -43,4 +43,38 @@ class Concept:
         
         return self._mu * exp(-self._c * min_distance)
     
+    def intersect(self, other):
+        """Computes the intersection of two concepts."""
+        pass #TODO implement
+
+    def unify(self, other):
+        """Computes the union of two concepts."""
+        pass #TODO implement
+        
+    def project(self, domains):
+        """Computes the projection of this concept onto a subset of domains."""
+        pass #TODO implement
+
+    def cut(self, dimension, value):
+        """Computes the result of cutting this concept into two parts (at the given value on the given dimension)."""
+        pass #TODO implement
+
+    def hypervolume(self):
+        """Computes the hypervolume of this concept."""
+        pass #TODO implement
+
+    def subset_of(self, other):
+        """Computes the degree of subsethood between this concept and a given other concept."""
+        pass #TODO implement
+
+    def implies(self, other):
+        """Computes the degree of implication between this concept and a given other concept."""
+        pass #TODO implement
     
+    def similarity(self, other):
+        """Computes the similarity of this concept to the given other concept."""
+        pass #TODO implement
+
+    def between(self, first, second):
+        """Computes the degree to which this concept is between the other two given concepts."""
+        pass #TODO implement
