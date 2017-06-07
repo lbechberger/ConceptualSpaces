@@ -55,7 +55,7 @@ class Cuboid:
         return map(helper, self._p_min, point, self._p_max)
 
     def __eq__(self, other):
-        if isinstance(other, self.__class__):
+        if isinstance(other, Cuboid):
             return self._p_min == other._p_min and self._p_max == other._p_max
         return False
     

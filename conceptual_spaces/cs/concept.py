@@ -36,6 +36,16 @@ class Concept:
     def __str__(self):
         return "<{0},{1},{2},{3}>".format(self._core, self._mu, self._c, self._weights)
     
+    def __eq__(self, other):
+        if not isinstance(other, Concept):
+            return False
+        if self._core != other._core or self._mu != other._mu or self._c != other._c or self._weights != other._weights:
+            return False
+        return True
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)
+    
     def membership(self, point):
         """Computes the membership of the point in this concept."""
         
@@ -49,7 +59,17 @@ class Concept:
 
     def unify(self, other):
         """Computes the union of two concepts."""
-        pass #TODO implement
+
+        if not isinstance(other, Concept):
+            raise Exception("Not a valid concept")
+        
+        core = self._core.unify(other._core) 
+        mu = max(self._mu, other._mu)
+        c = min(self._c, other._c)
+        weights = self._weights.merge(other._weights, 0.5, 0.5)
+        
+        return Concept(core, mu, c, weights, self._cs)
+        
         
     def project(self, domains):
         """Computes the projection of this concept onto a subset of domains."""

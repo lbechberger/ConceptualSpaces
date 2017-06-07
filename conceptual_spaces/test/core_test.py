@@ -109,5 +109,76 @@ class TestCore(unittest.TestCase):
         p = [12,-2,8]
         self.assertEqual(s.find_closest_point_candidates(p), [[7,2,8],[7,5,7]])
 
+    # __eq__(), __ne__()
+    def test_eq_ne_identity(self):
+        c = Cuboid([1,2,3],[7,8,9])
+        s = Core([c])
+        self.assertTrue(s == s)
+        self.assertFalse(s != s)
+
+    def test_eq_ne_no_core(self):
+        c = Cuboid([1,2,3],[7,8,9])
+        s = Core([c])
+        self.assertTrue(s != c)
+        self.assertFalse(s == c)
+
+    def test_eq_ne_shallow_copy(self):
+        c = Cuboid([1,2,3],[7,8,9])
+        s = Core([c])
+        s2 = Core([c])
+        self.assertTrue(s == s2)
+        self.assertFalse(s != s2)
+
+    def test_eq_ne_deep_copy(self):
+        c = Cuboid([1,2,3],[7,8,9])
+        s = Core([c])
+        c2 = Cuboid([1,2,3],[7,8,9])
+        s2 = Core([c2])
+        self.assertTrue(s == s2)
+        self.assertFalse(s != s2)
+
+    def test_eq_ne_reversed_cuboid_order(self):
+        c = Cuboid([1,2,3],[7,8,9])
+        c2 = Cuboid([6,5,4],[9,8,7])
+        s = Core([c, c2])
+        s2 = Core([c2, c])
+        self.assertTrue(s == s2)
+        self.assertFalse(s != s2)
+
+    def test_eq_ne_different_cores(self):
+        c = Cuboid([1,2,3],[7,8,9])
+        c2 = Cuboid([6,5,4],[9,8,7])
+        s = Core([c])
+        s2 = Core([c2])
+        self.assertTrue(s != s2)
+        self.assertFalse(s == s2)
+
+    # unify()
+    def test_unify_no_core(self):
+        c = Cuboid([1,2,3],[7,8,9])
+        s = Core([c])
+        with self.assertRaises(Exception):
+            s.unify(42)
+    
+    def test_unify_no_repair(self):
+        c1 = Cuboid([1,2,3],[7,8,9])
+        c2 = Cuboid([4,5,6],[7,7,7])
+        s1 = Core([c1])
+        s2 = Core([c2])
+        s_result = Core([c1, c2])
+        self.assertEqual(s1.unify(s2), s_result)
+        self.assertEqual(s1.unify(s2), s2.unify(s1))
+    
+    def test_unify_repair(self):
+        c1 = Cuboid([1,2,3],[2,3,4])
+        c2 = Cuboid([3,4,5],[7,7,7])
+        s1 = Core([c1])
+        s2 = Core([c2])
+        c1_result = Cuboid([1,2,3],[3.25,4,4.75])
+        c2_result = Cuboid([3,4,4.75],[7,7,7])
+        s_result = Core([c1_result, c2_result])
+        self.assertEqual(s1.unify(s2), s_result)
+        self.assertEqual(s1.unify(s2), s2.unify(s1))
+   
 
 unittest.main()

@@ -48,7 +48,7 @@ class ConceptualSpace:
                 return False
         
         return True
-        
+    
     def distance(self, x, y, weights):
         """Computes the combined metric d_C(x,y,W) between the two points x and y using the weights in 'weights'."""
         

@@ -48,4 +48,42 @@ class Weights:
         return True
     
     def __str__(self):
-        return "w<{1},<{2}>>".format(str(self.domain_weights),str(self.dimension_weights))
+        return "w<{0},<{1}>>".format(str(self.domain_weights),str(self.dimension_weights))
+    
+    def __eq__(self, other):
+        if not isinstance(other, Weights):
+            return False
+        if not self.dimension_weights == other.dimension_weights:
+            return False
+        if not self.domain_weights == other.domain_weights:
+            return False
+        return True
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)
+    
+    def merge(self, other, s = 0.5, t = 0.5):
+        """Merge two weights, using the parameters s and t to interpolate between domain and dimension weights, respectively."""
+        
+        dom_weights = {}
+        dim_weights = {}
+
+        for dom in set(self.domain_weights.keys()) & set(other.domain_weights.keys()):
+            weight_dom = s * self.domain_weights[dom] + (1.0 - s) * other.domain_weights[dom]
+            dom_weights[dom] = weight_dom
+            weights_dim = {}
+            for dim in self.dimension_weights[dom].keys():
+                w = t * self.dimension_weights[dom][dim] + (1.0 - t) * other.dimension_weights[dom][dim]
+                weights_dim[dim] = w
+            dim_weights[dom] = weights_dim
+        
+        for dom in set(self.domain_weights.keys()) - set(other.domain_weights.keys()):
+            dom_weights[dom] = self.domain_weights[dom]
+            dim_weights[dom] = self.dimension_weights[dom].copy()
+        
+        for dom in set(other.domain_weights.keys()) - set(self.domain_weights.keys()):
+            dom_weights[dom] = other.domain_weights[dom]
+            dim_weights[dom] = other.dimension_weights[dom].copy()
+        
+        
+        return Weights(dom_weights, dim_weights)
