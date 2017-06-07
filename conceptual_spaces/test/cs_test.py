@@ -10,6 +10,9 @@ import sys
 sys.path.append("..")
 from cs.cs import ConceptualSpace
 from cs.weights import Weights
+from cs.core import Core
+from cs.concept import Concept
+from cs.cuboid import Cuboid
 from math import sqrt
 
 class TestCore(unittest.TestCase):
@@ -124,5 +127,49 @@ class TestCore(unittest.TestCase):
         y = [2,0,2,2]   # difference: 1 2 1 2
         self.assertEqual(cs.distance(x,y,w), (4.0/3)*sqrt(0.5*1+0.5*4) + (2.0/3)*sqrt(0.6*1 + 0.4*4))
         self.assertEqual(cs.distance(x,y,w), cs.distance(y,x,w))
+    
+    # add_concept()
+    def test_add_concept_failure(self):
+        cs = ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        
+        with self.assertRaises(Exception):
+            cs.add_concept(42, 1337)
+
+    def test_add_concept_correct(self):
+        s = Core([Cuboid([1,2,3,4],[3,4,5,6])])
+        dom = {0:2, 1:1}        
+        dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
+        w = Weights(dom, dim)
+        cs = ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        
+        f = Concept(s, 0.5, 2.0, w, cs)  
+        
+        cs.add_concept(42, f)
+        self.assertTrue(42 in cs._concepts)
+        self.assertEqual(cs._concepts[42], f)
+    
+    def test_delete_concept(self):
+        s = Core([Cuboid([1,2,3,4],[3,4,5,6])])
+        dom = {0:2, 1:1}        
+        dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
+        w = Weights(dom, dim)
+        cs = ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        
+        f = Concept(s, 0.5, 2.0, w, cs)  
+        
+        cs.add_concept(42, f)
+        self.assertTrue(42 in cs._concepts)
+        self.assertEqual(cs._concepts[42], f)
+        
+        cs.delete_concept(43)
+        self.assertTrue(42 in cs._concepts)
+        self.assertEqual(cs._concepts[42], f)
+        
+        cs.delete_concept(42)
+        self.assertFalse(42 in cs._concepts)
+        self.assertEqual(len(cs._concepts), 0)
+        
+        cs.delete_concept(1337)
+        self.assertEqual(len(cs._concepts), 0)
     
 unittest.main()

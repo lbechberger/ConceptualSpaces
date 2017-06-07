@@ -6,6 +6,7 @@ Created on Tue Jun  6 12:15:30 2017
 """
 
 from math import sqrt
+from concept import Concept
 
 class ConceptualSpace:
     """The overall conceptual space.
@@ -25,6 +26,7 @@ class ConceptualSpace:
             
         self._n_dim = n_dim
         self._domains = domains
+        self._concepts = {}
         
     def _check_domain_structure(self, domains, n_dim):
         """Checks whether the domain structure is valid."""
@@ -62,3 +64,16 @@ class ConceptualSpace:
             distance += weights.domain_weights[domain] * sqrt(inner_distance)
         
         return distance
+    
+    def add_concept(self, key, concept):
+        """Adds a concept to the internal storage under the given key."""
+        
+        if not isinstance(concept, Concept):
+            raise Exception("Not a valid concept")
+        self._concepts[key] = concept
+    
+    def delete_concept(self, key):
+        """Deletes the concept with the given key form the internal storage."""
+        
+        if key in self._concepts:
+            del self._concepts[key]
