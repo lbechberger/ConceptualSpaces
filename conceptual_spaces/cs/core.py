@@ -105,3 +105,29 @@ class Core:
             modified_cuboids.append(Cuboid(p_min, p_max))
         
         return Core(modified_cuboids)
+    
+    def cut(self, dimension, value):
+        """Cuts the given core into two parts (at the given value on the given dimension).
+        
+        Returns the lower part and the upper part as a tuple (lower, upper)."""
+        
+        lower_cuboids = []
+        upper_cuboids = []
+        
+        for cuboid in self._cuboids:
+            if value >= cuboid._p_max[dimension]:
+                lower_cuboids.append(cuboid)
+            elif value <= cuboid._p_min[dimension]:
+                upper_cuboids.append(cuboid)
+            else:
+                p_min = list(cuboid._p_min)
+                p_min[dimension] = value
+                p_max = list(cuboid._p_max)
+                p_max[dimension] = value
+                lower_cuboids.append(Cuboid(list(cuboid._p_min), p_max))
+                upper_cuboids.append(Cuboid(p_min, list(cuboid._p_max)))
+
+        lower_core = None if len(lower_cuboids) == 0 else Core(lower_cuboids)     
+        upper_core = None if len(upper_cuboids) == 0 else Core(upper_cuboids)     
+        
+        return lower_core, upper_core

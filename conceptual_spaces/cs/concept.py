@@ -76,8 +76,15 @@ class Concept:
         pass #TODO implement
 
     def cut(self, dimension, value):
-        """Computes the result of cutting this concept into two parts (at the given value on the given dimension)."""
-        pass #TODO implement
+        """Computes the result of cutting this concept into two parts (at the given value on the given dimension).
+        
+        Returns the lower part and the upper part as a tuple (lower, upper)."""
+        
+        lower_core, upper_core = self._core.cut(dimension, value)
+        lower_concept = None if lower_core == None else Concept(lower_core, self._mu, self._c, self._weights, self._cs)
+        upper_concept = None if upper_core == None else Concept(upper_core, self._mu, self._c, self._weights, self._cs)
+        
+        return lower_concept, upper_concept
 
     def hypervolume(self):
         """Computes the hypervolume of this concept."""

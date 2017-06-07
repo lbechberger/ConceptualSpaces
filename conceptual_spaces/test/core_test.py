@@ -180,5 +180,46 @@ class TestCore(unittest.TestCase):
         self.assertEqual(s1.unify(s2), s_result)
         self.assertEqual(s1.unify(s2), s2.unify(s1))
    
+    # cut()
+    def test_cut_above(self):
+        c1 = Cuboid([1,2,3],[7,8,9])
+        c2 = Cuboid([4,5,6],[7,7,7])
+        s1 = Core([c1, c2])
+        self.assertEqual(s1.cut(0,8.0), (s1, None))
+
+    def test_cut_below(self):
+        c1 = Cuboid([1,2,3],[7,8,9])
+        c2 = Cuboid([4,5,6],[7,7,7])
+        s1 = Core([c1, c2])
+        self.assertEqual(s1.cut(2,0.0), (None, s1))
+        
+    def test_cut_through_center(self):
+        c1 = Cuboid([1,2,3],[7,8,9])
+        c2 = Cuboid([4,5,6],[7,7,7])
+        s1 = Core([c1, c2])
+        
+        low_c1 = Cuboid([1,2,3],[5,8,9])
+        low_c2 = Cuboid([4,5,6],[5,7,7])
+        low_s = Core([low_c1, low_c2])
+        
+        up_c1 = Cuboid([5,2,3],[7,8,9])
+        up_c2 = Cuboid([5,5,6],[7,7,7])
+        up_s = Core([up_c1, up_c2])
+        
+        self.assertEqual(s1.cut(0, 5), (low_s, up_s))
+
+    def test_cut_through_one_cuboid(self):
+        c1 = Cuboid([1,2,3],[7,8,9])
+        c2 = Cuboid([4,5,6],[7,7,7])
+        s1 = Core([c1, c2])
+        
+        low_c1 = Cuboid([1,2,3],[7,8,5])
+        low_s = Core([low_c1])
+        
+        up_c1 = Cuboid([1,2,5],[7,8,9])
+        up_c2 = Cuboid([4,5,6],[7,7,7])
+        up_s = Core([up_c1, up_c2])
+        
+        self.assertEqual(s1.cut(2, 5), (low_s, up_s))
 
 unittest.main()

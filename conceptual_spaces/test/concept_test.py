@@ -222,5 +222,70 @@ class TestCore(unittest.TestCase):
 #        f = Concept(s, 1.0, 2.0, w, cs)  
 #        self.assertEqual(f, f.unify(f))
     
+    # cut()
+    def test_cut_above(self):
+        c1 = Cuboid([1,2,3],[7,8,9])
+        c2 = Cuboid([4,5,6],[7,7,7])
+        s1 = Core([c1, c2])
+        dom = {0:2, 1:1}        
+        dim = {0:{0:1}, 1:{1:3, 2:2.0}}
+        w = Weights(dom, dim)
+        cs = ConceptualSpace(3, {0:[0], 1:[1,2]})
+        f1 = Concept(s1, 1.0, 2.0, w, cs)
+        self.assertEqual(f1.cut(0,8.0), (f1, None))
+
+    def test_cut_below(self):
+        c1 = Cuboid([1,2,3],[7,8,9])
+        c2 = Cuboid([4,5,6],[7,7,7])
+        s1 = Core([c1, c2])
+        dom = {0:2, 1:1}        
+        dim = {0:{0:1}, 1:{1:3, 2:2.0}}
+        w = Weights(dom, dim)
+        cs = ConceptualSpace(3, {0:[0], 1:[1,2]})
+        f1 = Concept(s1, 1.0, 2.0, w, cs)
+        self.assertEqual(f1.cut(2,0.0), (None, f1))
+        
+    def test_cut_through_center(self):
+        c1 = Cuboid([1,2,3],[7,8,9])
+        c2 = Cuboid([4,5,6],[7,7,7])
+        s1 = Core([c1, c2])
+        dom = {0:2, 1:1}        
+        dim = {0:{0:1}, 1:{1:3, 2:2.0}}
+        w = Weights(dom, dim)
+        cs = ConceptualSpace(3, {0:[0], 1:[1,2]})
+        f1 = Concept(s1, 1.0, 2.0, w, cs)
+        
+        low_c1 = Cuboid([1,2,3],[5,8,9])
+        low_c2 = Cuboid([4,5,6],[5,7,7])
+        low_s = Core([low_c1, low_c2])
+        low_f = Concept(low_s, 1.0, 2.0, w, cs)        
+        
+        up_c1 = Cuboid([5,2,3],[7,8,9])
+        up_c2 = Cuboid([5,5,6],[7,7,7])
+        up_s = Core([up_c1, up_c2])
+        up_f = Concept(up_s, 1.0, 2.0, w, cs)
+        
+        self.assertEqual(f1.cut(0, 5), (low_f, up_f))
+
+    def test_cut_through_one_cuboid(self):
+        c1 = Cuboid([1,2,3],[7,8,9])
+        c2 = Cuboid([4,5,6],[7,7,7])
+        s1 = Core([c1, c2])
+        dom = {0:2, 1:1}        
+        dim = {0:{0:1}, 1:{1:3, 2:2.0}}
+        w = Weights(dom, dim)
+        cs = ConceptualSpace(3, {0:[0], 1:[1,2]})
+        f1 = Concept(s1, 1.0, 2.0, w, cs)
+        
+        low_c1 = Cuboid([1,2,3],[7,8,5])
+        low_s = Core([low_c1])
+        low_f = Concept(low_s, 1.0, 2.0, w, cs)
+        
+        up_c1 = Cuboid([1,2,5],[7,8,9])
+        up_c2 = Cuboid([4,5,6],[7,7,7])
+        up_s = Core([up_c1, up_c2])
+        up_f = Concept(up_s, 1.0, 2.0, w, cs)
+        
+        self.assertEqual(f1.cut(2, 5), (low_f, up_f))
     
 unittest.main()
