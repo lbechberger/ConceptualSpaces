@@ -4,14 +4,15 @@ Created on Tue Jun  6 10:50:58 2017
 
 @author: lbechberger
 """
-from cuboid import Cuboid
+import cuboid as cub
+import cs
 
 class Core:
     """A concept's core, consisting of a set of cuboids with nonempty intersection.
     
     Implementation of the crisp Simple Star-Shaped Set (SSSS)"""
     
-    def __init__(self, cuboids):
+    def __init__(self, cuboids, domains):
         """Initializes the concept's core.
         
         The parameter cuboids must be a list of cuboids."""
@@ -19,21 +20,23 @@ class Core:
         if not type(cuboids) == list:
             raise Exception("'cuboids' is not a list")           
         for c in cuboids:
-            if not isinstance(c, Cuboid):
+            if not isinstance(c, cub.Cuboid):
                 raise Exception("'cuboids' does not only contain cuboids")
 
         if len(cuboids) == 0:
             raise Exception("empty list of cuboids")
 
-        if not self._check(cuboids):
-            raise Exception("cuboids do not intersect or have different relevant dimensions")
+        if not self._check(cuboids, domains):
+            raise Exception("cuboids do not intersect or are defined on different domains")
         
         self._cuboids = cuboids
+        self._domains = domains
     
-    def _check(self, cuboids = None):
-        """Asserts that the intersection of all cuboids is nonempty and that they have the same relevant dimensions."""
+    def _check(self, cuboids = None, domains = None):
+        """Asserts that the intersection of all cuboids is nonempty and that they are defined on the same domains"""
 
         cuboids = cuboids if (not cuboids == None) else self._cuboids      
+        domains = domains if (not domains == None) else self._domains      
         
         intersection = cuboids[0]
         for c in cuboids:
@@ -41,9 +44,11 @@ class Core:
             if intersection == None:
                 return False
 
-        relevant_dimensions = cuboids[0]._relevant_dimensions
+        if not all(dom in cs.ConceptualSpace.cs._domains.items() for dom in domains.items()):
+            return False
+        
         for c in cuboids:
-            if c._relevant_dimensions != relevant_dimensions:
+            if c._domains != domains:
                 return False
         
         return True
@@ -92,7 +97,7 @@ class Core:
         
         extended_list = list(self._cuboids) + list(other._cuboids)
         if self._check(extended_list):
-            return Core(extended_list)  # all cuboids already intersect --> nothing to do
+            return Core(extended_list, self._domains)  # all cuboids already intersect --> nothing to do
         
         # need to perform repair mechanism        
         midpoints = []
@@ -107,9 +112,9 @@ class Core:
         for cuboid in extended_list:
             p_min = map(min, cuboid._p_min, midpoint)
             p_max = map(max, cuboid._p_max, midpoint)
-            modified_cuboids.append(Cuboid(p_min, p_max))
+            modified_cuboids.append(cub.Cuboid(p_min, p_max, cuboid._domains))
         
-        return Core(modified_cuboids)
+        return Core(modified_cuboids, self._domains)
     
     def cut(self, dimension, value):
         """Cuts the given core into two parts (at the given value on the given dimension).
@@ -129,10 +134,10 @@ class Core:
                 p_min[dimension] = value
                 p_max = list(cuboid._p_max)
                 p_max[dimension] = value
-                lower_cuboids.append(Cuboid(list(cuboid._p_min), p_max))
-                upper_cuboids.append(Cuboid(p_min, list(cuboid._p_max)))
+                lower_cuboids.append(cub.Cuboid(list(cuboid._p_min), p_max, cuboid._domains))
+                upper_cuboids.append(cub.Cuboid(p_min, list(cuboid._p_max), cuboid._domains))
 
-        lower_core = None if len(lower_cuboids) == 0 else Core(lower_cuboids)     
-        upper_core = None if len(upper_cuboids) == 0 else Core(upper_cuboids)     
+        lower_core = None if len(lower_cuboids) == 0 else Core(lower_cuboids, self._domains)     
+        upper_core = None if len(upper_cuboids) == 0 else Core(upper_cuboids, self._domains)     
         
         return lower_core, upper_core

@@ -15,7 +15,7 @@ from cs.concept import Concept
 from cs.cuboid import Cuboid
 from math import sqrt
 
-class TestCore(unittest.TestCase):
+class TestConceptualSpace(unittest.TestCase):
 
     # constructor()
     def test_constructor_fine(self):
@@ -56,6 +56,13 @@ class TestCore(unittest.TestCase):
         domains = {0:[0,1], 1:[2,3], 2:[]}        
         with self.assertRaises(Exception):        
             ConceptualSpace(n, domains)
+
+    def test_constructor_singleton(self):
+        n = 4        
+        domains = {0:[0,1], 1:[2,3]}        
+        cs = ConceptualSpace(n, domains)        
+        self.assertEqual(cs, ConceptualSpace.cs)
+        
 
     # distance()
     def test_distance_illegal_point(self):
@@ -136,26 +143,26 @@ class TestCore(unittest.TestCase):
             cs.add_concept(42, 1337)
 
     def test_add_concept_correct(self):
-        s = Core([Cuboid([1,2,3,4],[3,4,5,6])])
+        cs = ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        s = Core([Cuboid([1,2,3,4],[3,4,5,6], {0:[0,1], 1:[2,3]})], {0:[0,1], 1:[2,3]})
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
         w = Weights(dom, dim)
-        cs = ConceptualSpace(4, {0:[0,1], 1:[2,3]})
         
-        f = Concept(s, 0.5, 2.0, w, cs)  
+        f = Concept(s, 0.5, 2.0, w)  
         
         cs.add_concept(42, f)
         self.assertTrue(42 in cs._concepts)
         self.assertEqual(cs._concepts[42], f)
     
     def test_delete_concept(self):
-        s = Core([Cuboid([1,2,3,4],[3,4,5,6])])
+        cs = ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        s = Core([Cuboid([1,2,3,4],[3,4,5,6], {0:[0,1], 1:[2,3]})], {0:[0,1], 1:[2,3]})
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
         w = Weights(dom, dim)
-        cs = ConceptualSpace(4, {0:[0,1], 1:[2,3]})
         
-        f = Concept(s, 0.5, 2.0, w, cs)  
+        f = Concept(s, 0.5, 2.0, w)  
         
         cs.add_concept(42, f)
         self.assertTrue(42 in cs._concepts)

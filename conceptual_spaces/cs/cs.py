@@ -6,13 +6,16 @@ Created on Tue Jun  6 12:15:30 2017
 """
 
 from math import sqrt
-from concept import Concept
+import concept as con
 
 class ConceptualSpace:
     """The overall conceptual space.
     
     Should be used as a singleton. Provides some utility functions."""
     
+    # singleton instance for convenient access
+    cs = None
+
     def __init__(self, n_dim, domains):
         """Initializes a conceptual space with the given numer of dimensions and the given set of domains.
         
@@ -27,6 +30,8 @@ class ConceptualSpace:
         self._n_dim = n_dim
         self._domains = domains
         self._concepts = {}
+        
+        ConceptualSpace.cs = self
         
     def _check_domain_structure(self, domains, n_dim):
         """Checks whether the domain structure is valid."""
@@ -68,7 +73,7 @@ class ConceptualSpace:
     def add_concept(self, key, concept):
         """Adds a concept to the internal storage under the given key."""
         
-        if not isinstance(concept, Concept):
+        if not isinstance(concept, con.Concept):
             raise Exception("Not a valid concept")
         self._concepts[key] = concept
     

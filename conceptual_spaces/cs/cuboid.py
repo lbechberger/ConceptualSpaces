@@ -5,33 +5,48 @@ Created on Thu Jun  1 13:51:31 2017
 @author: lbechberger
 """
 
+import cs
+
 class Cuboid:
     """Single cuboid that is used to define a concept's core."""
     
-    def __init__(self, p_min, p_max):
+    def __init__(self, p_min, p_max, domains):
         """Initializes the cuboid.
         
-        All entries of p_min must be <= their corresponding entry in p_max."""
+        All entries of p_min must be <= their corresponding entry in p_max.
+        All dimensions contained in the domains must be finite, all other dimensions infinite."""
         
-        if not self._check(p_min, p_max):
-            raise Exception("p_min is in some dimension above p_max")           
+        if not self._check(p_min, p_max, domains):
+            raise Exception("some constraint is violated!")           
         
         self._p_min = p_min
         self._p_max = p_max
+        self._domains = domains        
         
-        self._relevant_dimensions = []
-        for i in range(len(p_max)):
-            if p_max[i] != float("inf"):
-                self._relevant_dimensions.append(i)
     
-    def _check(self, p_min=None, p_max=None):
-        """Asserts that no entry of _p_min is larger than the corresponding entry of _p_max."""
+    def _check(self, p_min = None, p_max = None, domains = None):
+        """Checks the assertions of the cuboid.
+        
+        Asserts that no entry of _p_min is larger than the corresponding entry of _p_max, 
+        that both are defined on the correct set of dimensions, 
+        and that the given domains are compatible with the overall domain structure of the conceptual space."""
         
         p_min = p_min if (not p_min == None) else self._p_min
         p_max = p_max if (not p_max == None) else self._p_max
+        domains = domains if (not domains == None) else self._domains
+        dims = [dim for domain in domains.values() for dim in domain]        
         
-        if not len(p_min) == len(p_max):
-            raise Exception("p_min and p_max are of different length")
+        if not len(p_min) == len(p_max) == cs.ConceptualSpace.cs._n_dim:
+            return False
+
+        for i in range(len(p_max)):
+            if i in dims and (p_max[i] == float("inf") or p_min[i] == float("-inf")):
+                return False
+            if i not in dims and (p_max[i] != float("inf") or p_min[i] != float("-inf")):
+                return False
+
+        if not all(dom in cs.ConceptualSpace.cs._domains.items() for dom in domains.items()):
+            return False
         
         return reduce(lambda x, y: x and y, map(lambda y,z: y <= z, p_min, p_max))
     
@@ -61,7 +76,7 @@ class Cuboid:
 
     def __eq__(self, other):
         if isinstance(other, Cuboid):
-            return self._p_min == other._p_min and self._p_max == other._p_max
+            return self._p_min == other._p_min and self._p_max == other._p_max and self._domains == other._domains
         return False
     
     def __ne__(self, other):
@@ -70,14 +85,28 @@ class Cuboid:
     def __str__(self):
         return "c({},{})".format(self._p_min, self._p_max)
     
+    def _compatible(self, other):
+        """Checks whether two cuboids are compatible with each other (i.e., defined on compatible domain structures)."""
+
+        if not isinstance(other, Cuboid):
+            return False
+        
+        if len(self._p_min) != len(other._p_min):
+            return False
+        
+        for dom in set(self._domains.keys()) & set(other._domains.keys()):
+            if self._domains[dom] != other._domains[dom]:
+                return False
+        
+        dom_union = dict(self._domains)
+        dom_union.update(other._domains)
+        return all(dom in cs.ConceptualSpace.cs._domains.items() for dom in dom_union.items())
+    
     def intersect(self, other):
         """Intersects this cuboid with another one and returns the result as a new cuboid. Returns None if intersection is empty"""
 
-        if not isinstance(other, self.__class__):
-            raise Exception("can only intersect with other cuboids")
-        
-        if not len(other._p_min) == len(self._p_min):
-            raise Exception("different dimensionality")
+        if not self._compatible(other):
+            raise Exception("Cuboids are not compatible")
 
         p_min = []
         p_max = []
@@ -87,5 +116,8 @@ class Cuboid:
                 return None # no overlap in dimension i
             p_min.append(max(self._p_min[i], other._p_min[i]))
             p_max.append(min(self._p_max[i], other._p_max[i]))
+
+        dom_union = dict(self._domains)
+        dom_union.update(other._domains)         
         
-        return Cuboid(p_min, p_max)
+        return Cuboid(p_min, p_max, dom_union)

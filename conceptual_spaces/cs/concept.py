@@ -5,17 +5,19 @@ Created on Tue Jun  6 11:54:30 2017
 @author: lbechberger
 """
 
-from core import Core
-from weights import Weights
 from math import exp
+
+import core as cor
+import weights as wghts
+import cs
 
 class Concept:
     """A concept, implementation of the Fuzzy Simple Star-Shaped Set (FSSSS)."""
     
-    def __init__(self, core, mu, c, weights, cs):
+    def __init__(self, core, mu, c, weights):
         """Initializes the concept."""
 
-        if (not isinstance(core, Core)) or (not core._check()):
+        if (not isinstance(core, cor.Core)) or (not core._check()):
             raise Exception("Invalid core")
 
         if mu > 1.0 or mu <= 0.0:
@@ -24,15 +26,14 @@ class Concept:
         if c <= 0.0:
             raise Exception("Invalid c")
         
-        if (not isinstance(weights, Weights)) or (not weights._check()):
+        if (not isinstance(weights, wghts.Weights)) or (not weights._check()):
             raise Exception("Invalid weights")
         
         self._core = core
         self._mu = mu
         self._c = c
         self._weights = weights
-        self._cs = cs
-    
+            
     def __str__(self):
         return "<{0},{1},{2},{3}>".format(self._core, self._mu, self._c, self._weights)
     
@@ -49,7 +50,7 @@ class Concept:
     def membership(self, point):
         """Computes the membership of the point in this concept."""
         
-        min_distance = reduce(min, map(lambda x: self._cs.distance(x, point, self._weights), self._core.find_closest_point_candidates(point)))
+        min_distance = reduce(min, map(lambda x: cs.ConceptualSpace.cs.distance(x, point, self._weights), self._core.find_closest_point_candidates(point)))
         
         return self._mu * exp(-self._c * min_distance)
     
@@ -68,7 +69,7 @@ class Concept:
         c = min(self._c, other._c)
         weights = self._weights.merge(other._weights, 0.5, 0.5)
         
-        return Concept(core, mu, c, weights, self._cs)
+        return Concept(core, mu, c, weights)
         
         
     def project(self, domains):
@@ -81,8 +82,8 @@ class Concept:
         Returns the lower part and the upper part as a tuple (lower, upper)."""
         
         lower_core, upper_core = self._core.cut(dimension, value)
-        lower_concept = None if lower_core == None else Concept(lower_core, self._mu, self._c, self._weights, self._cs)
-        upper_concept = None if upper_core == None else Concept(upper_core, self._mu, self._c, self._weights, self._cs)
+        lower_concept = None if lower_core == None else Concept(lower_core, self._mu, self._c, self._weights)
+        upper_concept = None if upper_core == None else Concept(upper_core, self._mu, self._c, self._weights)
         
         return lower_concept, upper_concept
 
