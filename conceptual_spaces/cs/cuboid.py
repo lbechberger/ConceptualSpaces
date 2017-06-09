@@ -121,3 +121,23 @@ class Cuboid:
         dom_union.update(other._domains)         
         
         return Cuboid(p_min, p_max, dom_union)
+        
+    def project(self, new_domains):
+        """Projects this cuboid onto the given domains (which must be a subset of the cuboid's current domains)."""
+        
+        if not all(dom in self._domains.items() for dom in new_domains.items()):
+            raise Exception("Illegal set of new domains!")
+        
+        # remove all domains that became irrelevant by replacing the p_min and p_max entries with -inf and inf, respectively
+        relevant_dims = [dim for domain in new_domains.values() for dim in domain]
+        p_min = []
+        p_max = []
+        for i in range(len(self._p_min)):
+            if i in relevant_dims:
+                p_min.append(self._p_min[i])
+                p_max.append(self._p_max[i])
+            else:
+                p_min.append(float("-inf"))
+                p_max.append(float("inf"))
+        
+        return Cuboid(p_min, p_max, new_domains)

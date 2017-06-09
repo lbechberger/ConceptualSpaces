@@ -162,5 +162,27 @@ class TestWeights(unittest.TestCase):
         self.assertEqual(w.merge(w2), w_res)
         self.assertEqual(w.merge(w2), w2.merge(w))        
         
+    # project()
+    def test_project_2_dom_to_1(self):
+        dom = {0:2, 1:1}        
+        dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
+        w = Weights(dom, dim)
+        
+        dom_res = {0:1}
+        dim_res = {0:{0:1, 1:1}}
+        w_res = Weights(dom_res, dim_res)
+        
+        self.assertEqual(w.project({0:[0,1]}), w_res)
+ 
+    def test_project_3_dom_to_2(self):
+        dom = {0:2, 1:1, 2:3}        
+        dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}, 2:{4:1}}
+        w = Weights(dom, dim)
+        
+        dom_res = {0:2, 2:3}
+        dim_res = {0:{0:1, 1:1}, 2:{4:1}}
+        w_res = Weights(dom_res, dim_res)
+        
+        self.assertEqual(w.project({0:[0,1], 2:[4]}), w_res)
     
 unittest.main()

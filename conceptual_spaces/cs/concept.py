@@ -74,7 +74,12 @@ class Concept:
         
     def project(self, domains):
         """Computes the projection of this concept onto a subset of domains."""
-        pass #TODO implement
+        
+        # no explicit check for domains - Core will take care of this
+        new_core = self._core.project(domains)
+        new_weights = self._weights.project(domains)
+        
+        return Concept(new_core, self._mu, self._c, new_weights)
 
     def cut(self, dimension, value):
         """Computes the result of cutting this concept into two parts (at the given value on the given dimension).

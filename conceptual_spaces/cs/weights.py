@@ -87,3 +87,14 @@ class Weights:
         
         
         return Weights(dom_weights, dim_weights)
+    
+    def project(self, new_domains):
+        """Projects this set of weights onto a subset of domains."""
+
+        dom_weights = {}
+        dim_weights = {}
+        for dom in new_domains.keys():
+            dom_weights[dom] = self.domain_weights[dom]
+            dim_weights[dom] = dict(self.dimension_weights[dom])
+        
+        return Weights(dom_weights, dim_weights)

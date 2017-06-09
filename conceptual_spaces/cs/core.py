@@ -141,3 +141,13 @@ class Core:
         upper_core = None if len(upper_cuboids) == 0 else Core(upper_cuboids, self._domains)     
         
         return lower_core, upper_core
+    
+    def project(self, new_domains):
+        """Projects this core onto the given set of new domains (must be a subset of the core's current domains)."""
+        
+        if not all(dom in self._domains.items() for dom in new_domains.items()):
+            raise Exception("Illegal set of new domains!")
+        
+        projected_cuboids = map(lambda c: c.project(new_domains), self._cuboids)
+        
+        return Core(projected_cuboids, new_domains)

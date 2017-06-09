@@ -338,4 +338,37 @@ class TestCore(unittest.TestCase):
         
         self.assertEqual(f1.cut(2, 5), (low_f, up_f))
     
+    # project()
+    def test_project_identical_domains(self):
+        ConceptualSpace(3, {0:[0,1,2]})
+        c1 = Cuboid([0,0,0],[2,2,2],{0:[0,1,2]})
+        s = Core([c1],{0:[0,1,2]})
+        w = Weights({0:1}, {0:{0:0.5, 1:0.3, 2:0.2}})
+        f = Concept(s, 1.0, 5.0, w)
+        self.assertEqual(f.project({0:[0,1,2]}), f)
+    
+    def test_project_correct(self):
+        ConceptualSpace(3, {0:[0,1], 1:[2]})
+        c1 = Cuboid([1,2,3],[7,8,9], {0:[0,1], 1:[2]})
+        c2 = Cuboid([4,5,6],[7,7,7], {0:[0,1], 1:[2]})
+        s = Core([c1, c2],{0:[0,1], 1:[2]})
+        w = Weights({0:1, 1:2}, {0:{0:0.5, 1:0.3}, 1:{2:1}})
+        f = Concept(s, 1.0, 5.0, w)
+        
+        c1_res1 = Cuboid([1,2,float("-inf")],[7,8,float("inf")],{0:[0,1]})
+        c2_res1 = Cuboid([4,5,float("-inf")],[7,7,float("inf")],{0:[0,1]})
+        s_res1 = Core([c1_res1, c2_res1], {0:[0,1]})
+        w_res1 = Weights({0:1}, {0:{0:0.5, 1:0.3}})
+        f_res1 = Concept(s_res1, 1.0, 5.0, w_res1)
+        
+        c1_res2 = Cuboid([float("-inf"),float("-inf"),3],[float("inf"),float("inf"),9],{1:[2]})
+        c2_res2 = Cuboid([float("-inf"),float("-inf"),6],[float("inf"),float("inf"),7],{1:[2]})
+        s_res2 = Core([c1_res2, c2_res2], {1:[2]})
+        w_res2 = Weights({1:1}, {1:{2:1}})
+        f_res2 = Concept(s_res2, 1.0, 5, w_res2)
+        
+        self.assertEqual(f.project({0:[0,1]}), f_res1)
+        self.assertEqual(f.project({1:[2]}), f_res2)
+
+    
 unittest.main()

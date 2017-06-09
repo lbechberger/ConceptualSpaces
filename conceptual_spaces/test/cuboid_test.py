@@ -255,4 +255,31 @@ class TestCuboid(unittest.TestCase):
         self.assertEqual(c1.intersect(c2), c3)
         self.assertEqual(c1.intersect(c2), c2.intersect(c1))
 
+    # project()
+    def test_project_illegal_domains_subdomain(self):
+        self._create_cs()
+        c1 = Cuboid([0,0,0],[2,2,2],{0:[0,1,2]})
+        with self.assertRaises(Exception):
+            c1.project({0:[1,2]})
+    
+    def test_project_illegal_domains_other_domain_name(self):
+        self._create_cs()
+        c1 = Cuboid([0,0,0],[2,2,2],{0:[0,1,2]})
+        with self.assertRaises(Exception):
+            c1.project({1:[0,1,2]})
+
+    def test_project_identical_domains(self):
+        self._create_cs()
+        c1 = Cuboid([0,0,0],[2,2,2],{0:[0,1,2]})
+        self.assertEqual(c1.project({0:[0,1,2]}), c1)
+    
+    def test_project_correct(self):
+        cs.cs.ConceptualSpace(3, {0:[0,1], 1:[2]})
+        c1 = Cuboid([0,1,2],[3,4,5],{0:[0,1], 1:[2]})
+        c_res1 = Cuboid([0,1,float("-inf")],[3,4,float("inf")],{0:[0,1]})
+        c_res2 = Cuboid([float("-inf"),float("-inf"),2],[float("inf"),float("inf"),5],{1:[2]})
+        self.assertEqual(c1.project({0:[0,1]}), c_res1)
+        self.assertEqual(c1.project({1:[2]}), c_res2)
+        
+
 unittest.main()
