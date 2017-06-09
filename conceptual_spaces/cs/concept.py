@@ -5,7 +5,8 @@ Created on Tue Jun  6 11:54:30 2017
 @author: lbechberger
 """
 
-from math import exp
+from math import exp, sqrt, factorial, pi, gamma
+import itertools
 
 import core as cor
 import weights as wghts
@@ -92,9 +93,78 @@ class Concept:
         
         return lower_concept, upper_concept
 
+    def _reduce_domains(self, domains, dimensions):
+        """Reduces the domain structure such that only the given dimensions are still contained."""
+        new_domains = {}
+
+        for (dom, dims) in domains.items():
+            filtered_dims = [dim for dim in set(dims) & set(dimensions)]
+            if len(filtered_dims) > 0:
+                new_domains[dom] = filtered_dims
+        
+        return new_domains
+
+    def _hypervolume_couboid(self, cuboid):
+        """Computes the hypervolume of a single fuzzified cuboid."""
+
+        n = cs.ConceptualSpace.cs._n_dim
+
+        # calculating the factor in front of the sum
+        weight_product = 1.0
+        for (dom, dom_weight) in self._weights.domain_weights.items():
+            for (dim, dim_weight) in self._weights.dimension_weights[dom].items():
+                weight_product *= dom_weight * sqrt(dim_weight)
+        factor = self._mu / (self._c**n * weight_product)
+
+        all_dims = [dim for domain in self._core._domains.values() for dim in domain]
+        outer_sum = 0.0        
+        # outer sum
+        for i in range(1, n+1):
+            subsets = list(itertools.combinations(all_dims, i))
+            inner_sum = 0.0
+            # inner sum
+            for subset in subsets:
+                # first product
+                first_product = 1.0
+                for dim in set(all_dims) - set(subset):
+                    dom = filter(lambda (x,y): dim in y, self._core._domains.items())[0][0]
+                    w_dom = self._weights.domain_weights[dom]
+                    w_dim = self._weights.dimension_weights[dom][dim]
+                    b = cuboid._p_max[dim] - cuboid._p_min[dim]
+                    first_product *= w_dom * sqrt(w_dim) * b * self._c
+                
+                # second product
+                second_product = 1.0
+                reduced_domain_structure = self._reduce_domains(self._core._domains, subset)
+                for (dom, dims) in reduced_domain_structure.items():
+                    n_domain = len(dims)
+                    second_product *= factorial(n_domain) * (pi ** (n_domain/2.0))/(gamma((n_domain/2.0) + 1))
+                
+                inner_sum += first_product * second_product
+            
+            outer_sum += inner_sum
+        return factor * outer_sum
+
     def hypervolume(self):
         """Computes the hypervolume of this concept."""
-        pass #TODO implement
+        
+        hypervolume = 0.0
+        num_cuboids = len(self._core._cuboids)
+        
+        # use the inclusion-exclusion formula over all the cuboids
+        for l in range(1, num_cuboids + 1):
+            inner_sum = 0.0
+
+            subsets = list(itertools.combinations(self._core._cuboids, l))           
+            for subset in subsets:
+                intersection = subset[0]
+                for cuboid in subset:
+                    intersection = intersection.intersect(cuboid)
+                inner_sum += self._hypervolume_couboid(intersection)
+                
+            hypervolume += inner_sum * (-1.0)**(l+1)
+        
+        return hypervolume
 
     def subset_of(self, other):
         """Computes the degree of subsethood between this concept and a given other concept."""

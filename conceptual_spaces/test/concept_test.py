@@ -370,5 +370,62 @@ class TestCore(unittest.TestCase):
         self.assertEqual(f.project({0:[0,1]}), f_res1)
         self.assertEqual(f.project({1:[2]}), f_res2)
 
-    
+    # hypervolume()
+    def test_hypervolume_single_cuboid_lemon(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        ConceptualSpace(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        c_lemon = Cuboid([0.7, 0.45, 0.0], [0.8, 0.55, 0.1], domains)
+        s_lemon = Core([c_lemon], domains)
+        w_lemon = Weights({"color":0.5, "shape":0.5, "taste":2.0}, w_dim)
+        f_lemon = Concept(s_lemon, 1.0, 20.0, w_lemon)
+        
+        self.assertAlmostEqual(f_lemon.hypervolume(), 0.0135)
+
+    def test_hypervolume_single_cuboid_granny_smith(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        ConceptualSpace(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        c_granny_smith = Cuboid([0.55, 0.70, 0.35], [0.6, 0.8, 0.45], domains)
+        s_granny_smith = Core([c_granny_smith], domains)
+        w_granny_smith = Weights({"color":1.0, "shape":1.0, "taste":1.0}, w_dim)
+        f_granny_smith = Concept(s_granny_smith, 1.0, 25.0, w_granny_smith)
+
+        self.assertAlmostEqual(f_granny_smith.hypervolume(), 0.0042)
+
+    def test_hypervolume_single_cuboid_pear(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        ConceptualSpace(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        f_pear = Concept(s_pear, 1.0, 10.0, w_pear)
+
+        self.assertAlmostEqual(f_pear.hypervolume(), 0.0562)
+ 
+    def test_hypervolume_single_cuboid_orange(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        ConceptualSpace(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        c_orange = Cuboid([0.8, 0.9, 0.6], [0.9, 1.0, 0.7], domains)
+        s_orange = Core([c_orange], domains)
+        w_orange = Weights({"color":1.0, "shape":1.0, "taste":1.0}, w_dim)
+        f_orange = Concept(s_orange, 1.0, 15.0, w_orange)
+
+        self.assertAlmostEqual(f_orange.hypervolume(), 0.1270)
+   
+    def test_hypervolume_multiple_cuboids_apple(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        ConceptualSpace(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        c_apple_1 = Cuboid([0.5, 0.65, 0.35], [0.8, 0.8, 0.5], domains)
+        c_apple_2 = Cuboid([0.65, 0.65, 0.4], [0.85, 0.8, 0.55], domains)
+        c_apple_3 = Cuboid([0.7, 0.65, 0.45], [1.0, 0.8, 0.6], domains)
+        s_apple = Core([c_apple_1, c_apple_2, c_apple_3], domains)
+        w_apple = Weights({"color":0.50, "shape":1.50, "taste":1.00}, w_dim)
+        f_apple = Concept(s_apple, 1.0, 5.0, w_apple)
+
+        self.assertAlmostEqual(f_apple.hypervolume(), 0.3376)
+        
 unittest.main()
