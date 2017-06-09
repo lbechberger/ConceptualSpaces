@@ -119,7 +119,7 @@ class Concept:
         all_dims = [dim for domain in self._core._domains.values() for dim in domain]
         outer_sum = 0.0        
         # outer sum
-        for i in range(1, n+1):
+        for i in range(0, n+1):
             subsets = list(itertools.combinations(all_dims, i))
             inner_sum = 0.0
             # inner sum

@@ -380,7 +380,7 @@ class TestCore(unittest.TestCase):
         w_lemon = Weights({"color":0.5, "shape":0.5, "taste":2.0}, w_dim)
         f_lemon = Concept(s_lemon, 1.0, 20.0, w_lemon)
         
-        self.assertAlmostEqual(f_lemon.hypervolume(), 0.0135)
+        self.assertAlmostEqual(f_lemon.hypervolume(), 54.0/4000.0)
 
     def test_hypervolume_single_cuboid_granny_smith(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -391,7 +391,7 @@ class TestCore(unittest.TestCase):
         w_granny_smith = Weights({"color":1.0, "shape":1.0, "taste":1.0}, w_dim)
         f_granny_smith = Concept(s_granny_smith, 1.0, 25.0, w_granny_smith)
 
-        self.assertAlmostEqual(f_granny_smith.hypervolume(), 0.0042)
+        self.assertAlmostEqual(f_granny_smith.hypervolume(), 0.004212)
 
     def test_hypervolume_single_cuboid_pear(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -402,7 +402,7 @@ class TestCore(unittest.TestCase):
         w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
         f_pear = Concept(s_pear, 1.0, 10.0, w_pear)
 
-        self.assertAlmostEqual(f_pear.hypervolume(), 0.0562)
+        self.assertAlmostEqual(f_pear.hypervolume(), 0.0561600)
  
     def test_hypervolume_single_cuboid_orange(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -413,7 +413,7 @@ class TestCore(unittest.TestCase):
         w_orange = Weights({"color":1.0, "shape":1.0, "taste":1.0}, w_dim)
         f_orange = Concept(s_orange, 1.0, 15.0, w_orange)
 
-        self.assertAlmostEqual(f_orange.hypervolume(), 0.1270)
+        self.assertAlmostEqual(f_orange.hypervolume(), 0.01270370)
    
     def test_hypervolume_multiple_cuboids_apple(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -426,6 +426,6 @@ class TestCore(unittest.TestCase):
         w_apple = Weights({"color":0.50, "shape":1.50, "taste":1.00}, w_dim)
         f_apple = Concept(s_apple, 1.0, 5.0, w_apple)
 
-        self.assertAlmostEqual(f_apple.hypervolume(), 0.3376)
+        self.assertAlmostEqual(f_apple.hypervolume(), 0.3375000)
         
 unittest.main()
