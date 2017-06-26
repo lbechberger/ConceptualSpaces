@@ -64,6 +64,8 @@ class ConceptualSpace:
 
         for domain in self._domains.keys():
             inner_distance = 0.0
+            if not domain in weights.domain_weights:    # don't take into account domains w/o weights
+                continue
             for dimension in self._domains[domain]:
                 inner_distance += weights.dimension_weights[domain][dimension] * (x[dimension] - y[dimension])**2
             distance += weights.domain_weights[domain] * sqrt(inner_distance)

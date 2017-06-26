@@ -74,6 +74,30 @@ class Cuboid:
         
         return map(helper, self._p_min, point, self._p_max)
 
+    def get_closest_points(self, other):
+        """Computes closest points a in this and b in the other cuboid."""
+        
+        if not self._compatible(other):
+            raise Exception("Cuboids not compatible")
+        
+        a = []
+        b = []
+        
+        for i in range(len(self._p_min)):
+            if other._p_max[i] < self._p_min[i]:    # other cuboid below this one
+                a.append([self._p_min[i], self._p_min[i]])
+                b.append([other._p_max[i], other._p_max[i]])
+            elif other._p_min[i] > self._p_max[i]:  # this cuboid below other one
+                a.append([self._p_max[i], self._p_max[i]])
+                b.append([other._p_min[i], other._p_min[i]])
+            else:                                   # cuboids intersect
+                left = max(self._p_min[i], other._p_min[i])
+                right = min(self._p_max[i], other._p_max[i])
+                a.append([left, right])
+                b.append([left, right])
+
+        return a, b
+
     def __eq__(self, other):
         if isinstance(other, Cuboid):
             return self._p_min == other._p_min and self._p_max == other._p_max and self._domains == other._domains

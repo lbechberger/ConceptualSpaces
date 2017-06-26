@@ -281,5 +281,57 @@ class TestCuboid(unittest.TestCase):
         self.assertEqual(c1.project({0:[0,1]}), c_res1)
         self.assertEqual(c1.project({1:[2]}), c_res2)
         
+    # get_closest_points()
+    def test_get_closest_points_no_overlap_same_domains(self):
+        self._create_cs()
+        c1 = Cuboid([0,1,2],[1,2,3], {0:[0,1,2]})
+        c2 = Cuboid([2,3,4],[3,4,5], {0:[0,1,2]})
+        a_res = [[1,1],[2,2],[3,3]]
+        b_res = [[2,2],[3,3],[4,4]]
+        a, b = c1.get_closest_points(c2)
+        b2, a2 = c2.get_closest_points(c1)
+        self.assertEqual(a, a_res)
+        self.assertEqual(b, b_res)
+        self.assertEqual(a, a2)
+        self.assertEqual(b, b2)
+
+    def test_get_closest_points_two_overlaps_same_domains(self):
+        self._create_cs()
+        c1 = Cuboid([0,1,2],[1,2,3], {0:[0,1,2]})
+        c2 = Cuboid([1,1,4],[3,4,5], {0:[0,1,2]})
+        a_res = [[1,1],[1,2],[3,3]]
+        b_res = [[1,1],[1,2],[4,4]]
+        a, b = c1.get_closest_points(c2)
+        b2, a2 = c2.get_closest_points(c1)
+        self.assertEqual(a, a_res)
+        self.assertEqual(b, b_res)
+        self.assertEqual(a, a2)
+        self.assertEqual(b, b2)
+
+    def test_get_closest_points_othorgonal_domains(self):
+        cs.cs.ConceptualSpace(3, {0:[0,1], 1:[2]})
+        c1 = Cuboid([0,1,float("-inf")],[1,2,float("inf")], {0:[0,1]})
+        c2 = Cuboid([float("-inf"),float("-inf"),4],[float("inf"),float("inf"),5], {1:[2]})
+        a_res = [[0,1],[1,2],[4,5]]
+        b_res = [[0,1],[1,2],[4,5]]
+        a, b = c1.get_closest_points(c2)
+        b2, a2 = c2.get_closest_points(c1)
+        self.assertEqual(a, a_res)
+        self.assertEqual(b, b_res)
+        self.assertEqual(a, a2)
+        self.assertEqual(b, b2)
+
+    def test_get_closest_points_subdomains(self):
+        cs.cs.ConceptualSpace(3, {0:[0,1], 1:[2]})
+        c1 = Cuboid([0,1,float("-inf")],[1,2,float("inf")], {0:[0,1]})
+        c2 = Cuboid([2,1,4],[3,4,5], {0:[0,1],1:[2]})
+        a_res = [[1,1],[1,2],[4,5]]
+        b_res = [[2,2],[1,2],[4,5]]
+        a, b = c1.get_closest_points(c2)
+        b2, a2 = c2.get_closest_points(c1)
+        self.assertEqual(a, a_res)
+        self.assertEqual(b, b_res)
+        self.assertEqual(a, a2)
+        self.assertEqual(b, b2)
 
 unittest.main()

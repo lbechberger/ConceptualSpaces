@@ -8,7 +8,7 @@ Created on Tue Jun  6 10:51:06 2017
 import unittest
 import sys
 sys.path.append("..")
-from cs.core import Core
+from cs.core import Core, check
 from cs.cuboid import Cuboid
 import cs.cs
 
@@ -58,7 +58,7 @@ class TestCore(unittest.TestCase):
         s = Core([c1, c2], {1:[1,2]})
         self.assertEquals(s._cuboids, [c1, c2])
 
-    # _check
+    # check
     def test_check_true(self):
         cs.cs.ConceptualSpace(3, {0:[0,1,2]})
         c1 = Cuboid([1,2,3],[4,5,6], {0:[0,1,2]})
@@ -66,7 +66,7 @@ class TestCore(unittest.TestCase):
         c3 = Cuboid([2,2,2],[12.4,12.5,12.6], {0:[0,1,2]})
         l = [c1, c2, c3]
         s = Core(l, {0:[0,1,2]})
-        self.assertTrue(s._check())
+        self.assertTrue(check(s._cuboids, s._domains))
     
     def test_check_false(self):
         cs.cs.ConceptualSpace(3, {0:[0,1,2]})
@@ -75,7 +75,7 @@ class TestCore(unittest.TestCase):
         c3 = Cuboid([1,1,1],[2,3,4], {0:[0,1,2]})
         l = [c1, c2, c3]
         s = Core([c1], {0:[0,1,2]})
-        self.assertFalse(s._check(l))
+        self.assertFalse(check(l, s._domains))
     
     # add_cuboid
     def test_add_cuboid_true(self):

@@ -26,32 +26,11 @@ class Core:
         if len(cuboids) == 0:
             raise Exception("empty list of cuboids")
 
-        if not self._check(cuboids, domains):
+        if not check(cuboids, domains):
             raise Exception("cuboids do not intersect or are defined on different domains")
         
         self._cuboids = cuboids
         self._domains = domains
-    
-    def _check(self, cuboids = None, domains = None):
-        """Asserts that the intersection of all cuboids is nonempty and that they are defined on the same domains"""
-
-        cuboids = cuboids if (not cuboids == None) else self._cuboids      
-        domains = domains if (not domains == None) else self._domains      
-        
-        intersection = cuboids[0]
-        for c in cuboids:
-            intersection = intersection.intersect(c)
-            if intersection == None:
-                return False
-
-        if not all(dom in cs.ConceptualSpace.cs._domains.items() for dom in domains.items()):
-            return False
-        
-        for c in cuboids:
-            if c._domains != domains:
-                return False
-        
-        return True
     
     def add_cuboid(self, cuboid):
         """Adds the given cuboid to the internal list if it does not violate any constraints.
@@ -59,7 +38,7 @@ class Core:
         Returns true if the addition was successful and false if it was not successful."""
 
         extended_list = list(self._cuboids) + [cuboid]
-        if self._check(extended_list):
+        if check(extended_list, self._domains):
             self._cuboids.append(cuboid)
             return True
         else:
@@ -96,25 +75,9 @@ class Core:
             raise Exception("Incompatible cores")
         
         extended_list = list(self._cuboids) + list(other._cuboids)
-        if self._check(extended_list):
-            return Core(extended_list, self._domains)  # all cuboids already intersect --> nothing to do
         
-        # need to perform repair mechanism        
-        midpoints = []
-        for cuboid in extended_list: # midpoint of each cuboid
-            midpoints.append(map(lambda x, y: (x + y)/2.0, cuboid._p_min, cuboid._p_max))
-        # sum up all midpoints & divide by number of cuboids
-        midpoint = reduce(lambda x, y: map(lambda a,b: a+b, x, y), midpoints)
-        midpoint = map(lambda x: x/len(extended_list), midpoint)
-                
-        # extend cuboids
-        modified_cuboids = []
-        for cuboid in extended_list:
-            p_min = map(min, cuboid._p_min, midpoint)
-            p_max = map(max, cuboid._p_max, midpoint)
-            modified_cuboids.append(cub.Cuboid(p_min, p_max, cuboid._domains))
-        
-        return Core(modified_cuboids, self._domains)
+        return from_cuboids(extended_list, self._domains)
+
     
     def cut(self, dimension, value):
         """Cuts the given core into two parts (at the given value on the given dimension).
@@ -151,3 +114,45 @@ class Core:
         projected_cuboids = map(lambda c: c.project(new_domains), self._cuboids)
         
         return Core(projected_cuboids, new_domains)
+
+
+def check(cuboids, domains):
+    """Asserts that the intersection of all cuboids is nonempty and that they are defined on the same domains"""
+
+    intersection = cuboids[0]
+    for c in cuboids:
+        intersection = intersection.intersect(c)
+        if intersection == None:
+            return False
+
+    if not all(dom in cs.ConceptualSpace.cs._domains.items() for dom in domains.items()):
+        return False
+    
+    for c in cuboids:
+        if c._domains != domains:
+            return False
+    
+    return True
+
+def from_cuboids(cuboids, domains):
+    """Create a core from possibly non-intersecting cuboids by applying the repair mechanism."""
+    
+    if check(cuboids, domains):
+        return Core(cuboids, domains)  # all cuboids already intersect --> nothing to do
+    
+    # need to perform repair mechanism        
+    midpoints = []
+    for cuboid in cuboids: # midpoint of each cuboid
+        midpoints.append(map(lambda x, y: (x + y)/2.0, cuboid._p_min, cuboid._p_max))
+    # sum up all midpoints & divide by number of cuboids
+    midpoint = reduce(lambda x, y: map(lambda a,b: a+b, x, y), midpoints)
+    midpoint = map(lambda x: round(x/len(cuboids),10), midpoint)
+            
+    # extend cuboids
+    modified_cuboids = []
+    for cuboid in cuboids:
+        p_min = map(min, cuboid._p_min, midpoint)
+        p_max = map(max, cuboid._p_max, midpoint)
+        modified_cuboids.append(cub.Cuboid(p_min, p_max, cuboid._domains))
+    
+    return Core(modified_cuboids, domains)
