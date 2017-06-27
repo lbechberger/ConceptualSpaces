@@ -6,6 +6,7 @@ Created on Tue Jun  6 10:50:58 2017
 """
 import cuboid as cub
 import cs
+from itertools import compress
 
 class Core:
     """A concept's core, consisting of a set of cuboids with nonempty intersection.
@@ -29,7 +30,7 @@ class Core:
         if not check(cuboids, domains):
             raise Exception("cuboids do not intersect or are defined on different domains")
         
-        self._cuboids = cuboids
+        self._cuboids = simplify(cuboids)
         self._domains = domains
     
     def add_cuboid(self, cuboid):
@@ -156,3 +157,19 @@ def from_cuboids(cuboids, domains):
         modified_cuboids.append(cub.Cuboid(p_min, p_max, cuboid._domains))
     
     return Core(modified_cuboids, domains)
+
+def simplify(cuboids):
+    """Simplifies the given set of cuboids by removing redundant ones."""
+    keep = [True]*len(cuboids)
+    for i in range(len(cuboids)):
+        
+        p_min = cuboids[i]._p_min
+        p_max = cuboids[i]._p_max
+        for j in range(len(cuboids)):
+            if i == j or keep[j] == False:
+                continue
+            if cuboids[j].contains(p_min) and cuboids[j].contains(p_max):
+                keep[i] = False
+                break
+        
+    return list(compress(cuboids, keep))

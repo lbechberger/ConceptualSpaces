@@ -8,7 +8,7 @@ Created on Tue Jun  6 10:51:06 2017
 import unittest
 import sys
 sys.path.append("..")
-from cs.core import Core, check
+from cs.core import Core, check, simplify
 from cs.cuboid import Cuboid
 import cs.cs
 
@@ -141,7 +141,7 @@ class TestCore(unittest.TestCase):
     def test_find_closest_point_candidates_two_cuboids(self):
         cs.cs.ConceptualSpace(3, {0:[0,1,2]})
         c1 = Cuboid([1,2,3],[7,8,9], {0:[0,1,2]})
-        c2 = Cuboid([4,5,6],[7,7,7], {0:[0,1,2]})
+        c2 = Cuboid([4,5,6],[7,9,7], {0:[0,1,2]})
         s = Core([c1, c2], {0:[0,1,2]})
         p = [12,-2,8]
         self.assertEqual(s.find_closest_point_candidates(p), [[7,2,8],[7,5,7]])
@@ -149,7 +149,7 @@ class TestCore(unittest.TestCase):
     def test_find_closest_point_candidates_infinity(self):
         cs.cs.ConceptualSpace(3, {0:[0], 1:[1,2]})
         c1 = Cuboid([float("-inf"),2,3],[float("inf"),8,9], {1:[1,2]})
-        c2 = Cuboid([float("-inf"),5,6],[float("inf"),7,7], {1:[1,2]})
+        c2 = Cuboid([float("-inf"),5,6],[float("inf"),9,7], {1:[1,2]})
         s = Core([c1, c2], {1:[1,2]})
         p = [12,-2,8]
         self.assertEqual(s.find_closest_point_candidates(p), [[12,2,8],[12,5,7]])   
@@ -215,7 +215,7 @@ class TestCore(unittest.TestCase):
     def test_unify_no_repair(self):
         cs.cs.ConceptualSpace(3, {0:[0,1,2]})
         c1 = Cuboid([1,2,3],[7,8,9], {0:[0,1,2]})
-        c2 = Cuboid([4,5,6],[7,7,7], {0:[0,1,2]})
+        c2 = Cuboid([4,5,6],[7,9,7], {0:[0,1,2]})
         s1 = Core([c1], {0:[0,1,2]})
         s2 = Core([c2], {0:[0,1,2]})
         s_result = Core([c1, c2], {0:[0,1,2]})
@@ -246,7 +246,7 @@ class TestCore(unittest.TestCase):
     def test_unify_not_full_dims_same_dims(self):
         cs.cs.ConceptualSpace(3, {0:[0,1], 1:[2]})
         c1 = Cuboid([1,2,float("-inf")],[7,8,float("inf")], {0:[0,1]})
-        c2 = Cuboid([4,5,float("-inf")],[7,7,float("inf")], {0:[0,1]})
+        c2 = Cuboid([4,5,float("-inf")],[8,7,float("inf")], {0:[0,1]})
         s1 = Core([c1], {0:[0,1]})
         s2 = Core([c2], {0:[0,1]})
         s_result = Core([c1, c2], {0:[0,1]})
@@ -348,5 +348,21 @@ class TestCore(unittest.TestCase):
         s_res2 = Core([c1_res2, c2_res2], {1:[2]})
         self.assertEqual(s.project({0:[0,1]}), s_res1)
         self.assertEqual(s.project({1:[2]}), s_res2)
+
+    # simplify()
+    def test_simplify_subset(self):
+        cs.cs.ConceptualSpace(3, {0:[0,1,2]})
+        c1 = Cuboid([1,2,3],[7,8,9], {0:[0,1,2]})
+        c2 = Cuboid([4,5,6],[7,7,7], {0:[0,1,2]})
+        result = [c1]
+        self.assertEqual(simplify([c1,c2]), result)
+        self.assertEqual(simplify([c2,c1]), result)
+
+    def test_simplify_no_change(self):
+        cs.cs.ConceptualSpace(3, {0:[0,1,2]})
+        c1 = Cuboid([1,2,3],[7,8,9], {0:[0,1,2]})
+        c2 = Cuboid([4,5,6],[7,9,7], {0:[0,1,2]})
+        self.assertEqual(simplify([c1,c2]), [c1,c2])
+        self.assertEqual(simplify([c2,c1]), [c2,c1])
 
 unittest.main()

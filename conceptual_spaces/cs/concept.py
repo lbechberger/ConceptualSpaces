@@ -134,7 +134,8 @@ class Concept:
             for i in range(len(a)):
                 constr.append({"type":"ineq", "fun":makeFunMin(i)})#(lambda x: x[i] - min(a[i], b[i]))})
                 constr.append({"type":"ineq", "fun":makeFunMax(i)})#(lambda x: max(a[i], b[i]) - x[i])})
-            opt = scipy.optimize.minimize(neg_self_membership, start, constraints = constr)
+            # set eps to smaller than default value in order to ensure convergence
+            opt = scipy.optimize.minimize(neg_self_membership, start, constraints = constr, options = {"eps":1.0e-10})
             if not opt.success:
                 raise Exception("Optimizer failed!")
             x_star = list(opt.x)
@@ -353,11 +354,18 @@ class Concept:
 
     def subset_of(self, other):
         """Computes the degree of subsethood between this concept and a given other concept."""
-        pass #TODO implement
+        
+        intersection = self.intersect(other)
+        # need to modify c and weights in order to end up between 0 and 1
+        intersection._c = self._c
+        intersection._weights = self._weights
+        return intersection.hypervolume() / self.hypervolume()
+        
 
     def implies(self, other):
         """Computes the degree of implication between this concept and a given other concept."""
-        pass #TODO implement
+        
+        return self.subset_of(other)
     
     def similarity(self, other):
         """Computes the similarity of this concept to the given other concept."""
