@@ -132,8 +132,8 @@ class Concept:
             def makeFunMax(idx): # need this in order to avoid weird results (defining lambda in loop)
                 return (lambda x: max(a[idx],b[idx]) - x[idx])
             for i in range(len(a)):
-                constr.append({"type":"ineq", "fun":makeFunMin(i)})#(lambda x: x[i] - min(a[i], b[i]))})
-                constr.append({"type":"ineq", "fun":makeFunMax(i)})#(lambda x: max(a[i], b[i]) - x[i])})
+                constr.append({"type":"ineq", "fun":makeFunMin(i)})
+                constr.append({"type":"ineq", "fun":makeFunMax(i)})
             # set eps to smaller than default value in order to ensure convergence
             opt = scipy.optimize.minimize(neg_self_membership, start, constraints = constr, options = {"eps":1.0e-10})
             if not opt.success:
@@ -171,36 +171,80 @@ class Concept:
                 epsilon_2 = - log(mu / other._mu) / other._c
                 points = []
                 
-                to_minimize = lambda x: abs(cs.ConceptualSpace.cs.distance(a, x, self._weights) - epsilon_1)
-                constr = [{"type":"eq", "fun":(lambda x: cs.ConceptualSpace.cs.distance(b, x, other._weights) - epsilon_2)}]
-                for free_dim in relevant_dimensions:
-                    # free_dim is the single dimension that is allowed to vary, all other ones are fixed
-                    binary_vecs = list(itertools.product([False,True], repeat = len(relevant_dimensions) - 1))
-                    def makeFun(idx, point): # need this in order to avoid weird results (defining lambda in loop)
-                        return (lambda x: x[idx] - point[idx])
-                    for vec in binary_vecs:
-                        local_constr = list(constr)
-                        i = 0
-                        for dim in relevant_dimensions:
-                            if dim == free_dim:
-                                continue
-                            if vec[i]:
-                                local_constr.append({"type":"eq", "fun":makeFun(dim,a)})#(lambda x: x[dim] - a[dim])})
-                            else:
-                                local_constr.append({"type":"eq", "fun":makeFun(dim,b)})#(lambda x: x[dim] - b[dim])})
-                            i += 1
-                        first_guess = map(lambda x, y: (x + y)/2.0, a, b)
-                        opt = scipy.optimize.minimize(to_minimize, first_guess, constraints = local_constr)
-                        if opt.success and min(a[free_dim], b[free_dim]) <= opt.x[free_dim] <= max(a[free_dim], b[free_dim]):
-                            # only keep useful points - ignore the ones that are outside of the bounding box
-                            points.append(opt.x)
+                for num_free_dims in range(1, len(relevant_dimensions)):
+                    # start with a single free dimensions (i.e., edges of the bounding box) and increase until we find a solution
+                    for free_dims in itertools.combinations(relevant_dimensions, num_free_dims):
+                        # free_dims is the set of dimensions that are allowed to vary, all other ones are fixed
+                        
+                        binary_vecs = list(itertools.product([False,True], repeat = len(relevant_dimensions) - num_free_dims))
+                        
+                        for vec in binary_vecs:
+                           
+                            # compute the difference between the actual distance and the desired epsilon-distance
+                            def epsilon_difference(x, point, weights, epsilon):
+                                i = 0
+                                j = 0
+                                x_new = []
+                                # puzzle together our large x vector based on the fixed and the free dimensions
+                                for dim in range(cs.ConceptualSpace.cs._n_dim):
+                                    if dim in free_dims:
+                                        x_new.append(x[i])
+                                        i += 1
+                                    elif extrude[dim]:
+                                        x_new.append(a[dim])
+                                    else:
+                                        x_new.append(a[dim] if vec[j] else b[dim])
+                                        j += 1
+                                return abs(cs.ConceptualSpace.cs.distance(point, x_new, weights) - epsilon)
+                            
+                            bounds = []
+                            for dim in free_dims:
+                                bounds.append((min(a[dim], b[dim]), max(a[dim], b[dim])))
+                            first_guess = map(lambda (x, y): (x + y)/2.0, bounds)
+                            to_minimize = lambda x: max(epsilon_difference(x, a, self._weights, epsilon_1)**2, epsilon_difference(x, b, other._weights, epsilon_2)**2)
+                            
+                            opt = scipy.optimize.minimize(to_minimize, first_guess) #tol = 0.000001
+                            if opt.success:
+                                dist1 = epsilon_difference(opt.x, a, self._weights, epsilon_1)
+                                dist2 = epsilon_difference(opt.x, b, other._weights, epsilon_2)
+                                between = True
+                                k = 0
+                                for dim in free_dims:
+                                    if not (min(a[dim], b[dim]) <= opt.x[k] <= max(a[dim], b[dim])):
+                                        between = False
+                                        break
+                                    k += 1
+                                # must be between a and b on all free dimensions AND must be a sufficiently good solution
+                                if dist1 < 0.00001 and dist2 < 0.00001 and between:
+                                    point = []
+                                    i = 0
+                                    j = 0
+                                    # puzzle together our large x vector based on the fixed and the free dimensions
+                                    for dim in range(cs.ConceptualSpace.cs._n_dim):
+                                        if dim in free_dims:
+                                            point.append(opt.x[i])
+                                            i += 1
+                                        elif extrude[dim]:
+                                            point.append(a[dim])
+                                        else:
+                                            point.append(a[dim] if vec[j] else b[dim])
+                                            j += 1
+                                    
+                                    points.append(point)
+                                                        
+                    if len(points) > 0:
+                        # if we found a solution for num_free_dims: stop looking at higher values for num_free_dims
+                        p_min = []
+                        p_max = []
+                        for i in range(cs.ConceptualSpace.cs._n_dim):
+                            p_min.append(max(min(a[i],b[i]), reduce(min, map(lambda x: x[i], points))))
+                            p_max.append(min(max(a[i],b[i]), reduce(max, map(lambda x: x[i], points))))
+                        break
                 
-                p_min = []
-                p_max = []
-                for i in range(cs.ConceptualSpace.cs._n_dim):
-                    p_min.append(max(min(a[i],b[i]), reduce(min, map(lambda x: x[i], points))))
-                    p_max.append(min(max(a[i],b[i]), reduce(max, map(lambda x: x[i], points))))
-            
+                if p_min == None or p_max == None:  
+                    # this should never happen - if the weights are dependent, there MUST be a solution
+                    raise Exception("Could not find solution for dependent weights")
+                
             else:
                 # weights are not linearly dependent: use single-point cuboid
                 p_min = list(x_star)

@@ -263,14 +263,15 @@ class TestCore(unittest.TestCase):
         self.assertEqual(f.unify(f2), f_res)
         self.assertEqual(f2.unify(f), f_res)
         
-#    def test_unify_identity(self):
-#        s = Core([Cuboid([3, 4, 5, 6],[10, 10, 10, 10]), Cuboid([1,2,3,4],[3,4,5,6])])
-#        dom = {0:2, 1:1}        
-#        dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
-#        w = Weights(dom, dim)
-#        ConceptualSpace(4, {0:[0,1], 1:[2,3]})
-#        f = Concept(s, 1.0, 2.0, w)  
-#        self.assertEqual(f, f.unify(f))
+    def test_unify_identity(self):
+        doms = {0:[0,1], 1:[2,3]}
+        ConceptualSpace(4, doms)
+        s = Core([Cuboid([3, 4, 5, 6],[10, 10, 10, 10], doms), Cuboid([1,2,3,4],[3,4,5,6], doms)], doms)
+        dom = {0:2, 1:1}        
+        dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
+        w = Weights(dom, dim)
+        f = Concept(s, 1.0, 2.0, w)  
+        self.assertEqual(f, f.unify(f))
     
     # cut()
     def test_cut_above(self):
@@ -620,16 +621,16 @@ class TestCore(unittest.TestCase):
         f1 = Concept(s1, 0.9, 5.0, w1)
         f2 = Concept(s2, 1.0, 8.0, w2)
 
-        c_res1 = Cuboid([0.3073830473, 0.3147660942],[0.4, 0.5], doms)
+        c_res1 = Cuboid([0.3073830488, 0.3147660869],[0.4, 0.5], doms)
         s_res1 = Core([c_res1], doms)
         w_res1 = Weights({0:2, 1:1}, {0:{0:1}, 1:{1:1}})        
         f_res1 = Concept(s_res1, 0.3723525481, 5.0, w_res1)
         
-        c_res2 = Cuboid([0.3073830471, 0.3147660944],[0.4, 0.5], doms)
+        c_res2 = Cuboid([0.3073830488, 0.3147660869],[0.4, 0.5], doms)
         s_res2 = Core([c_res2], doms)
         w_res2 = Weights({0:2, 1:1}, {0:{0:1}, 1:{1:1}})        
         f_res2 = Concept(s_res2, 0.3723525481, 5.0, w_res2)
-              
+        
         self.assertEqual(f1.intersect(f2), f_res1)
         self.assertEqual(f2.intersect(f1), f_res2)
 
@@ -647,14 +648,14 @@ class TestCore(unittest.TestCase):
         f1 = Concept(s1, 0.8, 10.0, w1)
         f2 = Concept(s2, 0.8, 10.0, w2)
 
-        c_res11 = Cuboid([0.20, 0.50],[0.45, 0.85], doms)
-        c_res12 = Cuboid([0.45, 0.15],[0.70, 0.50], doms)
+        c_res11 = Cuboid([0.20, 0.4999975028],[0.45, 0.8499950019], doms)
+        c_res12 = Cuboid([0.45, 0.1500000037],[0.70, 0.4999975028], doms)
         s_res1 = Core([c_res11, c_res12], doms)
         w_res1 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:1}})        
         f_res1 = Concept(s_res1, 0.1785041281, 10.0, w_res1)
         
-        c_res21 = Cuboid([0.20, 0.50],[0.45, 0.85], doms)
-        c_res22 = Cuboid([0.45, 0.15],[0.70, 0.50], doms)
+        c_res21 = Cuboid([0.20, 0.4999975028],[0.45, 0.8499950019], doms)
+        c_res22 = Cuboid([0.45, 0.1500000037],[0.70, 0.4999975028], doms)
         s_res2 = Core([c_res21, c_res22], doms)
         w_res2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:1}})        
         f_res2 = Concept(s_res2, 0.1785041281, 10.0, w_res2)
@@ -676,12 +677,12 @@ class TestCore(unittest.TestCase):
         f1 = Concept(s1, 0.8, 10.0, w1)
         f2 = Concept(s2, 0.8, 10.0, w2)
 
-        c_res1 = Cuboid([0.60, 0.15],[0.70, 0.25], doms)
+        c_res1 = Cuboid([0.60, 0.1500000037],[0.70, 0.2499950019], doms)
         s_res1 = Core([c_res1], doms)
         w_res1 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:1}})        
         f_res1 = Concept(s_res1, 0.1785041281, 10.0, w_res1)
         
-        c_res2 = Cuboid([0.60, 0.15],[0.70, 0.25], doms)
+        c_res2 = Cuboid([0.60, 0.1500000037],[0.70, 0.2499950018], doms)
         s_res2 = Core([c_res2], doms)
         w_res2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:1}})        
         f_res2 = Concept(s_res2, 0.1785041281, 10.0, w_res2)
@@ -726,16 +727,16 @@ class TestCore(unittest.TestCase):
         f1 = Concept(s1, 1.0, 2.0, w1)
         f2 = Concept(s2, 1.0, 2.0, w2)
 
-        c_res1 = Cuboid([0.3234316027, 0.7, 0.3],[0.4648527395, 0.9, 0.4], doms)
+        c_res1 = Cuboid([0.3234313871, 0.7, 0.3],[0.4648529178, 0.9, 0.4], doms)
         s_res1 = Core([c_res1], doms)
         w_res1 = Weights({0:(5/6.0), 1:(7/6.0)}, {0:{0:1}, 1:{1:0.3125, 2:0.6875}})
         f_res1 = Concept(s_res1, 0.702480783, 2.0, w_res1)
         
-        c_res2 = Cuboid([0.3234312906, 0.7, 0.3],[0.464853139, 0.9, 0.4], doms)
+        c_res2 = Cuboid([0.3234315726, 0.7, 0.3],[0.464852639, 0.9, 0.4], doms)
         s_res2 = Core([c_res2], doms)
         w_res2 = Weights({0:(5/6.0), 1:(7/6.0)}, {0:{0:1}, 1:{1:0.3125, 2:0.6875}})
         f_res2 = Concept(s_res2, 0.7024810437, 2.0, w_res2)
-         
+        
         self.assertEqual(f1.intersect(f2), f_res1)
         self.assertEqual(f2.intersect(f1), f_res2)
 
@@ -751,12 +752,12 @@ class TestCore(unittest.TestCase):
         f1 = Concept(s1, 1.0, 2.0, w1)
         f2 = Concept(s2, 1.0, 2.0, w2)
 
-        c_res1 = Cuboid([0.3279520734, 0.7, 0.3],[0.3720479266, 0.9, 0.4], doms)
+        c_res1 = Cuboid([0.3279520727, 0.7, 0.3],[0.3720479257, 0.9, 0.4], doms)
         s_res1 = Core([c_res1], doms)
         w_res1 = Weights({0:1.5, 1:0.5}, {0:{0:1}, 1:{1:0.25, 2:0.75}})
         f_res1 = Concept(s_res1, 0.5968175744, 2.0, w_res1)
         
-        c_res2 = Cuboid([0.327952071, 0.7, 0.3],[0.372047929, 0.9, 0.4], doms)
+        c_res2 = Cuboid([0.3279520727, 0.7, 0.3],[0.3720479257, 0.9, 0.4], doms)
         s_res2 = Core([c_res2], doms)
         w_res2 = Weights({0:1.5, 1:0.5}, {0:{0:1}, 1:{1:0.25, 2:0.75}})
         f_res2 = Concept(s_res2, 0.5968175744, 2.0, w_res2)
@@ -894,6 +895,29 @@ class TestCore(unittest.TestCase):
         
         self.assertEqual(f_apple.intersect(f_pear), f_res1)
         self.assertEqual(f_pear.intersect(f_apple), f_res2)
+
+    def test_intersect_pathological_cones(self):
+        doms = {0:[0],1:[1,2]}       
+        ConceptualSpace(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        w = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        f1 = Concept(s1, 1.0, 1.0, w)
+        f2 = Concept(s2, 1.0, 1.0, w)
+
+        c_res1 = Cuboid([0.4, 0.4857142872, 0.4857142872],[0.6, 0.5142857143, 0.5142857143], doms)
+        s_res1 = Core([c_res1], doms)
+        f_res1 = Concept(s_res1, 0.8187307531, 1.0, w)
+        
+        c_res2 = Cuboid([0.4, 0.4857142872, 0.4857142872],[0.6, 0.5142857143, 0.5142857143], doms)
+        s_res2 = Core([c_res2], doms)
+        f_res2 = Concept(s_res2, 0.8187307531, 1.0, w)
+
+        self.assertEqual(f1.intersect(f2), f_res1)
+        self.assertEqual(f2.intersect(f1), f_res2)
+        
 
     # subset_of()
     def test_subset_of_granny_smith_apple(self):
