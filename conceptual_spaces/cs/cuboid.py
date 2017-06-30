@@ -36,7 +36,7 @@ class Cuboid:
         domains = domains if (not domains == None) else self._domains
         dims = [dim for domain in domains.values() for dim in domain]        
         
-        if not len(p_min) == len(p_max) == cs.ConceptualSpace.cs._n_dim:
+        if not len(p_min) == len(p_max) == cs._n_dim:
             return False
 
         for i in range(len(p_max)):
@@ -45,7 +45,7 @@ class Cuboid:
             if i not in dims and (p_max[i] != float("inf") or p_min[i] != float("-inf")):
                 return False
 
-        if not all(dom in cs.ConceptualSpace.cs._domains.items() for dom in domains.items()):
+        if not all(dom in cs._domains.items() for dom in domains.items()):
             return False
         
         return reduce(lambda x, y: x and y, map(lambda y,z: y <= z, p_min, p_max))
@@ -124,7 +124,7 @@ class Cuboid:
         
         dom_union = dict(self._domains)
         dom_union.update(other._domains)
-        return all(dom in cs.ConceptualSpace.cs._domains.items() for dom in dom_union.items())
+        return all(dom in cs._domains.items() for dom in dom_union.items())
     
     def intersect(self, other):
         """Intersects this cuboid with another one and returns the result as a new cuboid. Returns None if intersection is empty"""

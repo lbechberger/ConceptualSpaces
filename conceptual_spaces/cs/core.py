@@ -136,7 +136,7 @@ def check(cuboids, domains):
         if intersection == None:
             return False
 
-    if not all(dom in cs.ConceptualSpace.cs._domains.items() for dom in domains.items()):
+    if not all(dom in cs._domains.items() for dom in domains.items()):
         return False
     
     for c in cuboids:

@@ -12,13 +12,13 @@ from cs.core import Core
 from cs.cuboid import Cuboid
 from cs.concept import Concept
 from cs.weights import Weights
-from cs.cs import ConceptualSpace
+import cs.cs as cs
 
 class TestCore(unittest.TestCase):
 
     # constructor()
     def test_constructor_fine(self):
-        ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        cs.init(4, {0:[0,1], 1:[2,3]})
         s = Core([Cuboid([1,2,3,4],[3,4,5,6],{0:[0,1], 1:[2,3]})], {0:[0,1], 1:[2,3]})
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
@@ -32,7 +32,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(f._weights, w)
     
     def test_constructor_wrong_core(self):
-        ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        cs.init(4, {0:[0,1], 1:[2,3]})
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
         w = Weights(dom, dim)
@@ -40,7 +40,7 @@ class TestCore(unittest.TestCase):
             Concept(42, 1.0, 2.0, w)        
         
     def test_constructor_wrong_mu(self):
-        ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        cs.init(4, {0:[0,1], 1:[2,3]})
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
         w = Weights(dom, dim)
@@ -49,7 +49,7 @@ class TestCore(unittest.TestCase):
             Concept(s, 0.0, 2.0, w)        
     
     def test_constructor_wrong_c(self):
-        ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        cs.init(4, {0:[0,1], 1:[2,3]})
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
         w = Weights(dom, dim)
@@ -58,13 +58,13 @@ class TestCore(unittest.TestCase):
             Concept(s, 1.0, -1.0, w)        
             
     def test_constructor_wrong_weigths(self):
-        ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        cs.init(4, {0:[0,1], 1:[2,3]})
         s = Core([Cuboid([1,2,3,4],[3,4,5,6],{0:[0,1], 1:[2,3]})],{0:[0,1], 1:[2,3]})
         with self.assertRaises(Exception):        
             Concept(s, 1.0, 1.0, 42)        
 
     def test_constructor_same_relevant_dimensions(self):
-        ConceptualSpace(4, {0:[0], 1:[1,2,3]})
+        cs.init(4, {0:[0], 1:[1,2,3]})
         c1 = Cuboid([float("-inf"),2,3,4],[float("inf"),5,6,7], {1:[1,2,3]})
         c2 = Cuboid([float("-inf"),3,4,5],[float("inf"),6,7,8], {1:[1,2,3]})
         s = Core([c1, c2], {1:[1,2,3]})
@@ -82,7 +82,7 @@ class TestCore(unittest.TestCase):
 
     # membership()
     def test_membership_inside(self):
-        ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        cs.init(4, {0:[0,1], 1:[2,3]})
         s = Core([Cuboid([1,2,3,4],[3,4,5,6],{0:[0,1], 1:[2,3]})],{0:[0,1], 1:[2,3]})
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
@@ -93,7 +93,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(f.membership(p), 1.0)
    
     def test_membership_inside_other_c(self):
-        ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        cs.init(4, {0:[0,1], 1:[2,3]})
         s = Core([Cuboid([1,2,3,4],[3,4,5,6],{0:[0,1], 1:[2,3]})],{0:[0,1], 1:[2,3]})
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
@@ -104,7 +104,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(f.membership(p), 1.0)
 
     def test_membership_inside_other_mu(self):
-        ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        cs.init(4, {0:[0,1], 1:[2,3]})
         s = Core([Cuboid([1,2,3,4],[3,4,5,6],{0:[0,1], 1:[2,3]})],{0:[0,1], 1:[2,3]})
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
@@ -115,7 +115,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(f.membership(p), 0.5)
      
     def test_membership_outside_one_cuboid(self):
-        ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        cs.init(4, {0:[0,1], 1:[2,3]})
         s = Core([Cuboid([1,2,3,4],[3,4,5,6],{0:[0,1], 1:[2,3]})],{0:[0,1], 1:[2,3]})
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
@@ -126,7 +126,7 @@ class TestCore(unittest.TestCase):
         self.assertAlmostEqual(f.membership(p), 0.15173524)
 
     def test_membership_outside_two_cuboids(self):
-        ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        cs.init(4, {0:[0,1], 1:[2,3]})
         s = Core([Cuboid([3, 4, 5, 6],[10, 10, 10, 10], {0:[0,1], 1:[2,3]}), Cuboid([1,2,3,4],[3,4,5,6], {0:[0,1], 1:[2,3]})], {0:[0,1], 1:[2,3]})
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
@@ -137,7 +137,7 @@ class TestCore(unittest.TestCase):
         self.assertAlmostEqual(f.membership(p), 0.15173524)
     
     def test_membership_inside_infinity(self):
-        ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        cs.init(4, {0:[0,1], 1:[2,3]})
         s = Core([Cuboid([float("-inf"),float("-inf"),3,4],[float("inf"),float("inf"),5,6], {1:[2,3]})], {1:[2,3]})
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
@@ -148,7 +148,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(f.membership(p), 1.0)
     
     def test_membership_outside_one_cuboid_infinity(self):
-        ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        cs.init(4, {0:[0,1], 1:[2,3]})
         s = Core([Cuboid([1,2,float("-inf"),float("-inf")],[3,4,float("inf"),float("inf")], {0:[0,1]})], {0:[0,1]})
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
@@ -159,7 +159,7 @@ class TestCore(unittest.TestCase):
         self.assertAlmostEqual(f.membership(p), 0.15173524)
         
     def test_membership_outside_two_cuboids_infinity(self):
-        ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        cs.init(4, {0:[0,1], 1:[2,3]})
         s = Core([Cuboid([float("-inf"), float("-inf"), 5, 6],[float("inf"), float("inf"), 10, 10], {1:[2,3]}), Cuboid([float("-inf"),float("-inf"),3,4],[float("inf"),float("inf"),5,6], {1:[2,3]})], {1:[2,3]})
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
@@ -171,7 +171,7 @@ class TestCore(unittest.TestCase):
     
     # __eq__(), __ne__()
     def test_eq_ne_no_concept(self):
-        ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        cs.init(4, {0:[0,1], 1:[2,3]})
         s = Core([Cuboid([3, 4, 5, 6],[10, 10, 10, 10], {0:[0,1], 1:[2,3]}), Cuboid([1,2,3,4],[3,4,5,6], {0:[0,1], 1:[2,3]})], {0:[0,1], 1:[2,3]})
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
@@ -181,7 +181,7 @@ class TestCore(unittest.TestCase):
         self.assertTrue(f != 42)
     
     def test_eq_ne_identity(self):
-        ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        cs.init(4, {0:[0,1], 1:[2,3]})
         s = Core([Cuboid([3, 4, 5, 6],[10, 10, 10, 10], {0:[0,1], 1:[2,3]}), Cuboid([1,2,3,4],[3,4,5,6], {0:[0,1], 1:[2,3]})], {0:[0,1], 1:[2,3]})
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
@@ -191,7 +191,7 @@ class TestCore(unittest.TestCase):
         self.assertFalse(f != f)
 
     def test_eq_ne_shallow_copy(self):
-        ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        cs.init(4, {0:[0,1], 1:[2,3]})
         s = Core([Cuboid([3, 4, 5, 6],[10, 10, 10, 10], {0:[0,1], 1:[2,3]}), Cuboid([1,2,3,4],[3,4,5,6], {0:[0,1], 1:[2,3]})], {0:[0,1], 1:[2,3]})
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
@@ -202,7 +202,7 @@ class TestCore(unittest.TestCase):
         self.assertFalse(f != f2)
     
     def test_eq_ne_other_params(self):
-        ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        cs.init(4, {0:[0,1], 1:[2,3]})
         s = Core([Cuboid([3, 4, 5, 6],[10, 10, 10, 10], {0:[0,1], 1:[2,3]}), Cuboid([1,2,3,4],[3,4,5,6], {0:[0,1], 1:[2,3]})], {0:[0,1], 1:[2,3]})
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
@@ -219,7 +219,7 @@ class TestCore(unittest.TestCase):
      
     # unify()
     def test_unify_no_repair_no_params(self):
-        ConceptualSpace(3, {0:[0], 1:[1,2]})
+        cs.init(3, {0:[0], 1:[1,2]})
         c1 = Cuboid([1,2,3],[7,8,9], {0:[0], 1:[1,2]})
         c2 = Cuboid([4,5,6],[7,7,7], {0:[0], 1:[1,2]})
         dom = {0:2, 1:1}        
@@ -232,7 +232,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(f2.unify(f), f_res)
 
     def test_unify_no_repair_params(self):
-        ConceptualSpace(3, {0:[0], 1:[1,2]})
+        cs.init(3, {0:[0], 1:[1,2]})
         c1 = Cuboid([1,2,3],[7,8,9], {0:[0], 1:[1,2]})
         c2 = Cuboid([4,5,6],[7,7,7], {0:[0], 1:[1,2]})
         dom = {0:2, 1:1}        
@@ -249,7 +249,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(f2.unify(f), f_res)
         
     def test_unify_repair_no_params(self):
-        ConceptualSpace(3, {0:[0], 1:[1,2]})
+        cs.init(3, {0:[0], 1:[1,2]})
         c1 = Cuboid([1,2,3],[2,3,4], {0:[0], 1:[1,2]})
         c2 = Cuboid([3,4,5],[7,7,7], {0:[0], 1:[1,2]})
         c1_res = Cuboid([1,2,3],[3.25,4,4.75], {0:[0], 1:[1,2]})
@@ -265,7 +265,7 @@ class TestCore(unittest.TestCase):
         
     def test_unify_identity(self):
         doms = {0:[0,1], 1:[2,3]}
-        ConceptualSpace(4, doms)
+        cs.init(4, doms)
         s = Core([Cuboid([3, 4, 5, 6],[10, 10, 10, 10], doms), Cuboid([1,2,3,4],[3,4,5,6], doms)], doms)
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
@@ -275,7 +275,7 @@ class TestCore(unittest.TestCase):
     
     # cut()
     def test_cut_above(self):
-        ConceptualSpace(3, {0:[0], 1:[1,2]})
+        cs.init(3, {0:[0], 1:[1,2]})
         c1 = Cuboid([1,2,3],[7,8,9], {0:[0], 1:[1,2]})
         c2 = Cuboid([4,5,6],[7,7,7], {0:[0], 1:[1,2]})
         s1 = Core([c1, c2], {0:[0], 1:[1,2]})
@@ -286,7 +286,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(f1.cut(0,8.0), (f1, None))
 
     def test_cut_below(self):
-        ConceptualSpace(3, {0:[0], 1:[1,2]})
+        cs.init(3, {0:[0], 1:[1,2]})
         c1 = Cuboid([1,2,3],[7,8,9], {0:[0], 1:[1,2]})
         c2 = Cuboid([4,5,6],[7,7,7], {0:[0], 1:[1,2]})
         s1 = Core([c1, c2], {0:[0], 1:[1,2]})
@@ -297,7 +297,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(f1.cut(2,0.0), (None, f1))
         
     def test_cut_through_center(self):
-        ConceptualSpace(3, {0:[0], 1:[1,2]})
+        cs.init(3, {0:[0], 1:[1,2]})
         c1 = Cuboid([1,2,3],[7,8,9], {0:[0], 1:[1,2]})
         c2 = Cuboid([4,5,6],[7,7,7], {0:[0], 1:[1,2]})
         s1 = Core([c1, c2], {0:[0], 1:[1,2]})
@@ -319,7 +319,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(f1.cut(0, 5), (low_f, up_f))
 
     def test_cut_through_one_cuboid(self):
-        ConceptualSpace(3, {0:[0], 1:[1,2]})
+        cs.init(3, {0:[0], 1:[1,2]})
         c1 = Cuboid([1,2,3],[7,8,9], {0:[0], 1:[1,2]})
         c2 = Cuboid([4,5,6],[7,7,7], {0:[0], 1:[1,2]})
         s1 = Core([c1, c2], {0:[0], 1:[1,2]})
@@ -341,7 +341,7 @@ class TestCore(unittest.TestCase):
     
     # project()
     def test_project_identical_domains(self):
-        ConceptualSpace(3, {0:[0,1,2]})
+        cs.init(3, {0:[0,1,2]})
         c1 = Cuboid([0,0,0],[2,2,2],{0:[0,1,2]})
         s = Core([c1],{0:[0,1,2]})
         w = Weights({0:1}, {0:{0:0.5, 1:0.3, 2:0.2}})
@@ -349,7 +349,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(f.project({0:[0,1,2]}), f)
     
     def test_project_correct(self):
-        ConceptualSpace(3, {0:[0,1], 1:[2]})
+        cs.init(3, {0:[0,1], 1:[2]})
         c1 = Cuboid([1,2,3],[7,8,9], {0:[0,1], 1:[2]})
         c2 = Cuboid([4,5,6],[7,7,7], {0:[0,1], 1:[2]})
         s = Core([c1, c2],{0:[0,1], 1:[2]})
@@ -374,7 +374,7 @@ class TestCore(unittest.TestCase):
     # hypervolume()
     def test_hypervolume_single_cuboid_lemon(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
-        ConceptualSpace(3, domains)
+        cs.init(3, domains)
         w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
         c_lemon = Cuboid([0.7, 0.45, 0.0], [0.8, 0.55, 0.1], domains)
         s_lemon = Core([c_lemon], domains)
@@ -385,7 +385,7 @@ class TestCore(unittest.TestCase):
 
     def test_hypervolume_single_cuboid_granny_smith(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
-        ConceptualSpace(3, domains)
+        cs.init(3, domains)
         w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
         c_granny_smith = Cuboid([0.55, 0.70, 0.35], [0.6, 0.8, 0.45], domains)
         s_granny_smith = Core([c_granny_smith], domains)
@@ -396,7 +396,7 @@ class TestCore(unittest.TestCase):
 
     def test_hypervolume_single_cuboid_pear(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
-        ConceptualSpace(3, domains)
+        cs.init(3, domains)
         w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
         c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
         s_pear = Core([c_pear], domains)
@@ -407,7 +407,7 @@ class TestCore(unittest.TestCase):
  
     def test_hypervolume_single_cuboid_orange(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
-        ConceptualSpace(3, domains)
+        cs.init(3, domains)
         w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
         c_orange = Cuboid([0.8, 0.9, 0.6], [0.9, 1.0, 0.7], domains)
         s_orange = Core([c_orange], domains)
@@ -418,7 +418,7 @@ class TestCore(unittest.TestCase):
    
     def test_hypervolume_multiple_cuboids_apple(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
-        ConceptualSpace(3, domains)
+        cs.init(3, domains)
         w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
         c_apple_1 = Cuboid([0.5, 0.65, 0.35], [0.8, 0.8, 0.5], domains)
         c_apple_2 = Cuboid([0.65, 0.65, 0.4], [0.85, 0.8, 0.55], domains)
@@ -433,7 +433,7 @@ class TestCore(unittest.TestCase):
     # coding: {num_cuboids}_{space_dim}_{space_type}_{intersection_type}_{mu}_{weights}_{c}_{alpha}
     def test_intersect_1C_2D_M_crisp_sameMu_sameW_sameC(self):
         doms = {0:[0], 1:[1]}       
-        ConceptualSpace(2, doms)
+        cs.init(2, doms)
         c1 = Cuboid([1,2],[7,8], doms)
         c2 = Cuboid([4,5],[7,7], doms)
         s1 = Core([c1], doms)
@@ -451,7 +451,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_1C_2D_E_crisp_sameMu_sameW_sameC(self):
         doms = {0:[0,1]}       
-        ConceptualSpace(2, doms)
+        cs.init(2, doms)
         c1 = Cuboid([4,2],[7,8], doms)
         c2 = Cuboid([6,5],[9,7], doms)
         s1 = Core([c1], doms)
@@ -469,7 +469,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_1C_2D_E_crisp_diffMu_diffW_diffC(self):
         doms = {0:[0,1]}       
-        ConceptualSpace(2, doms)
+        cs.init(2, doms)
         c1 = Cuboid([-0.25,-10],[0.45,-4], doms)
         c2 = Cuboid([0.45,-5],[0.7,42], doms)
         s1 = Core([c1], doms)
@@ -489,7 +489,7 @@ class TestCore(unittest.TestCase):
  
     def test_intersect_1C_2D_E_muOverlap_diffMu_sameW_sameC(self):
         doms = {0:[0,1]}       
-        ConceptualSpace(2, doms)
+        cs.init(2, doms)
         c1 = Cuboid([0.00,0.00],[0.25,0.25], doms)
         c2 = Cuboid([0.50,0.50],[0.75,1.00], doms)
         s1 = Core([c1], doms)
@@ -507,7 +507,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_1C_2D_E_muOverlap_diffMu_sameW_sameC_variant2(self):
         doms = {0:[0,1]}       
-        ConceptualSpace(2, doms)
+        cs.init(2, doms)
         c1 = Cuboid([0.00,0.00],[0.25,0.25], doms)
         c2 = Cuboid([0.50,0.50],[0.75,1.00], doms)
         s1 = Core([c1], doms)
@@ -525,7 +525,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_1C_2D_E_1diffPoints_sameMu_sameW_sameC(self):
         doms = {0:[0,1]}       
-        ConceptualSpace(2, doms)
+        cs.init(2, doms)
         c1 = Cuboid([0.00,0.00],[0.25,0.25], doms)
         c2 = Cuboid([0.25,0.50],[0.75,1.00], doms)
         s1 = Core([c1], doms)
@@ -543,7 +543,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_1C_2D_E_1diffExtrude_sameMu_sameW_sameC(self):
         doms = {0:[0,1]}       
-        ConceptualSpace(2, doms)
+        cs.init(2, doms)
         c1 = Cuboid([0.00,0.00],[0.30,0.25], doms)
         c2 = Cuboid([0.20,0.50],[0.75,1.00], doms)
         s1 = Core([c1], doms)
@@ -561,7 +561,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_1C_2D_E_2diff_diffMu_diffW_diffC(self):
         doms = {0:[0,1]}       
-        ConceptualSpace(2, doms)
+        cs.init(2, doms)
         c1 = Cuboid([0.00,0.00],[0.30,0.25], doms)
         c2 = Cuboid([0.40,0.50],[0.55,0.90], doms)
         s1 = Core([c1], doms)
@@ -586,7 +586,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_1C_2D_M_2diff_diffMu_diffW_diffC(self):
         doms = {0:[0],1:[1]}       
-        ConceptualSpace(2, doms)
+        cs.init(2, doms)
         c1 = Cuboid([0.00,0.00],[0.30,0.25], doms)
         c2 = Cuboid([0.40,0.50],[0.55,0.90], doms)
         s1 = Core([c1], doms)
@@ -611,7 +611,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_1C_2D_M_2diff_diffMu_sameW_diffC(self):
         doms = {0:[0],1:[1]}       
-        ConceptualSpace(2, doms)
+        cs.init(2, doms)
         c1 = Cuboid([0.00,0.00],[0.30,0.25], doms)
         c2 = Cuboid([0.40,0.50],[0.55,0.90], doms)
         s1 = Core([c1], doms)
@@ -636,7 +636,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_2C_2D_M_2diff_sameMu_sameW_sameC_sameAlpha(self):
         doms = {0:[0],1:[1]}       
-        ConceptualSpace(2, doms)
+        cs.init(2, doms)
         c11 = Cuboid([0.00,0.00],[0.20,0.70], doms)
         c12 = Cuboid([0.00,0.00],[0.60,0.10], doms)
         c21 = Cuboid([0.30,0.90],[1.00,1.00], doms)
@@ -665,7 +665,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_2C_2D_M_2diff_sameMu_sameW_sameC_diffAlpha(self):
         doms = {0:[0],1:[1]}       
-        ConceptualSpace(2, doms)
+        cs.init(2, doms)
         c11 = Cuboid([0.00,0.00],[0.20,0.70], doms)
         c12 = Cuboid([0.00,0.00],[0.60,0.10], doms)
         c21 = Cuboid([0.50,0.90],[1.00,1.00], doms)
@@ -692,7 +692,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_1C_3D_C_2diffExtrM_sameMu_depW_sameC(self):
         doms = {0:[0,1],1:[2]}       
-        ConceptualSpace(3, doms)
+        cs.init(3, doms)
         c1 = Cuboid([0.00,0.00,0.00],[0.20,0.70,0.40], doms)
         c2 = Cuboid([0.50,0.90,0.30],[1.00,1.00,0.70], doms)
         s1 = Core([c1], doms)
@@ -717,7 +717,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_1C_3D_C_2diffExtrE_sameMu_depW_sameC(self):
         doms = {0:[0],1:[1,2]}       
-        ConceptualSpace(3, doms)
+        cs.init(3, doms)
         c1 = Cuboid([0.00,0.00,0.00],[0.20,0.70,0.40], doms)
         c2 = Cuboid([0.50,0.90,0.30],[1.00,1.00,0.70], doms)
         s1 = Core([c1], doms)
@@ -742,7 +742,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_1C_3D_C_3diff_sameMu_sameW_sameC(self):
         doms = {0:[0],1:[1,2]}       
-        ConceptualSpace(3, doms)
+        cs.init(3, doms)
         c1 = Cuboid([0.00,0.00,0.00],[0.20,0.70,0.30], doms)
         c2 = Cuboid([0.50,0.90,0.40],[1.00,1.00,0.70], doms)
         s1 = Core([c1], doms)
@@ -767,7 +767,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_1C_3D_C_3diff_sameMu_diffW_sameC(self):
         doms = {0:[0],1:[1,2]}       
-        ConceptualSpace(3, doms)
+        cs.init(3, doms)
         c1 = Cuboid([0.00,0.00,0.00],[0.20,0.70,0.30], doms)
         c2 = Cuboid([0.50,0.90,0.40],[1.00,1.00,0.70], doms)
         s1 = Core([c1], doms)
@@ -792,7 +792,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_2C_3D_C_3diffMuOverlap_diffMu_diffW_diffC_diffAlpha(self):
         doms = {0:[0],1:[1,2]}       
-        ConceptualSpace(3, doms)
+        cs.init(3, doms)
         c11 = Cuboid([0.00,0.00,0.00],[0.85,0.20,0.20], doms)
         c12 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.80], doms)
         c21 = Cuboid([0.90,0.30,0.30],[1.00,1.00,1.00], doms)
@@ -819,7 +819,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_1C_3D_C_3diffExtr_sameMu_diffW_diffC_2D3Dcuboids(self):
         doms = {0:[0],1:[1,2]}       
-        ConceptualSpace(3, doms)
+        cs.init(3, doms)
         c1 = Cuboid([0.00,0.00,0.00],[0.20,0.70,0.30], doms)
         c2 = Cuboid([-float("inf"),0.90,0.35],[float("inf"),1.00,0.70], {1:[1,2]})
         s1 = Core([c1], doms)
@@ -844,7 +844,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_1C_3D_C_3diffExtr_sameMu_diffW_diffC_2D1Dcuboids(self):
         doms = {0:[0],1:[1,2]}       
-        ConceptualSpace(3, doms)
+        cs.init(3, doms)
         c1 = Cuboid([0.00,-float("inf"),-float("inf")],[0.20,float("inf"),float("inf")], {0:[0]})
         c2 = Cuboid([-float("inf"),0.90,0.35],[float("inf"),1.00,0.70], {1:[1,2]})
         s1 = Core([c1], {0:[0]})
@@ -869,7 +869,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_apple_pear(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
-        ConceptualSpace(3, domains)
+        cs.init(3, domains)
         w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
         c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
         s_pear = Core([c_pear], domains)
@@ -898,7 +898,7 @@ class TestCore(unittest.TestCase):
 
     def test_intersect_pathological_cones(self):
         doms = {0:[0],1:[1,2]}       
-        ConceptualSpace(3, doms)
+        cs.init(3, doms)
         c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
         c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
         s1 = Core([c1], doms)
@@ -922,7 +922,7 @@ class TestCore(unittest.TestCase):
     # subset_of()
     def test_subset_of_granny_smith_apple(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
-        ConceptualSpace(3, domains)
+        cs.init(3, domains)
         w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
         c_granny_smith = Cuboid([0.55, 0.70, 0.35], [0.6, 0.8, 0.45], domains)
         s_granny_smith = Core([c_granny_smith], domains)
@@ -940,7 +940,7 @@ class TestCore(unittest.TestCase):
 
     def test_subset_of_pear_apple(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
-        ConceptualSpace(3, domains)
+        cs.init(3, domains)
         w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
         c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
         s_pear = Core([c_pear], domains)
@@ -959,7 +959,7 @@ class TestCore(unittest.TestCase):
 
     def test_subset_of_orange_lemon(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
-        ConceptualSpace(3, domains)
+        cs.init(3, domains)
         w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
         c_orange = Cuboid([0.8, 0.9, 0.6], [0.9, 1.0, 0.7], domains)
         s_orange = Core([c_orange], domains)
@@ -977,7 +977,7 @@ class TestCore(unittest.TestCase):
     # implies()
     def test_implies_granny_smith_apple(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
-        ConceptualSpace(3, domains)
+        cs.init(3, domains)
         w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
         c_granny_smith = Cuboid([0.55, 0.70, 0.35], [0.6, 0.8, 0.45], domains)
         s_granny_smith = Core([c_granny_smith], domains)
@@ -996,7 +996,7 @@ class TestCore(unittest.TestCase):
     
     def test_implies_lemon_nonSweet(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
-        ConceptualSpace(3, domains)
+        cs.init(3, domains)
         w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
         c_lemon = Cuboid([0.7, 0.45, 0.0], [0.8, 0.55, 0.1], domains)
         s_lemon = Core([c_lemon], domains)
@@ -1012,7 +1012,7 @@ class TestCore(unittest.TestCase):
     
     def test_implies_apple_red(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
-        ConceptualSpace(3, domains)
+        cs.init(3, domains)
         w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
         c_apple_1 = Cuboid([0.5, 0.65, 0.35], [0.8, 0.8, 0.5], domains)
         c_apple_2 = Cuboid([0.65, 0.65, 0.4], [0.85, 0.8, 0.55], domains)
@@ -1031,7 +1031,7 @@ class TestCore(unittest.TestCase):
     # similarity()
     def test_similarity_naive_symmetric(self):
         doms = {0:[0],1:[1,2]}       
-        ConceptualSpace(3, doms)
+        cs.init(3, doms)
         c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
         c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
         s1 = Core([c1], doms)
@@ -1045,7 +1045,7 @@ class TestCore(unittest.TestCase):
 
     def test_similarity_naive_asymmetric(self):
         doms = {0:[0],1:[1,2]}       
-        ConceptualSpace(3, doms)
+        cs.init(3, doms)
         c1 = Cuboid([0.00,0.00,0.00],[0.40,0.30,0.10], doms)
         c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
         s1 = Core([c1], doms)
@@ -1061,7 +1061,7 @@ class TestCore(unittest.TestCase):
     # between()
     def test_between_naive(self):
         doms = {0:[0],1:[1,2]}       
-        ConceptualSpace(3, doms)
+        cs.init(3, doms)
         c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
         c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
         c3 = Cuboid([0.30,0.40,0.30],[0.40,0.40,0.50], doms)

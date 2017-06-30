@@ -53,7 +53,7 @@ class Concept:
     def membership(self, point):
         """Computes the membership of the point in this concept."""
         
-        min_distance = reduce(min, map(lambda x: cs.ConceptualSpace.cs.distance(x, point, self._weights), self._core.find_closest_point_candidates(point)))
+        min_distance = reduce(min, map(lambda x: cs.distance(x, point, self._weights), self._core.find_closest_point_candidates(point)))
         
         return self._mu * exp(-self._c * min_distance)
     
@@ -64,12 +64,12 @@ class Concept:
             return (lambda y: y[idx] - b[idx])
         distance = - log(mu / self._mu) / self._c
         y = []
-        for i in range(cs.ConceptualSpace.cs._n_dim):
+        for i in range(cs._n_dim):
             if a[i] == b[i]:
                 y.append(a[i])
             else:
-                constr = [{"type":"eq", "fun":(lambda y: cs.ConceptualSpace.cs.distance(a,y,self._weights) - distance)}]
-                for j in range(cs.ConceptualSpace.cs._n_dim):
+                constr = [{"type":"eq", "fun":(lambda y: cs.distance(a,y,self._weights) - distance)}]
+                for j in range(cs._n_dim):
                     if i != j:
                         constr.append({"type":"eq", "fun":makeFun(j)})
                 
@@ -111,11 +111,11 @@ class Concept:
         mu = None
         p_min = None
         p_max = None
-        if self._mu * exp(-self._c * cs.ConceptualSpace.cs.distance(a, b, self._weights)) >= other._mu:
+        if self._mu * exp(-self._c * cs.distance(a, b, self._weights)) >= other._mu:
             # intersection is part of other cuboid
             mu = other._mu
             p_min, p_max = self._intersection_mu_special_case(a, c2, b, mu)
-        elif other._mu * exp(-other._c * cs.ConceptualSpace.cs.distance(a, b, other._weights)) >= self._mu:
+        elif other._mu * exp(-other._c * cs.distance(a, b, other._weights)) >= self._mu:
             # intersection is part of this cuboid
             mu = self._mu
             p_min, p_max = other._intersection_mu_special_case(b, c1, a, mu)
@@ -123,8 +123,8 @@ class Concept:
             # intersection is in the cuboid between a and b
         
             # find point with highest identical membership to both cuboids
-            neg_self_membership = lambda x: -self._mu * exp(-self._c * cs.ConceptualSpace.cs.distance(a, x, self._weights))
-            neg_other_membership = lambda x: -other._mu * exp(-other._c * cs.ConceptualSpace.cs.distance(b, x, other._weights))
+            neg_self_membership = lambda x: -self._mu * exp(-self._c * cs.distance(a, x, self._weights))
+            neg_other_membership = lambda x: -other._mu * exp(-other._c * cs.distance(b, x, other._weights))
             start = map(lambda x, y: (x + y)/2.0, a, b)
             constr = [{"type":"eq", "fun":(lambda x: neg_self_membership(x) - neg_other_membership(x))}]
             def makeFunMin(idx): # need this in order to avoid weird results (defining lambda in loop)
@@ -143,10 +143,10 @@ class Concept:
 
             # check if the weights are linearly dependent w.r.t. all relevant dimensions            
             relevant_dimensions = []
-            for i in range(cs.ConceptualSpace.cs._n_dim):
+            for i in range(cs._n_dim):
                 if not extrude[i]:
                     relevant_dimensions.append(i)
-            relevant_domains = self._reduce_domains(cs.ConceptualSpace.cs._domains, relevant_dimensions)
+            relevant_domains = self._reduce_domains(cs._domains, relevant_dimensions)
             
             t = None
             weights_dependent = True
@@ -186,7 +186,7 @@ class Concept:
                                 j = 0
                                 x_new = []
                                 # puzzle together our large x vector based on the fixed and the free dimensions
-                                for dim in range(cs.ConceptualSpace.cs._n_dim):
+                                for dim in range(cs._n_dim):
                                     if dim in free_dims:
                                         x_new.append(x[i])
                                         i += 1
@@ -195,7 +195,7 @@ class Concept:
                                     else:
                                         x_new.append(a[dim] if vec[j] else b[dim])
                                         j += 1
-                                return abs(cs.ConceptualSpace.cs.distance(point, x_new, weights) - epsilon)
+                                return abs(cs.distance(point, x_new, weights) - epsilon)
                             
                             bounds = []
                             for dim in free_dims:
@@ -220,7 +220,7 @@ class Concept:
                                     i = 0
                                     j = 0
                                     # puzzle together our large x vector based on the fixed and the free dimensions
-                                    for dim in range(cs.ConceptualSpace.cs._n_dim):
+                                    for dim in range(cs._n_dim):
                                         if dim in free_dims:
                                             point.append(opt.x[i])
                                             i += 1
@@ -236,7 +236,7 @@ class Concept:
                         # if we found a solution for num_free_dims: stop looking at higher values for num_free_dims
                         p_min = []
                         p_max = []
-                        for i in range(cs.ConceptualSpace.cs._n_dim):
+                        for i in range(cs._n_dim):
                             p_min.append(max(min(a[i],b[i]), reduce(min, map(lambda x: x[i], points))))
                             p_max.append(min(max(a[i],b[i]), reduce(max, map(lambda x: x[i], points))))
                         break
@@ -337,7 +337,7 @@ class Concept:
     def _hypervolume_couboid(self, cuboid):
         """Computes the hypervolume of a single fuzzified cuboid."""
 
-        n = cs.ConceptualSpace.cs._n_dim
+        n = cs._n_dim
 
         # calculating the factor in front of the sum
         weight_product = 1.0
@@ -424,7 +424,7 @@ class Concept:
         Uses right now only the naive point-based approach."""
         
         if method == "naive":
-            return exp(-other._c * cs.ConceptualSpace.cs.distance(self._core.midpoint(), other._core.midpoint(), other._weights))
+            return exp(-other._c * cs.distance(self._core.midpoint(), other._core.midpoint(), other._weights))
         else:
             raise Exception("Unknown method")
 
@@ -437,6 +437,6 @@ class Concept:
             self_point = self._core.midpoint()
             first_point = first._core.midpoint()
             second_point = second._core.midpoint()
-            return cs.ConceptualSpace.cs.between(first_point, self_point, second_point, method="crisp")
+            return cs.between(first_point, self_point, second_point, method="crisp")
         else:
             raise Exception("Unknown method")
