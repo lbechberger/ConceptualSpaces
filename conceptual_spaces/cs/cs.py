@@ -7,6 +7,7 @@ Created on Tue Jun  6 12:15:30 2017
 
 from math import sqrt
 import concept as con
+from weights import Weights
 
 class ConceptualSpace:
     """The overall conceptual space.
@@ -30,6 +31,17 @@ class ConceptualSpace:
         self._n_dim = n_dim
         self._domains = domains
         self._concepts = {}
+        
+        # construct default weights
+        dim_weights = {}
+        dom_weights = {}
+        for (dom, dims) in domains.items():
+            dom_weights[dom] = 1.0
+            local_dim_weights = {}
+            for dim in dims:
+                local_dim_weights[dim] = 1
+            dim_weights[dom] = local_dim_weights
+        self._no_weights = Weights(dom_weights, dim_weights)
         
         ConceptualSpace.cs = self
         
@@ -84,3 +96,16 @@ class ConceptualSpace:
         
         if key in self._concepts:
             del self._concepts[key]
+    
+    def between(self, first, middle, second, method="crisp"):
+        """Computes the betweenness relation between the three given points.
+        
+        Right now only uses the crisp definition of betweenness (returns either 1.0 or 0.0)."""
+        
+        if method == "crisp":
+            if (self.distance(first, middle, self._no_weights) + self.distance(middle, second, self._no_weights) - self.distance(first, second, self._no_weights)) < 0.00001:
+                return 1.0
+            else:
+                return 0.0
+        else:
+            raise Exception("Unknown method")

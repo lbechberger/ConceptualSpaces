@@ -178,5 +178,57 @@ class TestConceptualSpace(unittest.TestCase):
         
         cs.delete_concept(1337)
         self.assertEqual(len(cs._concepts), 0)
+        
+    # between()
+    def test_between_crisp_4D2dom(self):
+        cs = ConceptualSpace(4, {0:[0,1], 1:[2,3]})
+        first = [0,0,0,0]
+        middle1 = [0.5,1,0.5,0.75]
+        middle2 = [0.5,1,1,1.5]
+        middle3 = [0.5,0.5,1,1.5]
+        middle4 = [0.5,1,1,3.5]
+        second = [1,2,2,3]
+        self.assertEqual(cs.between(first,middle1,second, method="crisp"), 1.0)
+        self.assertEqual(cs.between(first,middle2,second, method="crisp"), 1.0)
+        self.assertEqual(cs.between(first,middle3,second, method="crisp"), 0.0)
+        self.assertEqual(cs.between(first,middle4,second, method="crisp"), 0.0)
+        self.assertEqual(cs.between(second,middle1,first, method="crisp"), 1.0)
+        self.assertEqual(cs.between(second,middle2,first, method="crisp"), 1.0)
+        self.assertEqual(cs.between(second,middle3,first, method="crisp"), 0.0)
+        self.assertEqual(cs.between(second,middle4,first, method="crisp"), 0.0)
+
+    def test_between_crisp_4D1dom(self):
+        cs = ConceptualSpace(4, {0:[0,1,2,3]})
+        first = [0,0,0,0]
+        middle1 = [0.5,1,0.5,0.75]
+        middle2 = [0.5,1,1,1.5]
+        middle3 = [0.5,0.5,1,1.5]
+        middle4 = [0.5,1,1,3.5]
+        second = [1,2,2,3]
+        self.assertEqual(cs.between(first,middle1,second, method="crisp"), 0.0)
+        self.assertEqual(cs.between(first,middle2,second, method="crisp"), 1.0)
+        self.assertEqual(cs.between(first,middle3,second, method="crisp"), 0.0)
+        self.assertEqual(cs.between(first,middle4,second, method="crisp"), 0.0)
+        self.assertEqual(cs.between(second,middle1,first, method="crisp"), 0.0)
+        self.assertEqual(cs.between(second,middle2,first, method="crisp"), 1.0)
+        self.assertEqual(cs.between(second,middle3,first, method="crisp"), 0.0)
+        self.assertEqual(cs.between(second,middle4,first, method="crisp"), 0.0)
+
+    def test_between_crisp_4D4dom(self):
+        cs = ConceptualSpace(4, {0:[0], 1:[1], 2:[2], 3:[3]})
+        first = [0,0,0,0]
+        middle1 = [0.5,1,0.5,0.75]
+        middle2 = [0.5,1,1,1.5]
+        middle3 = [0.5,0.5,1,1.5]
+        middle4 = [0.5,1,1,3.5]
+        second = [1,2,2,3]
+        self.assertEqual(cs.between(first,middle1,second, method="crisp"), 1.0)
+        self.assertEqual(cs.between(first,middle2,second, method="crisp"), 1.0)
+        self.assertEqual(cs.between(first,middle3,second, method="crisp"), 1.0)
+        self.assertEqual(cs.between(first,middle4,second, method="crisp"), 0.0)
+        self.assertEqual(cs.between(second,middle1,first, method="crisp"), 1.0)
+        self.assertEqual(cs.between(second,middle2,first, method="crisp"), 1.0)
+        self.assertEqual(cs.between(second,middle3,first, method="crisp"), 1.0)
+        self.assertEqual(cs.between(second,middle4,first, method="crisp"), 0.0)
     
 unittest.main()

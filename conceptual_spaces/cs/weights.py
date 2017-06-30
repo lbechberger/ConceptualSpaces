@@ -38,11 +38,11 @@ class Weights:
         domain_weights = domain_weights if domain_weights != None else self.domain_weights        
         dimension_weights = dimension_weights if dimension_weights != None else self.dimension_weights        
         
-        if sum(domain_weights.values()) != len(domain_weights.keys()):
+        if abs(sum(domain_weights.values()) - len(domain_weights.keys())) > 1e9:
             return False
         
         for weights in dimension_weights.values():
-            if sum(weights.values()) != 1.0:
+            if abs(sum(weights.values()) - 1.0) > 1e9:
                 return False
         
         return True

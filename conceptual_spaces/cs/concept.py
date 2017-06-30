@@ -406,15 +406,37 @@ class Concept:
         return intersection.hypervolume() / self.hypervolume()
         
 
-    def implies(self, other):
-        """Computes the degree of implication between this concept and a given other concept."""
+    def implies(self, other, method="identity"):
+        """Computes the degree of implication between this concept and a given other concept.
         
-        return self.subset_of(other)
+        Possible methods: 'identity' (used as default), 'squared'"""
+        
+        if method == "identity":
+            return self.subset_of(other)
+        elif method == "squared":
+            return self.subset_of(other)**2
+        else:
+            raise Exception("Unknown method")
     
-    def similarity(self, other):
-        """Computes the similarity of this concept to the given other concept."""
-        pass #TODO implement
+    def similarity(self, other, method="naive"):
+        """Computes the similarity of this concept to the given other concept.
+        
+        Uses right now only the naive point-based approach."""
+        
+        if method == "naive":
+            return exp(-other._c * cs.ConceptualSpace.cs.distance(self._core.midpoint(), other._core.midpoint(), other._weights))
+        else:
+            raise Exception("Unknown method")
 
-    def between(self, first, second):
-        """Computes the degree to which this concept is between the other two given concepts."""
-        pass #TODO implement
+    def between(self, first, second, method="naive"):
+        """Computes the degree to which this concept is between the other two given concepts.
+        
+        Uses right now only the naive binary point-based approach."""
+
+        if method == "naive":        
+            self_point = self._core.midpoint()
+            first_point = first._core.midpoint()
+            second_point = second._core.midpoint()
+            return cs.ConceptualSpace.cs.between(first_point, self_point, second_point, method="crisp")
+        else:
+            raise Exception("Unknown method")

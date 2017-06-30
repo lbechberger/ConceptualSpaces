@@ -1028,4 +1028,57 @@ class TestCore(unittest.TestCase):
         
         self.assertAlmostEqual(f_apple.implies(f_red), 0.6111111111111109)
 
+    # similarity()
+    def test_similarity_naive_symmetric(self):
+        doms = {0:[0],1:[1,2]}       
+        ConceptualSpace(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        w = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        f1 = Concept(s1, 1.0, 1.0, w)
+        f2 = Concept(s2, 1.0, 1.0, w)
+        
+        self.assertAlmostEqual(f1.similarity(f2, "naive"), 0.3011942119122)
+        self.assertAlmostEqual(f2.similarity(f1, "naive"), f1.similarity(f2))
+
+    def test_similarity_naive_asymmetric(self):
+        doms = {0:[0],1:[1,2]}       
+        ConceptualSpace(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.30,0.10], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertAlmostEqual(f1.similarity(f2, "naive"), 0.061968893864880734)
+        self.assertAlmostEqual(f2.similarity(f1, "naive"), 0.23444817280911917)
+
+    # between()
+    def test_between_naive(self):
+        doms = {0:[0],1:[1,2]}       
+        ConceptualSpace(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([0.30,0.40,0.30],[0.40,0.40,0.50], doms)
+        c4 = Cuboid([0.30,0.30,0.30],[0.40,0.40,0.50], doms)
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], doms)
+        s4 = Core([c4], doms)
+        w = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        f1 = Concept(s1, 1.0, 1.0, w)
+        f2 = Concept(s2, 1.0, 1.0, w)
+        f3 = Concept(s3, 1.0, 1.0, w)
+        f4 = Concept(s4, 1.0, 1.0, w)
+        
+        self.assertEqual(f3.between(f1, f2, method="naive"), 1.0)
+        self.assertEqual(f3.between(f2, f1, method="naive"), 1.0)
+        self.assertEqual(f4.between(f1, f2, method="naive"), 0.0)
+        self.assertEqual(f4.between(f2, f1, method="naive"), 0.0)
+
 unittest.main()
