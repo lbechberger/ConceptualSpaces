@@ -5,7 +5,7 @@ Created on Tue Jun  6 11:54:30 2017
 @author: lbechberger
 """
 
-from math import exp, sqrt, factorial, pi, gamma, log, isnan, isinf
+from math import exp, sqrt, factorial, pi, gamma, log
 import itertools
 import scipy.optimize
 
