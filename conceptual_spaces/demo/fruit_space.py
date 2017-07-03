@@ -41,7 +41,7 @@ c_lemon = Cuboid([0.7, 0.45, 0.0], [0.8, 0.55, 0.1], domains)
 s_lemon = Core([c_lemon], domains)
 w_lemon = Weights({"color":0.5, "shape":0.5, "taste":2.0}, w_dim)
 lemon = Concept(s_lemon, 1.0, 20.0, w_lemon)
-space.add_concept("orange", lemon)
+space.add_concept("lemon", lemon)
 
 # define GrannySmith concept
 c_granny_smith = Cuboid([0.55, 0.70, 0.35], [0.6, 0.8, 0.45], domains)

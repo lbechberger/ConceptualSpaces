@@ -571,15 +571,16 @@ class TestCore(unittest.TestCase):
         f1 = Concept(s1, 0.9, 5.0, w1)
         f2 = Concept(s2, 1.0, 8.0, w2)
 
-        c_res1 = Cuboid([0.3671005749,0.3762216484],[0.3671005749,0.3762216484], doms)
+        c_res1 = Cuboid([0.3670043848, 0.3762729758],[0.3670043848, 0.3762729758], doms)
         s_res1 = Core([c_res1], doms)
         w_res1 = Weights({0:1}, {0:{0:(7/12.0), 1:(5/12.0)}})        
-        f_res1 = Concept(s_res1, 0.542937404, 5.0, w_res1)
+        f_res1 = Concept(s_res1, 0.5429369989, 5.0, w_res1)
         
-        c_res2 = Cuboid([0.3670016362, 0.3762744145],[0.3670016362, 0.3762744145], doms)
+        c_res2 = Cuboid([0.3669356482, 0.3763095722],[0.3669356482, 0.3763095722], doms)
         s_res2 = Core([c_res2], doms)
         w_res2 = Weights({0:1}, {0:{0:(7/12.0), 1:(5/12.0)}})        
-        f_res2 = Concept(s_res2, 0.5429368707, 5.0, w_res2)
+        f_res2 = Concept(s_res2, 0.54293668, 5.0, w_res2)
+        
         
         self.assertEqual(f1.intersect(f2), f_res1)
         self.assertEqual(f2.intersect(f1), f_res2)
@@ -596,15 +597,15 @@ class TestCore(unittest.TestCase):
         f1 = Concept(s1, 0.9, 5.0, w1)
         f2 = Concept(s2, 1.0, 8.0, w2)
 
-        c_res1 = Cuboid([0.3999999999, 0.3204489823],[0.3999999999, 0.3204489823], doms)
+        c_res1 = Cuboid([0.3999999998, 0.3204489823],[0.3999999998, 0.3204489823], doms)
         s_res1 = Core([c_res1], doms)
         w_res1 = Weights({0:(7/12.0), 1:(5/12.0)}, {0:{0:1}, 1:{1:1}})        
-        f_res1 = Concept(s_res1, 0.3838108497, 5.0, w_res1)
+        f_res1 = Concept(s_res1, 0.3838108499, 5.0, w_res1)
         
-        c_res2 = Cuboid([0.3999999999, 0.3204489825],[0.3999999999, 0.3204489825], doms)
+        c_res2 = Cuboid([0.3999999663, 0.3204490335],[0.3999999663, 0.3204490335], doms)
         s_res2 = Core([c_res2], doms)
         w_res2 = Weights({0:(7/12.0), 1:(5/12.0)}, {0:{0:1}, 1:{1:1}})        
-        f_res2 = Concept(s_res2, 0.3838108493, 5.0, w_res2)
+        f_res2 = Concept(s_res2, 0.383810816, 5.0, w_res2)
               
         self.assertEqual(f1.intersect(f2), f_res1)
         self.assertEqual(f2.intersect(f1), f_res2)
@@ -702,15 +703,15 @@ class TestCore(unittest.TestCase):
         f1 = Concept(s1, 1.0, 2.0, w1)
         f2 = Concept(s2, 1.0, 2.0, w2)
 
-        c_res1 = Cuboid([0.3272802977, 0.837442891, 0.3],[0.3272802977, 0.837442891, 0.4], doms)
+        c_res1 = Cuboid([0.327200066, 0.8376643818, 0.3],[0.327200066, 0.8376643818, 0.4], doms)
         s_res1 = Core([c_res1], doms)
         w_res1 = Weights({0:(2.0/3), 1:(4.0/3)}, {0:{0:0.625, 1:0.375}, 1:{2:1}})
-        f_res1 = Concept(s_res1, 0.8409744422, 2.0, w_res1)
+        f_res1 = Concept(s_res1, 0.8409747859, 2.0, w_res1)
         
-        c_res2 = Cuboid([0.3271963787, 0.8376746001, 0.3],[0.3271963787, 0.8376746001, 0.4], doms)
+        c_res2 = Cuboid([0.3272006707, 0.8376627822, 0.3],[0.3272006707, 0.8376627822, 0.4], doms)
         s_res2 = Core([c_res2], doms)
         w_res2 = Weights({0:1, 1:2}, {0:{0:0.625, 1:0.375}, 1:{2:1}})
-        f_res2 = Concept(s_res2, 0.8409747409, 2.0, w_res2)
+        f_res2 = Concept(s_res2, 0.8409747627, 2.0, w_res2)
         
         self.assertEqual(f1.intersect(f2), f_res1)
         self.assertEqual(f2.intersect(f1), f_res2)
@@ -727,7 +728,7 @@ class TestCore(unittest.TestCase):
         f1 = Concept(s1, 1.0, 2.0, w1)
         f2 = Concept(s2, 1.0, 2.0, w2)
 
-        c_res1 = Cuboid([0.3234313871, 0.7, 0.3],[0.4648529178, 0.9, 0.4], doms)
+        c_res1 = Cuboid([0.3234313871, 0.7, 0.3],[0.4648529177, 0.9, 0.4], doms)
         s_res1 = Core([c_res1], doms)
         w_res1 = Weights({0:(5/6.0), 1:(7/6.0)}, {0:{0:1}, 1:{1:0.3125, 2:0.6875}})
         f_res1 = Concept(s_res1, 0.702480783, 2.0, w_res1)
@@ -777,15 +778,15 @@ class TestCore(unittest.TestCase):
         f1 = Concept(s1, 1.0, 2.0, w1)
         f2 = Concept(s2, 1.0, 2.0, w2)
 
-        c_res1 = Cuboid([0.2935424869, 0.8999999962, 0.4],[0.2935424869, 0.8999999962, 0.4], doms)
+        c_res1 = Cuboid([0.293542487, 0.9, 0.3999999996],[0.293542487, 0.9, 0.3999999996], doms)
         s_res1 = Core([c_res1], doms)
         w_res1 = Weights({0:1.25, 1:0.75}, {0:{0:1}, 1:{1:0.425, 2:0.575}})
-        f_res1 = Concept(s_res1, 0.6617185102, 2.0, w_res1)
+        f_res1 = Concept(s_res1, 0.6617185092, 2.0, w_res1)
         
-        c_res2 = Cuboid([0.2935424944, 0.8999999007, 0.4],[0.2935424944, 0.8999999007, 0.4], doms)
+        c_res2 = Cuboid([0.293542507, 0.8999997212, 0.4],[0.293542507, 0.8999997212, 0.4], doms)
         s_res2 = Core([c_res2], doms)
         w_res2 = Weights({0:1.25, 1:0.75}, {0:{0:1}, 1:{1:0.425, 2:0.575}})
-        f_res2 = Concept(s_res2, 0.6617184173, 2.0, w_res2)
+        f_res2 = Concept(s_res2, 0.6617182499, 2.0, w_res2)
 
         self.assertEqual(f1.intersect(f2), f_res1)
         self.assertEqual(f2.intersect(f1), f_res2)
@@ -829,15 +830,15 @@ class TestCore(unittest.TestCase):
         f1 = Concept(s1, 1.0, 2.0, w1)
         f2 = Concept(s2, 1.0, 5.0, w2)
 
-        c_res1 = Cuboid([0.00, 0.8798325911, 0.3332302073],[0.20, 0.8798325911, 0.3332302073], doms)
+        c_res1 = Cuboid([0.0, 0.8798304865, 0.3332340033],[0.2, 0.8798304865, 0.3332340033], doms)
         s_res1 = Core([c_res1], doms)
         w_res1 = Weights({0:(4.0/3.0), 1:(2.0/3.0)}, {0:{0:1}, 1:{1:0.425, 2:0.575}})
-        f_res1 = Concept(s_res1, 0.909910215, 2.0, w_res1)
+        f_res1 = Concept(s_res1, 0.9099102151, 2.0, w_res1)
         
-        c_res2 = Cuboid([0.00, 0.8798294109, 0.3332359837],[0.20, 0.8798294109, 0.3332359837], doms)
+        c_res2 = Cuboid([0.0, 0.8798294352, 0.3332359396],[0.2, 0.8798294352, 0.3332359396], doms)
         s_res2 = Core([c_res2], doms)
         w_res2 = Weights({0:(4.0/3.0), 1:(2.0/3.0)}, {0:{0:1}, 1:{1:0.425, 2:0.575}})
-        f_res2 = Concept(s_res2, 0.9099102768, 2.0, w_res2)
+        f_res2 = Concept(s_res2, 0.9099102764, 2.0, w_res2)
 
         self.assertEqual(f1.intersect(f2), f_res1)
         self.assertEqual(f2.intersect(f1), f_res2)
@@ -883,18 +884,44 @@ class TestCore(unittest.TestCase):
         w_apple = Weights({"color":0.50, "shape":1.50, "taste":1.00}, w_dim)
         f_apple = Concept(s_apple, 1.0, 5.0, w_apple)
 
-        c_res1 = Cuboid([0.50, 0.6187499793, 0.35],[0.70, 0.6187499793, 0.45], domains)
+        c_res1 = Cuboid([0.5, 0.6187499794, 0.35],[0.7, 0.6187499794, 0.45], domains)
         s_res1 = Core([c_res1], domains)
         w_res1 = Weights({"color":0.50, "shape":1.375, "taste":1.125}, w_dim)
-        f_res1 = Concept(s_res1, 0.7910649883, 5.0, w_res1)
+        f_res1 = Concept(s_res1, 0.7910649884, 5.0, w_res1)
         
-        c_res2 = Cuboid([0.50, 0.6187499794, 0.35],[0.70, 0.6187499794, 0.45], domains)
+        c_res2 = Cuboid([0.5, 0.6187499794, 0.35],[0.7, 0.6187499794, 0.45], domains)
         s_res2 = Core([c_res2], domains)
         w_res2 = Weights({"color":0.50, "shape":1.375, "taste":1.125}, w_dim)
         f_res2 = Concept(s_res2, 0.791065315, 5.0, w_res2)
         
         self.assertEqual(f_apple.intersect(f_pear), f_res1)
         self.assertEqual(f_pear.intersect(f_apple), f_res2)
+
+    def test_intersect_red_green(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        f_red = Concept(s_red, 1.0, 20.0, w_red)
+        
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        f_green = Concept(s_green, 1.0, 20.0, w_green)
+
+        c_res1 = Cuboid([0.725, float("-inf"), float("-inf")], [0.725, float("inf"), float("inf")], {"color":[0]})
+        s_res1 = Core([c_res1], {"color":[0]})
+        w_res1 = Weights({"color":1.0}, {"color":{0:1.0}})
+        f_res1 = Concept(s_res1, 0.0301973834, 20.0, w_res1)
+        
+        c_res2 = Cuboid([0.725, float("-inf"), float("-inf")], [0.725, float("inf"), float("inf")], {"color":[0]})
+        s_res2 = Core([c_res2], {"color":[0]})
+        w_res2 = Weights({"color":1.0}, {"color":{0:1.0}})
+        f_res2 = Concept(s_res2, 0.0301973834, 20.0, w_res2)
+         
+        self.assertEqual(f_red.intersect(f_green), f_res1)
+        self.assertEqual(f_green.intersect(f_red), f_res2)
 
     def test_intersect_pathological_cones(self):
         doms = {0:[0],1:[1,2]}       
@@ -954,8 +981,8 @@ class TestCore(unittest.TestCase):
         w_apple = Weights({"color":0.50, "shape":1.50, "taste":1.00}, w_dim)
         f_apple = Concept(s_apple, 1.0, 5.0, w_apple)
         
-        self.assertAlmostEqual(f_pear.subset_of(f_apple), 0.35158458440000007)
-        self.assertAlmostEqual(f_apple.subset_of(f_pear), 0.3125195015901235)
+        self.assertAlmostEqual(f_pear.subset_of(f_apple), 0.4520373228571429)
+        self.assertAlmostEqual(f_apple.subset_of(f_pear), 0.19069907388897037)
 
     def test_subset_of_orange_lemon(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -971,7 +998,7 @@ class TestCore(unittest.TestCase):
         w_lemon = Weights({"color":0.5, "shape":0.5, "taste":2.0}, w_dim)
         f_lemon = Concept(s_lemon, 1.0, 20.0, w_lemon)
         
-        self.assertAlmostEqual(f_orange.subset_of(f_lemon), 0.00030722252128279883)
+        self.assertAlmostEqual(f_orange.subset_of(f_lemon), 0.00024392897777777777)
 
 
     # implies()
@@ -992,7 +1019,7 @@ class TestCore(unittest.TestCase):
         f_apple = Concept(s_apple, 1.0, 5.0, w_apple)
         
         self.assertAlmostEqual(f_granny_smith.implies(f_apple), 1.00)
-        self.assertAlmostEqual(f_apple.implies(f_granny_smith), 0.46172839506172847)
+        self.assertAlmostEqual(f_apple.implies(f_granny_smith), 0.11709107083287003)
     
     def test_implies_lemon_nonSweet(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -1026,7 +1053,7 @@ class TestCore(unittest.TestCase):
         w_red = Weights({"color":1.0}, {"color":{0:1.0}})
         f_red = Concept(s_red, 1.0, 20.0, w_red)
         
-        self.assertAlmostEqual(f_apple.implies(f_red), 0.6111111111111109)
+        self.assertAlmostEqual(f_apple.implies(f_red), 0.3333333333333333)
 
     # similarity()
     def test_similarity_naive_symmetric(self):

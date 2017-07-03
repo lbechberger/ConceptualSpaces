@@ -5,7 +5,7 @@ Created on Tue Jun  6 11:54:30 2017
 @author: lbechberger
 """
 
-from math import exp, sqrt, factorial, pi, gamma, log
+from math import exp, sqrt, factorial, pi, gamma, log, isnan, isinf
 import itertools
 import scipy.optimize
 
@@ -121,25 +121,40 @@ class Concept:
             p_min, p_max = other._intersection_mu_special_case(b, c1, a, mu)
         else:
             # intersection is in the cuboid between a and b
+            # --> find point with highest identical membership to both cuboids
         
-            # find point with highest identical membership to both cuboids
-            neg_self_membership = lambda x: -self._mu * exp(-self._c * cs.distance(a, x, self._weights))
-            neg_other_membership = lambda x: -other._mu * exp(-other._c * cs.distance(b, x, other._weights))
-            start = map(lambda x, y: (x + y)/2.0, a, b)
-            constr = [{"type":"eq", "fun":(lambda x: neg_self_membership(x) - neg_other_membership(x))}]
-            def makeFunMin(idx): # need this in order to avoid weird results (defining lambda in loop)
-                return (lambda x: x[idx] - min(a[idx],b[idx]))
-            def makeFunMax(idx): # need this in order to avoid weird results (defining lambda in loop)
-                return (lambda x: max(a[idx],b[idx]) - x[idx])
-            for i in range(len(a)):
-                constr.append({"type":"ineq", "fun":makeFunMin(i)})
-                constr.append({"type":"ineq", "fun":makeFunMax(i)})
-            # set eps to smaller than default value in order to ensure convergence
-            opt = scipy.optimize.minimize(neg_self_membership, start, constraints = constr, options = {"eps":1.0e-10})
+            # only use the relevant dimensions in order to make optimization easier
+            def membership(x, point, mu, c, weights):
+                x_new = []
+                j = 0
+                for dim in range(cs._n_dim):
+                    if extrude[dim]:
+                        x_new.append(point[dim])
+                    else:
+                        x_new.append(x[j])
+                        j += 1
+                return mu * exp(-c * cs.distance(point, x_new, weights))
+
+            bounds = []
+            for dim in range(cs._n_dim):
+                if not extrude[dim]:
+                    bounds.append((min(a[dim], b[dim]), max(a[dim], b[dim])))
+            first_guess = map(lambda (x, y): (x + y)/2.0, bounds)
+            to_minimize = lambda x: -membership(x, a, self._mu, self._c, self._weights)
+            constr = [{"type":"eq", "fun":(lambda x: abs(membership(x, a, self._mu, self._c, self._weights) - membership(x, b, other._mu, other._c, other._weights)))}]
+            opt = scipy.optimize.minimize(to_minimize, first_guess, constraints = constr, bounds = bounds, options = {"eps":1.0e-10})
             if not opt.success:
                 raise Exception("Optimizer failed!")
-            x_star = list(opt.x)
-            mu = -neg_self_membership(x_star)
+            # reconstruct full x by inserting fixed coordinates that will be extruded later
+            x_star = []
+            j = 0
+            for dim in range(cs._n_dim):
+                if extrude[dim]:
+                    x_star.append(a[dim])
+                else:
+                    x_star.append(opt.x[j])
+                    j += 1
+            mu = membership(opt.x, a, self._mu, self._c, self._weights)
 
             # check if the weights are linearly dependent w.r.t. all relevant dimensions            
             relevant_dimensions = []
@@ -398,12 +413,20 @@ class Concept:
 
     def subset_of(self, other):
         """Computes the degree of subsethood between this concept and a given other concept."""
+
+        common_domains = {}
+        for dom, dims in self._core._domains.iteritems():
+            if dom in other._core._domains and other._core._domains[dom] == dims:
+                common_domains[dom] = dims
+        projected_self = self.project(common_domains)
+        projected_other = other.project(common_domains)
         
-        intersection = self.intersect(other)
-        # need to modify c and weights in order to end up between 0 and 1
-        intersection._c = self._c
-        intersection._weights = self._weights
-        return intersection.hypervolume() / self.hypervolume()
+        intersection = projected_self.intersect(projected_other)
+        intersection._c = projected_other._c
+        intersection._weights = projected_other._weights
+        projected_self._c = projected_other._c
+        projected_self._weights = projected_other._weights
+        return intersection.hypervolume() / projected_self.hypervolume()
         
 
     def implies(self, other, method="identity"):
