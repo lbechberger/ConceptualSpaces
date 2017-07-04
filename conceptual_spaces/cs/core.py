@@ -124,7 +124,7 @@ class Core:
             central_region = central_region.intersect(c)
         
         midpoint = map(lambda x, y: (x + y)/2.0, central_region._p_min, central_region._p_max)
-        midpoint = map(lambda x: 0 if isnan(x) else x, midpoint)    # inf - inf = nan; set to 0 instead
+#        midpoint = map(lambda x: 0 if isnan(x) else x, midpoint)    # inf - inf = nan; set to 0 instead
         return midpoint
 
 def check(cuboids, domains):

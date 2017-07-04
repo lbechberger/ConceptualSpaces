@@ -11,6 +11,7 @@ sys.path.append("..")
 import cs.cs
 from timeit import default_timer as timer
 import random
+from math import sqrt
 
 def random_cuboid(dimensions, domains, min_val, max_val):
     p_min = []
@@ -32,13 +33,14 @@ def random_weights(domains):
     return cs.weights.Weights(dom_weights, dim_weights)        
 
 def runtime_intersection(n, num_samples, max_dim_per_domain):
-    """Computes runtime statistics for the intersection operation of concepts. The parameter 'n' gives the dimensionality of the concepts"""
+    """Computes runtime statistics for the intersection operation of concepts.
+    
+    Parameters: n = number of dimensions, num_samples: number of samples to draw, max_dim_per_domain: maximal number of dimensions per domain."""
+    
     dimensions = range(n)
     random.seed(1)
-    min_time = 99999
-    max_time = 0
-    avg_time = 0.0    
     
+    times = []
     for i in range(num_samples):
         # create a  random domain structure
         domains = {}
@@ -63,17 +65,68 @@ def runtime_intersection(n, num_samples, max_dim_per_domain):
         f1.intersect(f2)
         end = timer()
         duration = end-start
-        min_time = min(min_time, duration)
-        max_time = max(max_time, duration)
-        avg_time += duration
-        
-        
-    avg_time /= num_samples
-    print "Number of dimensions: {0}\t Number of samples: {1}".format(n, num_samples)
-    print "min: {0} ms".format(min_time*1000)
-    print "max: {0} ms".format(max_time*1000)
-    print "avg: {0} ms\n".format(avg_time*1000)
+        times.append(duration)
     
+    min_time = min(times)
+    max_time = max(times)
+    mean_time = sum(times) / num_samples
+    std_time = sqrt(sum(map(lambda x: (x - mean_time)**2, times))/num_samples)
+
+    print "{0},{1},{2},{3},{4}".format(n, min_time*1000, max_time*1000, mean_time*1000, std_time*1000)    
+
+def runtime_hypervolume(n, num_samples, max_dim_per_domain):
+    """Computes runtime statistics for the hypervolume operation of concepts.
+    
+    Parameters: n = number of dimensions, num_samples: number of samples to draw, max_dim_per_domain: maximal number of dimensions per domain."""
+    dimensions = range(n)
+    random.seed(1)
+    
+    times = []
+    for i in range(num_samples):
+        # create a  random domain structure
+        domains = {}
+        dimensions_left = dimensions
+        j = 0
+        while len(dimensions_left)  > 0:
+            num_dims = random.randint(1, min(len(dimensions_left), max_dim_per_domain))
+            dims = random.sample(dimensions_left, num_dims)
+            domains[j] = list(dims)
+            dimensions_left = [dim for dim in dimensions_left if dim not in dims]
+            j+= 1
+           
+        # make the conceptual space
+        cs.cs.init(n, domains)
+        
+        # create a concept with random weights, random cuboids, random mu and random c
+        f = cs.concept.Concept(cs.core.Core([random_cuboid(dimensions, domains, 0.0, 1.0)], domains), random.uniform(0.01, 1.0), random.uniform(1.0, 50.0), random_weights(domains))
+
+        start = timer()
+        f.hypervolume()
+        end = timer()
+        duration = end-start
+        times.append(duration)
+    
+    min_time = min(times)
+    max_time = max(times)
+    mean_time = sum(times) / num_samples
+    std_time = sqrt(sum(map(lambda x: (x - mean_time)**2, times))/num_samples)
+
+    print "{0},{1},{2},{3},{4}".format(n, min_time*1000, max_time*1000, mean_time*1000, std_time*1000)    
+  
+####################################################################################################################################  
 # MAIN: here we select what to run at all
-for n in [1,2,3,4,5,10,15,20,30,40,50,100,200,500]:
-    runtime_intersection(n, 10000, 2)
+run_intersection = False
+run_hypervolume = False
+list_of_n = [1,2,4,8,16,32,64,128,256,512]
+
+if run_intersection: 
+    print "INTERSECTION"
+    print "n, min_time, max_time, mean_time, std_time"
+    for n in list_of_n:
+        runtime_intersection(n, 10000, 5)
+
+if run_hypervolume: 
+    print "HYPERVOLUME"
+    print "n, min_time, max_time, mean_time, std_time"
+    for n in list_of_n:
+        runtime_hypervolume(n, 10000, 5)

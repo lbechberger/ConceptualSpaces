@@ -5,7 +5,7 @@ Created on Tue Jun  6 11:54:30 2017
 @author: lbechberger
 """
 
-from math import exp, sqrt, factorial, pi, gamma, log
+from math import exp, sqrt, factorial, pi, gamma, log, isnan
 import itertools
 import scipy.optimize
 
@@ -352,7 +352,8 @@ class Concept:
     def _hypervolume_couboid(self, cuboid):
         """Computes the hypervolume of a single fuzzified cuboid."""
 
-        n = cs._n_dim
+        all_dims = [dim for domain in self._core._domains.values() for dim in domain]
+        n = len(all_dims)
 
         # calculating the factor in front of the sum
         weight_product = 1.0
@@ -361,13 +362,12 @@ class Concept:
                 weight_product *= dom_weight * sqrt(dim_weight)
         factor = self._mu / (self._c**n * weight_product)
 
-        all_dims = [dim for domain in self._core._domains.values() for dim in domain]
-        outer_sum = 0.0        
         # outer sum
+        outer_sum = 0.0        
         for i in range(0, n+1):
-            subsets = list(itertools.combinations(all_dims, i))
-            inner_sum = 0.0
             # inner sum
+            inner_sum = 0.0
+            subsets = list(itertools.combinations(all_dims, i))
             for subset in subsets:
                 # first product
                 first_product = 1.0
@@ -447,7 +447,20 @@ class Concept:
         Uses right now only the naive point-based approach."""
         
         if method == "naive":
-            return exp(-other._c * cs.distance(self._core.midpoint(), other._core.midpoint(), other._weights))
+            self_midpoint = self._core.midpoint()
+            other_midpoint = other._core.midpoint()
+            
+            # if the concepts are defined on different domains, choose the midpoints such that their distance is minimized
+            for dim in range(cs._n_dim):
+                if isnan(self_midpoint[dim]) and isnan(other_midpoint[dim]):
+                    self_midpoint[dim] = 0
+                    other_midpoint[dim] = 0
+                elif isnan(self_midpoint[dim]):
+                    self_midpoint[dim] = other_midpoint[dim]
+                elif isnan(other_midpoint[dim]):
+                    other_midpoint[dim] = self_midpoint[dim]
+                    
+            return exp(-other._c * cs.distance(self_midpoint, other_midpoint, other._weights))
         else:
             raise Exception("Unknown method")
 

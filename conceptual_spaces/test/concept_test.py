@@ -14,7 +14,7 @@ from cs.concept import Concept
 from cs.weights import Weights
 import cs.cs as cs
 
-class TestCore(unittest.TestCase):
+class TestConcept(unittest.TestCase):
 
     # constructor()
     def test_constructor_fine(self):
@@ -1084,6 +1084,23 @@ class TestCore(unittest.TestCase):
         
         self.assertAlmostEqual(f1.similarity(f2, "naive"), 0.061968893864880734)
         self.assertAlmostEqual(f2.similarity(f1, "naive"), 0.23444817280911917)
+    
+    def test_similarity_naive_apple_red(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        c_apple_1 = Cuboid([0.5, 0.65, 0.35], [0.8, 0.8, 0.5], domains)
+        c_apple_2 = Cuboid([0.65, 0.65, 0.4], [0.85, 0.8, 0.55], domains)
+        c_apple_3 = Cuboid([0.7, 0.65, 0.45], [1.0, 0.8, 0.6], domains)
+        s_apple = Core([c_apple_1, c_apple_2, c_apple_3], domains)
+        w_apple = Weights({"color":0.50, "shape":1.50, "taste":1.00}, {"color":{0:1}, "shape":{1:1}, "taste":{2:1}})
+        f_apple = Concept(s_apple, 1.0, 10.0, w_apple)
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        f_red = Concept(s_red, 1.0, 20.0, w_red)
+        
+        self.assertAlmostEqual(f_apple.similarity(f_red), 0.018315638888734196)
+        self.assertAlmostEqual(f_red.similarity(f_apple), 0.3678794411714424)
 
     # between()
     def test_between_naive(self):

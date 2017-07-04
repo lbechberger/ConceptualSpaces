@@ -11,6 +11,7 @@ sys.path.append("..")
 from cs.core import Core, check, simplify
 from cs.cuboid import Cuboid
 import cs.cs as cs
+from math import isnan
 
 class TestCore(unittest.TestCase):
     
@@ -385,6 +386,8 @@ class TestCore(unittest.TestCase):
         c1 = Cuboid([-float("inf"),2,3], [float("inf"),5,6], {1:[1,2]})
         c2 = Cuboid([-float("inf"),1,1], [float("inf"),4,4], {1:[1,2]})
         s = Core([c1,c2], {1:[1,2]})
-        self.assertEqual(s.midpoint(), [0, 3, 3.5])
+        self.assertTrue(isnan(s.midpoint()[0]))
+        self.assertEqual(s.midpoint()[1], 3.0)
+        self.assertEqual(s.midpoint()[2], 3.5)
 
 unittest.main()
