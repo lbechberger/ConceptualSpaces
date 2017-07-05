@@ -16,40 +16,13 @@ class Cuboid:
         All entries of p_min must be <= their corresponding entry in p_max.
         All dimensions contained in the domains must be finite, all other dimensions infinite."""
         
-        if not self._check(p_min, p_max, domains):
+        if not check(p_min, p_max, domains):
             raise Exception("some constraint is violated!")           
         
         self._p_min = p_min
         self._p_max = p_max
         self._domains = domains        
-        
-    
-    def _check(self, p_min = None, p_max = None, domains = None):
-        """Checks the assertions of the cuboid.
-        
-        Asserts that no entry of _p_min is larger than the corresponding entry of _p_max, 
-        that both are defined on the correct set of dimensions, 
-        and that the given domains are compatible with the overall domain structure of the conceptual space."""
-        
-        p_min = p_min if (not p_min == None) else self._p_min
-        p_max = p_max if (not p_max == None) else self._p_max
-        domains = domains if (not domains == None) else self._domains
-        dims = [dim for domain in domains.values() for dim in domain]        
-        
-        if not len(p_min) == len(p_max) == cs._n_dim:
-            return False
-
-        for i in range(len(p_max)):
-            if i in dims and (p_max[i] == float("inf") or p_min[i] == float("-inf")):
-                return False
-            if i not in dims and (p_max[i] != float("inf") or p_min[i] != float("-inf")):
-                return False
-
-        if not all(dom in cs._domains.items() for dom in domains.items()):
-            return False
-        
-        return reduce(lambda x, y: x and y, map(lambda y,z: y <= z, p_min, p_max))
-    
+  
     def contains(self, point):
         """Checks whether the given point is inside the cuboid."""
         
@@ -165,3 +138,25 @@ class Cuboid:
                 p_max.append(float("inf"))
         
         return Cuboid(p_min, p_max, new_domains)
+
+def check(p_min, p_max, domains):
+    """Asserts that no entry of _p_min is larger than the corresponding entry of _p_max, 
+    that both are defined on the correct set of dimensions, 
+    and that the given domains are compatible with the overall domain structure of the conceptual space."""
+    
+    dims = [dim for domain in domains.values() for dim in domain]        
+    
+    if not len(p_min) == len(p_max) == cs._n_dim:
+        return False
+
+    for i in range(len(p_max)):
+        if i in dims and (p_max[i] == float("inf") or p_min[i] == float("-inf")):
+            return False
+        if i not in dims and (p_max[i] != float("inf") or p_min[i] != float("-inf")):
+            return False
+
+    if not all(dom in cs._domains.items() for dom in domains.items()):
+        return False
+    
+    return reduce(lambda x, y: x and y, map(lambda y,z: y <= z, p_min, p_max))
+  

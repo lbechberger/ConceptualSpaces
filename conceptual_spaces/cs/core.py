@@ -7,7 +7,6 @@ Created on Tue Jun  6 10:50:58 2017
 import cuboid as cub
 import cs
 from itertools import compress
-from math import isnan
 
 class Core:
     """A concept's core, consisting of a set of cuboids with nonempty intersection.
@@ -124,7 +123,6 @@ class Core:
             central_region = central_region.intersect(c)
         
         midpoint = map(lambda x, y: (x + y)/2.0, central_region._p_min, central_region._p_max)
-#        midpoint = map(lambda x: 0 if isnan(x) else x, midpoint)    # inf - inf = nan; set to 0 instead
         return midpoint
 
 def check(cuboids, domains):

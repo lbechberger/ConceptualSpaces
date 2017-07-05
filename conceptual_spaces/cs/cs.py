@@ -78,11 +78,11 @@ def distance(x, y, weights):
 
     for domain in this._domains.keys():
         inner_distance = 0.0
-        if not domain in weights.domain_weights:    # don't take into account domains w/o weights
+        if not domain in weights._domain_weights:    # don't take into account domains w/o weights
             continue
         for dimension in this._domains[domain]:
-            inner_distance += weights.dimension_weights[domain][dimension] * (x[dimension] - y[dimension])**2
-        distance += weights.domain_weights[domain] * sqrt(inner_distance)
+            inner_distance += weights._dimension_weights[domain][dimension] * (x[dimension] - y[dimension])**2
+        distance += weights._domain_weights[domain] * sqrt(inner_distance)
     
     return distance
 

@@ -16,10 +16,10 @@ class Weights:
         'domain_weights' is a mapping from domains to weights and 
         'dimension_weights' contains for each domain a mapping from dimensions to weights."""
         
-        self.domain_weights = self._normalize(domain_weights, len(domain_weights.keys()))
-        self.dimension_weights = {}
+        self._domain_weights = self._normalize(domain_weights, len(domain_weights.keys()))
+        self._dimension_weights = {}
         for (domain, weights) in dimension_weights.items():
-            self.dimension_weights[domain] = self._normalize(weights, 1.0)
+            self._dimension_weights[domain] = self._normalize(weights, 1.0)
         
     def _normalize(self, weights, total):
         """Normalizes a given set of weights such that they sum up to the desired total."""
@@ -32,30 +32,15 @@ class Weights:
         
         return result
 
-    def _check(self, domain_weights = None, dimension_weights = None):
-        """Checks if all normalization constraints are fulfilled."""
-
-        domain_weights = domain_weights if domain_weights != None else self.domain_weights        
-        dimension_weights = dimension_weights if dimension_weights != None else self.dimension_weights        
-        
-        if abs(sum(domain_weights.values()) - len(domain_weights.keys())) > 1e-9:
-            return False
-        
-        for weights in dimension_weights.values():
-            if abs(sum(weights.values()) - 1.0) > 1e-9:
-                return False
-        
-        return True
-    
     def __str__(self):
-        return "w<{0},<{1}>>".format(str(self.domain_weights),str(self.dimension_weights))
+        return "w<{0},<{1}>>".format(str(self._domain_weights),str(self._dimension_weights))
     
     def __eq__(self, other):
         if not isinstance(other, Weights):
             return False
-        if not self.dimension_weights == other.dimension_weights:
+        if not self._dimension_weights == other._dimension_weights:
             return False
-        if not self.domain_weights == other.domain_weights:
+        if not self._domain_weights == other._domain_weights:
             return False
         return True
     
@@ -68,22 +53,22 @@ class Weights:
         dom_weights = {}
         dim_weights = {}
 
-        for dom in set(self.domain_weights.keys()) & set(other.domain_weights.keys()):
-            weight_dom = s * self.domain_weights[dom] + (1.0 - s) * other.domain_weights[dom]
+        for dom in set(self._domain_weights.keys()) & set(other._domain_weights.keys()):
+            weight_dom = s * self._domain_weights[dom] + (1.0 - s) * other._domain_weights[dom]
             dom_weights[dom] = weight_dom
             weights_dim = {}
-            for dim in self.dimension_weights[dom].keys():
-                w = t * self.dimension_weights[dom][dim] + (1.0 - t) * other.dimension_weights[dom][dim]
+            for dim in self._dimension_weights[dom].keys():
+                w = t * self._dimension_weights[dom][dim] + (1.0 - t) * other._dimension_weights[dom][dim]
                 weights_dim[dim] = w
             dim_weights[dom] = weights_dim
         
-        for dom in set(self.domain_weights.keys()) - set(other.domain_weights.keys()):
-            dom_weights[dom] = self.domain_weights[dom]
-            dim_weights[dom] = self.dimension_weights[dom].copy()
+        for dom in set(self._domain_weights.keys()) - set(other._domain_weights.keys()):
+            dom_weights[dom] = self._domain_weights[dom]
+            dim_weights[dom] = self._dimension_weights[dom].copy()
         
-        for dom in set(other.domain_weights.keys()) - set(self.domain_weights.keys()):
-            dom_weights[dom] = other.domain_weights[dom]
-            dim_weights[dom] = other.dimension_weights[dom].copy()
+        for dom in set(other._domain_weights.keys()) - set(self._domain_weights.keys()):
+            dom_weights[dom] = other._domain_weights[dom]
+            dim_weights[dom] = other._dimension_weights[dom].copy()
         
         
         return Weights(dom_weights, dim_weights)
@@ -94,7 +79,19 @@ class Weights:
         dom_weights = {}
         dim_weights = {}
         for dom in new_domains.keys():
-            dom_weights[dom] = self.domain_weights[dom]
-            dim_weights[dom] = dict(self.dimension_weights[dom])
+            dom_weights[dom] = self._domain_weights[dom]
+            dim_weights[dom] = dict(self._dimension_weights[dom])
         
         return Weights(dom_weights, dim_weights)
+
+def check(domain_weights, dimension_weights):
+    """Checks if all normalization constraints are fulfilled."""
+
+    if abs(sum(domain_weights.values()) - len(domain_weights.keys())) > 1e-9:
+        return False
+    
+    for weights in dimension_weights.values():
+        if abs(sum(weights.values()) - 1.0) > 1e-9:
+            return False
+    
+    return True

@@ -8,7 +8,7 @@ Created on Thu Jun  1 14:25:20 2017
 import unittest
 import sys
 sys.path.append("..")
-from cs.cuboid import Cuboid
+from cs.cuboid import Cuboid, check
 import cs.cs as cs
 
 class TestCuboid(unittest.TestCase):
@@ -19,23 +19,19 @@ class TestCuboid(unittest.TestCase):
     # _check()
     def test_check_true(self):
         self._create_cs()
-        c = Cuboid([1, 2, 3], [2, 3, 4], {0:[0,1,2]})
-        self.assertTrue(c._check())
+        self.assertTrue(check([1, 2, 3], [2, 3, 4], {0:[0,1,2]}))
     
     def test_check_true_same(self):    
         self._create_cs()
-        c = Cuboid([1, 2, 3], [1, 2, 3], {0:[0,1,2]})
-        self.assertTrue(c._check())
+        self.assertTrue(check([1, 2, 3], [1, 2, 3], {0:[0,1,2]}))
     
     def test_check_false(self):
         self._create_cs()
-        c = Cuboid( [1,2,3], [2,3,4], {0:[0,1,2]})
-        self.assertFalse(c._check([1,2,3], [2,3,2], {0:[0,1,2]}))
+        self.assertFalse(check([1,2,3], [2,3,2], {0:[0,1,2]}))
     
     def test_check_empty(self):
         self._create_cs()
-        c = Cuboid([1,2,3], [2,3,4], {0:[0,1,2]})
-        self.assertFalse(c._check([],[], {0:[0,1,2]}))
+        self.assertFalse(check([],[], {0:[0,1,2]}))
     
     # constructor()
     def test_init_empty_init(self):

@@ -29,7 +29,7 @@ class Concept:
         if c <= 0.0:
             raise Exception("Invalid c")
         
-        if (not isinstance(weights, wghts.Weights)) or (not weights._check()):
+        if (not isinstance(weights, wghts.Weights)) or (not wghts.check(weights._domain_weights, weights._dimension_weights)):
             raise Exception("Invalid weights")
         
         self._core = core
@@ -169,10 +169,10 @@ class Concept:
                 for dim in dims:
                     if t is None:
                         # initialize
-                        t = (self._weights.domain_weights[dom] * sqrt(self._weights.dimension_weights[dom][dim])) / (other._weights.domain_weights[dom] * sqrt(other._weights.dimension_weights[dom][dim]))
+                        t = (self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim])) / (other._weights._domain_weights[dom] * sqrt(other._weights._dimension_weights[dom][dim]))
                     else:
                         # compare
-                        t_prime = (self._weights.domain_weights[dom] * sqrt(self._weights.dimension_weights[dom][dim])) / (other._weights.domain_weights[dom] * sqrt(other._weights.dimension_weights[dom][dim]))
+                        t_prime = (self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim])) / (other._weights._domain_weights[dom] * sqrt(other._weights._dimension_weights[dom][dim]))
                         if round(t,10) != round(t_prime,10):
                             weights_dependent = False
                             break
@@ -357,8 +357,8 @@ class Concept:
 
         # calculating the factor in front of the sum
         weight_product = 1.0
-        for (dom, dom_weight) in self._weights.domain_weights.items():
-            for (dim, dim_weight) in self._weights.dimension_weights[dom].items():
+        for (dom, dom_weight) in self._weights._domain_weights.items():
+            for (dim, dim_weight) in self._weights._dimension_weights[dom].items():
                 weight_product *= dom_weight * sqrt(dim_weight)
         factor = self._mu / (self._c**n * weight_product)
 
@@ -373,8 +373,8 @@ class Concept:
                 first_product = 1.0
                 for dim in set(all_dims) - set(subset):
                     dom = filter(lambda (x,y): dim in y, self._core._domains.items())[0][0]
-                    w_dom = self._weights.domain_weights[dom]
-                    w_dim = self._weights.dimension_weights[dom][dim]
+                    w_dom = self._weights._domain_weights[dom]
+                    w_dim = self._weights._dimension_weights[dom][dim]
                     b = cuboid._p_max[dim] - cuboid._p_min[dim]
                     first_product *= w_dom * sqrt(w_dim) * b * self._c
                 
