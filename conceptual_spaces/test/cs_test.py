@@ -224,4 +224,16 @@ class TestConceptualSpace(unittest.TestCase):
         self.assertEqual(space.between(second,middle3,first, method="crisp"), 1.0)
         self.assertEqual(space.between(second,middle4,first, method="crisp"), 0.0)
     
+    # round()
+    def test_round(self):
+        self.assertEqual(space.round(0.12345678901234567890), 0.1234567890)
+        self.assertEqual(space.round(0.987654321987654321), 0.9876543220)
+        self.assertEqual(space.round(0.999), 0.999)
+    
+    # equal()
+    def test_equal(self):
+        self.assertTrue(space.equal(0.12345678901234567890, 0.1234567890218749576))
+        self.assertFalse(space.equal(0.7363248628, 0.7363248629))
+        self.assertTrue(space.equal(space.round(0.65348616381658), 0.65348616381658))
+        
 unittest.main()

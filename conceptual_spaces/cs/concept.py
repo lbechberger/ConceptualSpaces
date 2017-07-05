@@ -43,7 +43,8 @@ class Concept:
     def __eq__(self, other):
         if not isinstance(other, Concept):
             return False
-        if self._core != other._core or self._mu != other._mu or self._c != other._c or self._weights != other._weights:
+        if not (self._core == other._core and cs.equal(self._mu, other._mu) and cs.equal(self._c, other._c) and self._weights == other._weights):
+#        if self._core != other._core or self._mu != other._mu or self._c != other._c or self._weights != other._weights:
             return False
         return True
     
@@ -142,7 +143,7 @@ class Concept:
             first_guess = map(lambda (x, y): (x + y)/2.0, bounds)
             to_minimize = lambda x: -membership(x, a, self._mu, self._c, self._weights)
             constr = [{"type":"eq", "fun":(lambda x: abs(membership(x, a, self._mu, self._c, self._weights) - membership(x, b, other._mu, other._c, other._weights)))}]
-            opt = scipy.optimize.minimize(to_minimize, first_guess, constraints = constr, bounds = bounds, options = {"eps":1.0e-10})
+            opt = scipy.optimize.minimize(to_minimize, first_guess, constraints = constr, bounds = bounds, options = {"eps":cs._epsilon})
             if not opt.success:
                 raise Exception("Optimizer failed!")
             # reconstruct full x by inserting fixed coordinates that will be extruded later
@@ -265,16 +266,16 @@ class Concept:
                 p_min = list(x_star)
                 p_max = list(x_star)
                 pass
-                                                           
+        
+        # round everything, because we only found approximate solutions anyways
+        mu = cs.round(mu)
+        p_min = map(cs.round, p_min)
+        p_max = map(cs.round, p_max)
+                                                   
         # extrude in remaining dimensions
         for i in range(len(extrude)):
             if extrude[i]:
                 p_max[i] = a_range[i][1]
-
-        # round for tests
-        mu = round(mu, 10)
-        p_min = map(lambda x: round(x, 10), p_min)
-        p_max = map(lambda x: round(x, 10), p_max)
 
         # finally, construct a cuboid and return it along with mu
         cuboid = cub.Cuboid(p_min, p_max, new_domains)
@@ -294,7 +295,7 @@ class Concept:
                 candidates.append(self._intersect_fuzzy_cuboids(c1, c2, other))
         
         mu = reduce(max, map(lambda x: x[0], candidates))
-        cuboids = map(lambda x: x[1], filter(lambda y: y[0] == mu, candidates))        
+        cuboids = map(lambda x: x[1], filter(lambda y: cs.equal(y[0],mu), candidates))        
         
         # create a repaired core
         core = cor.from_cuboids(cuboids, cuboids[0]._domains)
@@ -426,8 +427,8 @@ class Concept:
         intersection._weights = projected_other._weights
         projected_self._c = projected_other._c
         projected_self._weights = projected_other._weights
-        return intersection.hypervolume() / projected_self.hypervolume()
-        
+        subsethood = intersection.hypervolume() / projected_self.hypervolume()
+        return subsethood
 
     def implies(self, other, method="identity"):
         """Computes the degree of implication between this concept and a given other concept.
@@ -460,7 +461,8 @@ class Concept:
                 elif isnan(other_midpoint[dim]):
                     other_midpoint[dim] = self_midpoint[dim]
                     
-            return exp(-other._c * cs.distance(self_midpoint, other_midpoint, other._weights))
+            sim = exp(-other._c * cs.distance(self_midpoint, other_midpoint, other._weights))
+            return sim
         else:
             raise Exception("Unknown method")
 

@@ -72,7 +72,7 @@ class Core:
         if not isinstance(other, Core):
             raise Exception("Not a valid core")
         
-        if len(self._cuboids[0]._p_min) != len(other._cuboids[0]._p_min):
+        if not self._cuboids[0]._compatible(other._cuboids[0]):
             raise Exception("Incompatible cores")
         
         extended_list = list(self._cuboids) + list(other._cuboids)
@@ -122,7 +122,7 @@ class Core:
         for c in self._cuboids:
             central_region = central_region.intersect(c)
         
-        midpoint = map(lambda x, y: (x + y)/2.0, central_region._p_min, central_region._p_max)
+        midpoint = map(lambda x, y: 0.5*(x + y), central_region._p_min, central_region._p_max)
         return midpoint
 
 def check(cuboids, domains):
@@ -152,10 +152,10 @@ def from_cuboids(cuboids, domains):
     # need to perform repair mechanism        
     midpoints = []
     for cuboid in cuboids: # midpoint of each cuboid
-        midpoints.append(map(lambda x, y: (x + y)/2.0, cuboid._p_min, cuboid._p_max))
+        midpoints.append(map(lambda x, y: 0.5*(x + y), cuboid._p_min, cuboid._p_max))
     # sum up all midpoints & divide by number of cuboids
     midpoint = reduce(lambda x, y: map(lambda a,b: a+b, x, y), midpoints)
-    midpoint = map(lambda x: round(x/len(cuboids),10), midpoint)
+    midpoint = map(lambda x: x/len(cuboids), midpoint)
             
     # extend cuboids
     modified_cuboids = []
@@ -168,6 +168,7 @@ def from_cuboids(cuboids, domains):
 
 def simplify(cuboids):
     """Simplifies the given set of cuboids by removing redundant ones."""
+    
     keep = [True]*len(cuboids)
     for i in range(len(cuboids)):
         

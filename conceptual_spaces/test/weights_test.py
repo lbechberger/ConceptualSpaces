@@ -27,7 +27,7 @@ class TestWeights(unittest.TestCase):
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
 
         w = Weights(dom, dim)   
-        dom_new = {0:(4.0/3), 1:(2.0/3)}
+        dom_new = {0:4.0/3, 1:2.0/3}
         dim_new = {0:{0:0.5, 1:0.5}, 1:{2:0.6, 3:0.4}}
         
         self.assertEqual(w._domain_weights, dom_new)

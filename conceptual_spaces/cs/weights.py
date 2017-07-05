@@ -5,6 +5,8 @@ Created on Tue Jun  6 12:45:36 2017
 @author: lbechberger
 """
 
+import cs
+
 class Weights:
     """Specifies a set of weights W = <W_delta, {W_d}>.
     
@@ -38,10 +40,28 @@ class Weights:
     def __eq__(self, other):
         if not isinstance(other, Weights):
             return False
-        if not self._dimension_weights == other._dimension_weights:
+            
+        if len(self._domain_weights) != len(other._domain_weights):
             return False
-        if not self._domain_weights == other._domain_weights:
+        for dom, weight in self._domain_weights.iteritems():
+            if dom not in other._domain_weights:
+                return False
+            if not cs.equal(other._domain_weights[dom], weight):
+                return False
+        
+        if len(self._dimension_weights) != len(other._dimension_weights):
             return False
+        for dom, dims in self._dimension_weights.iteritems():
+            if dom not in other._dimension_weights:
+                return False
+            other_dims = other._dimension_weights[dom]
+            if len(dims) != len(other_dims):
+                return False
+            for dim, weight in dims.iteritems():
+                if dim not in other_dims:
+                    return False
+                if not cs.equal(other_dims[dim], weight):
+                    return False
         return True
     
     def __ne__(self, other):
@@ -87,11 +107,11 @@ class Weights:
 def check(domain_weights, dimension_weights):
     """Checks if all normalization constraints are fulfilled."""
 
-    if abs(sum(domain_weights.values()) - len(domain_weights.keys())) > 1e-9:
+    if not cs.equal(sum(domain_weights.values()), len(domain_weights.keys())):
         return False
     
     for weights in dimension_weights.values():
-        if abs(sum(weights.values()) - 1.0) > 1e-9:
+        if not cs.equal(sum(weights.values()), 1.0):
             return False
     
     return True

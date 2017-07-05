@@ -9,10 +9,11 @@ Created on Tue Jun  6 12:15:30 2017
 @author: lbechberger
 """
 
-from math import sqrt
+from math import sqrt, isinf
 import concept as con
-from weights import Weights
+import weights as wghts
 import sys
+import __builtin__
 
 this = sys.modules[__name__]
 
@@ -20,6 +21,8 @@ this._n_dim = None
 this._domains = None
 this._concepts = None
 this._no_weights = None
+this._precision_digits = 10
+this._epsilon = 1e-10
 
 def init(n_dim, domains):
     """Initializes a conceptual space with the given numer of dimensions and the given set of domains.
@@ -45,7 +48,7 @@ def init(n_dim, domains):
         for dim in dims:
             local_dim_weights[dim] = 1
         dim_weights[dom] = local_dim_weights
-    this._no_weights = Weights(dom_weights, dim_weights)
+    this._no_weights = wghts.Weights(dom_weights, dim_weights)
     
 def _check_domain_structure(domains, n_dim):
     """Checks whether the domain structure is valid."""
@@ -111,3 +114,11 @@ def between(first, middle, second, method="crisp"):
             return 0.0
     else:
         raise Exception("Unknown method")
+
+def round(x):
+    """Rounds the given number to a globally constant precision."""
+    return __builtin__.round(x, this._precision_digits)
+
+def equal(x, y):
+    """Checks whether two floating point numbers are considered to be equal under the globally set precision."""
+    return abs(x - y) < this._epsilon or (isinf(x) and isinf(y) and (x>0) == (y>0))

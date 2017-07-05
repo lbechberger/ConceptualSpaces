@@ -73,7 +73,9 @@ class Cuboid:
 
     def __eq__(self, other):
         if isinstance(other, Cuboid):
-            return self._p_min == other._p_min and self._p_max == other._p_max and self._domains == other._domains
+            p_min_equal = reduce(lambda x,y: x and y, map(cs.equal, self._p_min, other._p_min))
+            p_max_equal = reduce(lambda x,y: x and y, map(cs.equal, self._p_max, other._p_max))
+            return p_min_equal and p_max_equal and self._domains == other._domains
         return False
     
     def __ne__(self, other):
