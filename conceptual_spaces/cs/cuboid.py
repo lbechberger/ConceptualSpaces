@@ -82,7 +82,7 @@ class Cuboid:
         return not self.__eq__(other)
 
     def __str__(self):
-        return "c({},{})".format(self._p_min, self._p_max)
+        return "{}-{}".format(self._p_min, self._p_max)
     
     def _compatible(self, other):
         """Checks whether two cuboids are compatible with each other (i.e., defined on compatible domain structures)."""

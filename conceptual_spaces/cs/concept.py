@@ -38,7 +38,7 @@ class Concept:
         self._weights = weights
             
     def __str__(self):
-        return "<{0},{1},{2},{3}>".format(self._core, self._mu, self._c, self._weights)
+        return "core: {0}\nmu: {1}\nc: {2}\nweights: {3}".format(self._core, self._mu, self._c, self._weights)
     
     def __eq__(self, other):
         if not isinstance(other, Concept):

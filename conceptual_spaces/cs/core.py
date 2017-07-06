@@ -46,7 +46,7 @@ class Core:
             return False
     
     def __str__(self):
-        return "s({})".format(', '.join(str(x) for x in self._cuboids))
+        return "{{{}}}".format(', '.join(str(x) for x in self._cuboids))
     
     def __eq__(self, other):
         if not isinstance(other, Core):

@@ -35,7 +35,7 @@ class Weights:
         return result
 
     def __str__(self):
-        return "w<{0},<{1}>>".format(str(self._domain_weights),str(self._dimension_weights))
+        return "<{0},{1}>".format(str(self._domain_weights),str(self._dimension_weights))
     
     def __eq__(self, other):
         if not isinstance(other, Weights):
