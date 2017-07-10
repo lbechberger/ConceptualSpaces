@@ -50,12 +50,12 @@ For convenience, the conceptual space also contains a dictionary for storing con
 space.add_concept("pear", pear)
 ```
 
-In the file `demo/fruit_space.py`, we have already defined several concepts for different types of fruit along with some properties.
+In the file `conceptual_spaces/demo/fruit_space.py`, we have already defined several concepts for different types of fruit along with some properties.
 Variables for fruit concepts (with identifiers in parentheses): pear ('pear'), orange ('orange'), lemon ('lemon'), granny_smith ('Granny Smith'), apple ('apple'), banana ('banana').
 Variables for properties: red ('red'), green, ('green'), blue ('blue'), non_sweet ('nonSweet').
 There is also a `demo()` function in this file that displays the information of this readme file.
 
-The folder `demo/images` contains some 2D and 3D visualizations of these concepts.
+The folder `conceptual_spaces/demo/images/` contains some 2D and 3D visualizations of these concepts.
 
 We can display a concept by simply printing it:
 ```python
