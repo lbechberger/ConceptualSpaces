@@ -51,20 +51,20 @@ space.add_concept("pear", pear)
 ```
 
 In the file `demo/fruit_space.py`, we have already defined several concepts for different types of fruit along with some properties.
-Variables for fruit concepts (with identifiers in parentheses): pear ('pear'), orange ('orange'), lemon ('lemon'), granny_smith ('Granny Smith'), apple ('apple'), banana ('banana')
-Variables for properties: red ('red'), green, ('green'), blue ('blue'), non_sweet ('nonSweet')
+Variables for fruit concepts (with identifiers in parentheses): pear ('pear'), orange ('orange'), lemon ('lemon'), granny_smith ('Granny Smith'), apple ('apple'), banana ('banana').
+Variables for properties: red ('red'), green, ('green'), blue ('blue'), non_sweet ('nonSweet').
+There is also a `demo()` function in this file that displays the information of this readme file.
 
 The folder `demo/images` contains some 2D and 3D visualizations of these concepts.
 
 We can display a concept by simply printing it:
-    print pear
-
-This results in the following output:
+```python
+print pear
     core: {\[0.5, 0.4, 0.35\]-\[0.7, 0.6, 0.45\]}
     mu: 1.0
     c: 12.0
     weights: <{'color': 0.5, 'taste': 1.25, 'shape': 1.25},{'color': {0: 1.0}, 'taste': {2: 1.0}, 'shape': {1: 1.0}}>
-
+```
 ### Operations on Concepts
 
 We can execute the following operations on a concept `c`:
