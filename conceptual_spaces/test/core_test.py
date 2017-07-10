@@ -205,13 +205,13 @@ class TestCore(unittest.TestCase):
         self.assertTrue(s != s2)
         self.assertFalse(s == s2)
 
-    # unify()
+    # unify_with()
     def test_unify_no_core(self):
         cs.init(3, {0:[0,1,2]})
         c = Cuboid([1,2,3],[7,8,9], {0:[0,1,2]})
         s = Core([c], {0:[0,1,2]})
         with self.assertRaises(Exception):
-            s.unify(42)
+            s.unify_with(42)
     
     def test_unify_no_repair(self):
         cs.init(3, {0:[0,1,2]})
@@ -220,8 +220,8 @@ class TestCore(unittest.TestCase):
         s1 = Core([c1], {0:[0,1,2]})
         s2 = Core([c2], {0:[0,1,2]})
         s_result = Core([c1, c2], {0:[0,1,2]})
-        self.assertEqual(s1.unify(s2), s_result)
-        self.assertEqual(s1.unify(s2), s2.unify(s1))
+        self.assertEqual(s1.unify_with(s2), s_result)
+        self.assertEqual(s1.unify_with(s2), s2.unify_with(s1))
     
     def test_unify_repair(self):
         cs.init(3, {0:[0,1,2]})
@@ -232,8 +232,8 @@ class TestCore(unittest.TestCase):
         c1_result = Cuboid([1,2,3],[3.25,4,4.75], {0:[0,1,2]})
         c2_result = Cuboid([3,4,4.75],[7,7,7], {0:[0,1,2]})
         s_result = Core([c1_result, c2_result], {0:[0,1,2]})
-        self.assertEqual(s1.unify(s2), s_result)
-        self.assertEqual(s1.unify(s2), s2.unify(s1))
+        self.assertEqual(s1.unify_with(s2), s_result)
+        self.assertEqual(s1.unify_with(s2), s2.unify_with(s1))
     
     def test_unify_not_full_dims_different_dims(self):
         cs.init(3, {0:[0,1], 1:[2]})
@@ -242,7 +242,7 @@ class TestCore(unittest.TestCase):
         s1 = Core([c1], {0:[0,1], 1:[2]})
         s2 = Core([c2], {0:[0,1]})
         with self.assertRaises(Exception):
-            s1.unify(s2)
+            s1.unify_with(s2)
  
     def test_unify_not_full_dims_same_dims(self):
         cs.init(3, {0:[0,1], 1:[2]})
@@ -251,23 +251,23 @@ class TestCore(unittest.TestCase):
         s1 = Core([c1], {0:[0,1]})
         s2 = Core([c2], {0:[0,1]})
         s_result = Core([c1, c2], {0:[0,1]})
-        self.assertEqual(s1.unify(s2), s_result)
-        self.assertEqual(s1.unify(s2), s2.unify(s1))
+        self.assertEqual(s1.unify_with(s2), s_result)
+        self.assertEqual(s1.unify_with(s2), s2.unify_with(s1))
         
-    # cut()
+    # cut_at()
     def test_cut_above(self):
         cs.init(3, {0:[0,1,2]})
         c1 = Cuboid([1,2,3],[7,8,9], {0:[0,1,2]})
         c2 = Cuboid([4,5,6],[7,7,7], {0:[0,1,2]})
         s1 = Core([c1, c2], {0:[0,1,2]})
-        self.assertEqual(s1.cut(0,8.0), (s1, None))
+        self.assertEqual(s1.cut_at(0,8.0), (s1, None))
 
     def test_cut_below(self):
         cs.init(3, {0:[0,1,2]})
         c1 = Cuboid([1,2,3],[7,8,9], {0:[0,1,2]})
         c2 = Cuboid([4,5,6],[7,7,7], {0:[0,1,2]})
         s1 = Core([c1, c2], {0:[0,1,2]})
-        self.assertEqual(s1.cut(2,0.0), (None, s1))
+        self.assertEqual(s1.cut_at(2,0.0), (None, s1))
         
     def test_cut_through_center(self):
         cs.init(3, {0:[0,1,2]})
@@ -283,7 +283,7 @@ class TestCore(unittest.TestCase):
         up_c2 = Cuboid([5,5,6],[7,7,7], {0:[0,1,2]})
         up_s = Core([up_c1, up_c2], {0:[0,1,2]})
         
-        self.assertEqual(s1.cut(0, 5), (low_s, up_s))
+        self.assertEqual(s1.cut_at(0, 5), (low_s, up_s))
 
     def test_cut_through_one_cuboid(self):
         cs.init(3, {0:[0,1,2]})
@@ -298,7 +298,7 @@ class TestCore(unittest.TestCase):
         up_c2 = Cuboid([4,5,6],[7,7,7], {0:[0,1,2]})
         up_s = Core([up_c1, up_c2], {0:[0,1,2]})
         
-        self.assertEqual(s1.cut(2, 5), (low_s, up_s))
+        self.assertEqual(s1.cut_at(2, 5), (low_s, up_s))
 
     def test_cut_infinity(self):
         cs.init(3, {0:[0], 1:[1], 2:[2]})
@@ -313,28 +313,28 @@ class TestCore(unittest.TestCase):
         up_c2 = Cuboid([4,float("-inf"),6],[7,float("inf"),7], {0:[0], 2:[2]})
         up_s = Core([up_c1, up_c2], {0:[0], 2:[2]})
         
-        self.assertEqual(s1.cut(2, 5), (low_s, up_s))
+        self.assertEqual(s1.cut_at(2, 5), (low_s, up_s))
     
-    # project()
+    # project_onto()
     def test_project_illegal_domains_subdomain(self):
         cs.init(3, {0:[0,1,2]})
         c1 = Cuboid([0,0,0],[2,2,2],{0:[0,1,2]})
         s = Core([c1],{0:[0,1,2]})
         with self.assertRaises(Exception):
-            s.project({0:[1,2]})
+            s.project_onto({0:[1,2]})
     
     def test_project_illegal_domains_other_domain_name(self):
         cs.init(3, {0:[0,1,2]})
         c1 = Cuboid([0,0,0],[2,2,2],{0:[0,1,2]})
         s = Core([c1],{0:[0,1,2]})
         with self.assertRaises(Exception):
-            s.project({1:[0,1,2]})
+            s.project_onto({1:[0,1,2]})
 
     def test_project_identical_domains(self):
         cs.init(3, {0:[0,1,2]})
         c1 = Cuboid([0,0,0],[2,2,2],{0:[0,1,2]})
         s = Core([c1],{0:[0,1,2]})
-        self.assertEqual(s.project({0:[0,1,2]}), s)
+        self.assertEqual(s.project_onto({0:[0,1,2]}), s)
     
     def test_project_correct(self):
         cs.init(3, {0:[0,1], 1:[2]})
@@ -347,8 +347,8 @@ class TestCore(unittest.TestCase):
         c1_res2 = Cuboid([float("-inf"),float("-inf"),3],[float("inf"),float("inf"),9],{1:[2]})
         c2_res2 = Cuboid([float("-inf"),float("-inf"),6],[float("inf"),float("inf"),7],{1:[2]})
         s_res2 = Core([c1_res2, c2_res2], {1:[2]})
-        self.assertEqual(s.project({0:[0,1]}), s_res1)
-        self.assertEqual(s.project({1:[2]}), s_res2)
+        self.assertEqual(s.project_onto({0:[0,1]}), s_res1)
+        self.assertEqual(s.project_onto({1:[2]}), s_res2)
 
     # simplify()
     def test_simplify_subset(self):

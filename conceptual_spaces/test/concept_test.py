@@ -80,7 +80,7 @@ class TestConcept(unittest.TestCase):
         self.assertEqual(f._weights, w)
     
 
-    # membership()
+    # membership_of()
     def test_membership_inside(self):
         cs.init(4, {0:[0,1], 1:[2,3]})
         s = Core([Cuboid([1,2,3,4],[3,4,5,6],{0:[0,1], 1:[2,3]})],{0:[0,1], 1:[2,3]})
@@ -90,7 +90,7 @@ class TestConcept(unittest.TestCase):
         
         f = Concept(s, 1.0, 2.0, w)  
         p = [1.5, 4, 4, 4]
-        self.assertEqual(f.membership(p), 1.0)
+        self.assertEqual(f.membership_of(p), 1.0)
    
     def test_membership_inside_other_c(self):
         cs.init(4, {0:[0,1], 1:[2,3]})
@@ -101,7 +101,7 @@ class TestConcept(unittest.TestCase):
         
         f = Concept(s, 1.0, 10.0, w)  
         p = [1.5, 4, 4, 4]
-        self.assertEqual(f.membership(p), 1.0)
+        self.assertEqual(f.membership_of(p), 1.0)
 
     def test_membership_inside_other_mu(self):
         cs.init(4, {0:[0,1], 1:[2,3]})
@@ -112,7 +112,7 @@ class TestConcept(unittest.TestCase):
         
         f = Concept(s, 0.5, 2.0, w)  
         p = [1.5, 4, 4, 4]
-        self.assertEqual(f.membership(p), 0.5)
+        self.assertEqual(f.membership_of(p), 0.5)
      
     def test_membership_outside_one_cuboid(self):
         cs.init(4, {0:[0,1], 1:[2,3]})
@@ -123,7 +123,7 @@ class TestConcept(unittest.TestCase):
         
         f = Concept(s, 1.0, 2.0, w)  
         p = [4, 4, 4, 4]
-        self.assertAlmostEqual(f.membership(p), 0.15173524)
+        self.assertAlmostEqual(f.membership_of(p), 0.15173524)
 
     def test_membership_outside_two_cuboids(self):
         cs.init(4, {0:[0,1], 1:[2,3]})
@@ -134,7 +134,7 @@ class TestConcept(unittest.TestCase):
         
         f = Concept(s, 1.0, 2.0, w)  
         p = [4, 4, 4, 4]
-        self.assertAlmostEqual(f.membership(p), 0.15173524)
+        self.assertAlmostEqual(f.membership_of(p), 0.15173524)
     
     def test_membership_inside_infinity(self):
         cs.init(4, {0:[0,1], 1:[2,3]})
@@ -145,7 +145,7 @@ class TestConcept(unittest.TestCase):
         
         f = Concept(s, 1.0, 2.0, w)  
         p = [1.5, 4, 4, 4]
-        self.assertEqual(f.membership(p), 1.0)
+        self.assertEqual(f.membership_of(p), 1.0)
     
     def test_membership_outside_one_cuboid_infinity(self):
         cs.init(4, {0:[0,1], 1:[2,3]})
@@ -156,7 +156,7 @@ class TestConcept(unittest.TestCase):
         
         f = Concept(s, 1.0, 2.0, w)  
         p = [4, 4, 10, 4]
-        self.assertAlmostEqual(f.membership(p), 0.15173524)
+        self.assertAlmostEqual(f.membership_of(p), 0.15173524)
         
     def test_membership_outside_two_cuboids_infinity(self):
         cs.init(4, {0:[0,1], 1:[2,3]})
@@ -167,7 +167,7 @@ class TestConcept(unittest.TestCase):
         
         f = Concept(s, 1.0, 2.0, w)  
         p = [4, 4, 10, 4]
-        self.assertAlmostEqual(f.membership(p), 0.18515757)
+        self.assertAlmostEqual(f.membership_of(p), 0.18515757)
     
     # __eq__(), __ne__()
     def test_eq_ne_no_concept(self):
@@ -217,7 +217,7 @@ class TestConcept(unittest.TestCase):
         self.assertFalse(f3 == f2)
         self.assertTrue(f3 != f2)
      
-    # unify()
+    # unify_with()
     def test_unify_no_repair_no_params(self):
         cs.init(3, {0:[0], 1:[1,2]})
         c1 = Cuboid([1,2,3],[7,8,9], {0:[0], 1:[1,2]})
@@ -228,8 +228,8 @@ class TestConcept(unittest.TestCase):
         f = Concept(Core([c1], {0:[0], 1:[1,2]}), 1.0, 2.0, w) 
         f2 = Concept(Core([c2], {0:[0], 1:[1,2]}), 1.0, 2.0, w)
         f_res = Concept(Core([c1,c2], {0:[0], 1:[1,2]}), 1.0, 2.0, w)
-        self.assertEqual(f.unify(f2), f_res)
-        self.assertEqual(f2.unify(f), f_res)
+        self.assertEqual(f.unify_with(f2), f_res)
+        self.assertEqual(f2.unify_with(f), f_res)
 
     def test_unify_no_repair_params(self):
         cs.init(3, {0:[0], 1:[1,2]})
@@ -245,8 +245,8 @@ class TestConcept(unittest.TestCase):
         f = Concept(Core([c1], {0:[0], 1:[1,2]}), 1.0, 5.2, w) 
         f2 = Concept(Core([c2], {0:[0], 1:[1,2]}), 0.5, 2.5, w2)
         f_res = Concept(Core([c1,c2], {0:[0], 1:[1,2]}), 1.0, 2.5, w_res)
-        self.assertEqual(f.unify(f2), f_res)
-        self.assertEqual(f2.unify(f), f_res)
+        self.assertEqual(f.unify_with(f2), f_res)
+        self.assertEqual(f2.unify_with(f), f_res)
         
     def test_unify_repair_no_params(self):
         cs.init(3, {0:[0], 1:[1,2]})
@@ -260,8 +260,8 @@ class TestConcept(unittest.TestCase):
         f = Concept(Core([c1], {0:[0], 1:[1,2]}), 1.0, 2.0, w) 
         f2 = Concept(Core([c2], {0:[0], 1:[1,2]}), 1.0, 2.0, w)
         f_res = Concept(Core([c1_res,c2_res], {0:[0], 1:[1,2]}), 1.0, 2.0, w)
-        self.assertEqual(f.unify(f2), f_res)
-        self.assertEqual(f2.unify(f), f_res)
+        self.assertEqual(f.unify_with(f2), f_res)
+        self.assertEqual(f2.unify_with(f), f_res)
         
     def test_unify_identity(self):
         doms = {0:[0,1], 1:[2,3]}
@@ -271,9 +271,9 @@ class TestConcept(unittest.TestCase):
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
         w = Weights(dom, dim)
         f = Concept(s, 1.0, 2.0, w)  
-        self.assertEqual(f, f.unify(f))
+        self.assertEqual(f, f.unify_with(f))
     
-    # cut()
+    # cut_at()
     def test_cut_above(self):
         cs.init(3, {0:[0], 1:[1,2]})
         c1 = Cuboid([1,2,3],[7,8,9], {0:[0], 1:[1,2]})
@@ -283,7 +283,7 @@ class TestConcept(unittest.TestCase):
         dim = {0:{0:1}, 1:{1:3, 2:2.0}}
         w = Weights(dom, dim)
         f1 = Concept(s1, 1.0, 2.0, w)
-        self.assertEqual(f1.cut(0,8.0), (f1, None))
+        self.assertEqual(f1.cut_at(0,8.0), (f1, None))
 
     def test_cut_below(self):
         cs.init(3, {0:[0], 1:[1,2]})
@@ -294,7 +294,7 @@ class TestConcept(unittest.TestCase):
         dim = {0:{0:1}, 1:{1:3, 2:2.0}}
         w = Weights(dom, dim)
         f1 = Concept(s1, 1.0, 2.0, w)
-        self.assertEqual(f1.cut(2,0.0), (None, f1))
+        self.assertEqual(f1.cut_at(2,0.0), (None, f1))
         
     def test_cut_through_center(self):
         cs.init(3, {0:[0], 1:[1,2]})
@@ -316,7 +316,7 @@ class TestConcept(unittest.TestCase):
         up_s = Core([up_c1, up_c2], {0:[0], 1:[1,2]})
         up_f = Concept(up_s, 1.0, 2.0, w)
         
-        self.assertEqual(f1.cut(0, 5), (low_f, up_f))
+        self.assertEqual(f1.cut_at(0, 5), (low_f, up_f))
 
     def test_cut_through_one_cuboid(self):
         cs.init(3, {0:[0], 1:[1,2]})
@@ -337,16 +337,16 @@ class TestConcept(unittest.TestCase):
         up_s = Core([up_c1, up_c2], {0:[0], 1:[1,2]})
         up_f = Concept(up_s, 1.0, 2.0, w)
         
-        self.assertEqual(f1.cut(2, 5), (low_f, up_f))
+        self.assertEqual(f1.cut_at(2, 5), (low_f, up_f))
     
-    # project()
+    # project_onto()
     def test_project_identical_domains(self):
         cs.init(3, {0:[0,1,2]})
         c1 = Cuboid([0,0,0],[2,2,2],{0:[0,1,2]})
         s = Core([c1],{0:[0,1,2]})
         w = Weights({0:1}, {0:{0:0.5, 1:0.3, 2:0.2}})
         f = Concept(s, 1.0, 5.0, w)
-        self.assertEqual(f.project({0:[0,1,2]}), f)
+        self.assertEqual(f.project_onto({0:[0,1,2]}), f)
     
     def test_project_correct(self):
         cs.init(3, {0:[0,1], 1:[2]})
@@ -368,10 +368,10 @@ class TestConcept(unittest.TestCase):
         w_res2 = Weights({1:1}, {1:{2:1}})
         f_res2 = Concept(s_res2, 1.0, 5, w_res2)
         
-        self.assertEqual(f.project({0:[0,1]}), f_res1)
-        self.assertEqual(f.project({1:[2]}), f_res2)
+        self.assertEqual(f.project_onto({0:[0,1]}), f_res1)
+        self.assertEqual(f.project_onto({1:[2]}), f_res2)
 
-    # hypervolume()
+    # size()
     def test_hypervolume_single_cuboid_lemon(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
         cs.init(3, domains)
@@ -381,7 +381,7 @@ class TestConcept(unittest.TestCase):
         w_lemon = Weights({"color":0.5, "shape":0.5, "taste":2.0}, w_dim)
         f_lemon = Concept(s_lemon, 1.0, 20.0, w_lemon)
         
-        self.assertAlmostEqual(f_lemon.hypervolume(), 54.0/4000.0)
+        self.assertAlmostEqual(f_lemon.size(), 54.0/4000.0)
 
     def test_hypervolume_single_cuboid_granny_smith(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -392,7 +392,7 @@ class TestConcept(unittest.TestCase):
         w_granny_smith = Weights({"color":1.0, "shape":1.0, "taste":1.0}, w_dim)
         f_granny_smith = Concept(s_granny_smith, 1.0, 25.0, w_granny_smith)
 
-        self.assertAlmostEqual(f_granny_smith.hypervolume(), 0.004212)
+        self.assertAlmostEqual(f_granny_smith.size(), 0.004212)
 
     def test_hypervolume_single_cuboid_pear(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -403,7 +403,7 @@ class TestConcept(unittest.TestCase):
         w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
         f_pear = Concept(s_pear, 1.0, 10.0, w_pear)
 
-        self.assertAlmostEqual(f_pear.hypervolume(), 0.0561600)
+        self.assertAlmostEqual(f_pear.size(), 0.0561600)
  
     def test_hypervolume_single_cuboid_orange(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -414,7 +414,7 @@ class TestConcept(unittest.TestCase):
         w_orange = Weights({"color":1.0, "shape":1.0, "taste":1.0}, w_dim)
         f_orange = Concept(s_orange, 1.0, 15.0, w_orange)
 
-        self.assertAlmostEqual(f_orange.hypervolume(), 0.01270370)
+        self.assertAlmostEqual(f_orange.size(), 0.01270370)
    
     def test_hypervolume_multiple_cuboids_apple(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -427,9 +427,9 @@ class TestConcept(unittest.TestCase):
         w_apple = Weights({"color":0.50, "shape":1.50, "taste":1.00}, w_dim)
         f_apple = Concept(s_apple, 1.0, 5.0, w_apple)
 
-        self.assertAlmostEqual(f_apple.hypervolume(), 0.3375000)
+        self.assertAlmostEqual(f_apple.size(), 0.3375000)
     
-    # intersect()
+    # intersect_with()
     # coding: {num_cuboids}_{space_dim}_{space_type}_{intersection_type}_{mu}_{weights}_{c}_{alpha}
     def test_intersect_1C_2D_M_crisp_sameMu_sameW_sameC(self):
         doms = {0:[0], 1:[1]}       
@@ -446,8 +446,8 @@ class TestConcept(unittest.TestCase):
         s_res = Core([c_res], doms)
         f_res = Concept(s_res, 1.0, 5.0, w)
         
-        self.assertEqual(f1.intersect(f2), f_res)
-        self.assertEqual(f2.intersect(f1), f_res)
+        self.assertEqual(f1.intersect_with(f2), f_res)
+        self.assertEqual(f2.intersect_with(f1), f_res)
 
     def test_intersect_1C_2D_E_crisp_sameMu_sameW_sameC(self):
         doms = {0:[0,1]}       
@@ -464,8 +464,8 @@ class TestConcept(unittest.TestCase):
         s_res = Core([c_res], doms)
         f_res = Concept(s_res, 0.5, 7.0, w)
         
-        self.assertEqual(f1.intersect(f2), f_res)
-        self.assertEqual(f2.intersect(f1), f_res)
+        self.assertEqual(f1.intersect_with(f2), f_res)
+        self.assertEqual(f2.intersect_with(f1), f_res)
 
     def test_intersect_1C_2D_E_crisp_diffMu_diffW_diffC(self):
         doms = {0:[0,1]}       
@@ -484,8 +484,8 @@ class TestConcept(unittest.TestCase):
         w_res = Weights({0:1}, {0:{0:0.45, 1:0.55}})
         f_res = Concept(s_res, 0.8, 3.0, w_res)
         
-        self.assertEqual(f1.intersect(f2), f_res)
-        self.assertEqual(f2.intersect(f1), f_res)
+        self.assertEqual(f1.intersect_with(f2), f_res)
+        self.assertEqual(f2.intersect_with(f1), f_res)
  
     def test_intersect_1C_2D_E_muOverlap_diffMu_sameW_sameC(self):
         doms = {0:[0,1]}       
@@ -502,8 +502,8 @@ class TestConcept(unittest.TestCase):
         s_res = Core([c_res], doms)
         f_res = Concept(s_res, 0.5, 1.0, w)
         
-        self.assertEqual(f1.intersect(f2), f_res)
-        self.assertEqual(f2.intersect(f1), f_res)
+        self.assertEqual(f1.intersect_with(f2), f_res)
+        self.assertEqual(f2.intersect_with(f1), f_res)
 
     def test_intersect_1C_2D_E_muOverlap_diffMu_sameW_sameC_variant2(self):
         doms = {0:[0,1]}       
@@ -520,8 +520,8 @@ class TestConcept(unittest.TestCase):
         s_res = Core([c_res], doms)
         f_res = Concept(s_res, 0.5, 2.0, w)
         
-        self.assertEqual(f1.intersect(f2), f_res)
-        self.assertEqual(f2.intersect(f1), f_res)
+        self.assertEqual(f1.intersect_with(f2), f_res)
+        self.assertEqual(f2.intersect_with(f1), f_res)
 
     def test_intersect_1C_2D_E_1diffPoints_sameMu_sameW_sameC(self):
         doms = {0:[0,1]}       
@@ -538,8 +538,8 @@ class TestConcept(unittest.TestCase):
         s_res = Core([c_res], doms)
         f_res = Concept(s_res, 0.6427870843, 5.0, w)
         
-        self.assertEqual(f1.intersect(f2), f_res)
-        self.assertEqual(f2.intersect(f1), f_res)
+        self.assertEqual(f1.intersect_with(f2), f_res)
+        self.assertEqual(f2.intersect_with(f1), f_res)
 
     def test_intersect_1C_2D_E_1diffExtrude_sameMu_sameW_sameC(self):
         doms = {0:[0,1]}       
@@ -556,8 +556,8 @@ class TestConcept(unittest.TestCase):
         s_res = Core([c_res], doms)
         f_res = Concept(s_res, 0.6427870843, 5.0, w)
         
-        self.assertEqual(f1.intersect(f2), f_res)
-        self.assertEqual(f2.intersect(f1), f_res)
+        self.assertEqual(f1.intersect_with(f2), f_res)
+        self.assertEqual(f2.intersect_with(f1), f_res)
 
     def test_intersect_1C_2D_E_2diff_diffMu_diffW_diffC(self):
         doms = {0:[0,1]}       
@@ -582,8 +582,8 @@ class TestConcept(unittest.TestCase):
         f_res2 = Concept(s_res2, 0.54293668, 5.0, w_res2)
         
         
-        self.assertEqual(f1.intersect(f2), f_res1)
-        self.assertEqual(f2.intersect(f1), f_res2)
+        self.assertEqual(f1.intersect_with(f2), f_res1)
+        self.assertEqual(f2.intersect_with(f1), f_res2)
 
     def test_intersect_1C_2D_M_2diff_diffMu_diffW_diffC(self):
         doms = {0:[0],1:[1]}       
@@ -607,8 +607,8 @@ class TestConcept(unittest.TestCase):
         w_res2 = Weights({0:(7/12.0), 1:(5/12.0)}, {0:{0:1}, 1:{1:1}})        
         f_res2 = Concept(s_res2, 0.383810816, 5.0, w_res2)
               
-        self.assertEqual(f1.intersect(f2), f_res1)
-        self.assertEqual(f2.intersect(f1), f_res2)
+        self.assertEqual(f1.intersect_with(f2), f_res1)
+        self.assertEqual(f2.intersect_with(f1), f_res2)
 
     def test_intersect_1C_2D_M_2diff_diffMu_sameW_diffC(self):
         doms = {0:[0],1:[1]}       
@@ -632,8 +632,8 @@ class TestConcept(unittest.TestCase):
         w_res2 = Weights({0:2, 1:1}, {0:{0:1}, 1:{1:1}})        
         f_res2 = Concept(s_res2, 0.3723525481, 5.0, w_res2)
         
-        self.assertEqual(f1.intersect(f2), f_res1)
-        self.assertEqual(f2.intersect(f1), f_res2)
+        self.assertEqual(f1.intersect_with(f2), f_res1)
+        self.assertEqual(f2.intersect_with(f1), f_res2)
 
     def test_intersect_2C_2D_M_2diff_sameMu_sameW_sameC_sameAlpha(self):
         doms = {0:[0],1:[1]}       
@@ -661,8 +661,8 @@ class TestConcept(unittest.TestCase):
         w_res2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:1}})        
         f_res2 = Concept(s_res2, 0.1785041281, 10.0, w_res2)
         
-        self.assertEqual(f1.intersect(f2), f_res1)
-        self.assertEqual(f2.intersect(f1), f_res2)
+        self.assertEqual(f1.intersect_with(f2), f_res1)
+        self.assertEqual(f2.intersect_with(f1), f_res2)
 
     def test_intersect_2C_2D_M_2diff_sameMu_sameW_sameC_diffAlpha(self):
         doms = {0:[0],1:[1]}       
@@ -688,8 +688,8 @@ class TestConcept(unittest.TestCase):
         w_res2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:1}})        
         f_res2 = Concept(s_res2, 0.1785041281, 10.0, w_res2)
         
-        self.assertEqual(f1.intersect(f2), f_res1)
-        self.assertEqual(f2.intersect(f1), f_res2)
+        self.assertEqual(f1.intersect_with(f2), f_res1)
+        self.assertEqual(f2.intersect_with(f1), f_res2)
 
     def test_intersect_1C_3D_C_2diffExtrM_sameMu_depW_sameC(self):
         doms = {0:[0,1],1:[2]}       
@@ -713,8 +713,8 @@ class TestConcept(unittest.TestCase):
         w_res2 = Weights({0:1, 1:2}, {0:{0:0.625, 1:0.375}, 1:{2:1}})
         f_res2 = Concept(s_res2, 0.8409747627, 2.0, w_res2)
         
-        self.assertEqual(f1.intersect(f2), f_res1)
-        self.assertEqual(f2.intersect(f1), f_res2)
+        self.assertEqual(f1.intersect_with(f2), f_res1)
+        self.assertEqual(f2.intersect_with(f1), f_res2)
 
     def test_intersect_1C_3D_C_2diffExtrE_sameMu_depW_sameC(self):
         doms = {0:[0],1:[1,2]}       
@@ -738,8 +738,8 @@ class TestConcept(unittest.TestCase):
         w_res2 = Weights({0:(5/6.0), 1:(7/6.0)}, {0:{0:1}, 1:{1:0.3125, 2:0.6875}})
         f_res2 = Concept(s_res2, 0.7024810437, 2.0, w_res2)
         
-        self.assertEqual(f1.intersect(f2), f_res1)
-        self.assertEqual(f2.intersect(f1), f_res2)
+        self.assertEqual(f1.intersect_with(f2), f_res1)
+        self.assertEqual(f2.intersect_with(f1), f_res2)
 
     def test_intersect_1C_3D_C_3diff_sameMu_sameW_sameC(self):
         doms = {0:[0],1:[1,2]}       
@@ -763,8 +763,8 @@ class TestConcept(unittest.TestCase):
         w_res2 = Weights({0:1.5, 1:0.5}, {0:{0:1}, 1:{1:0.25, 2:0.75}})
         f_res2 = Concept(s_res2, 0.5968175744, 2.0, w_res2)
 
-        self.assertEqual(f1.intersect(f2), f_res1)
-        self.assertEqual(f2.intersect(f1), f_res2)
+        self.assertEqual(f1.intersect_with(f2), f_res1)
+        self.assertEqual(f2.intersect_with(f1), f_res2)
 
     def test_intersect_1C_3D_C_3diff_sameMu_diffW_sameC(self):
         doms = {0:[0],1:[1,2]}       
@@ -788,8 +788,8 @@ class TestConcept(unittest.TestCase):
         w_res2 = Weights({0:1.25, 1:0.75}, {0:{0:1}, 1:{1:0.425, 2:0.575}})
         f_res2 = Concept(s_res2, 0.6617182499, 2.0, w_res2)
 
-        self.assertEqual(f1.intersect(f2), f_res1)
-        self.assertEqual(f2.intersect(f1), f_res2)
+        self.assertEqual(f1.intersect_with(f2), f_res1)
+        self.assertEqual(f2.intersect_with(f1), f_res2)
 
     def test_intersect_2C_3D_C_3diffMuOverlap_diffMu_diffW_diffC_diffAlpha(self):
         doms = {0:[0],1:[1,2]}       
@@ -815,8 +815,8 @@ class TestConcept(unittest.TestCase):
         w_res2 = Weights({0:1.25, 1:0.75}, {0:{0:1}, 1:{1:0.425, 2:0.575}})
         f_res2 = Concept(s_res2, 0.5, 5.0, w_res2)
 
-        self.assertEqual(f1.intersect(f2), f_res1)
-        self.assertEqual(f2.intersect(f1), f_res2)
+        self.assertEqual(f1.intersect_with(f2), f_res1)
+        self.assertEqual(f2.intersect_with(f1), f_res2)
 
     def test_intersect_1C_3D_C_3diffExtr_sameMu_diffW_diffC_2D3Dcuboids(self):
         doms = {0:[0],1:[1,2]}       
@@ -840,8 +840,8 @@ class TestConcept(unittest.TestCase):
         w_res2 = Weights({0:(4.0/3.0), 1:(2.0/3.0)}, {0:{0:1}, 1:{1:0.425, 2:0.575}})
         f_res2 = Concept(s_res2, 0.9099102764, 2.0, w_res2)
 
-        self.assertEqual(f1.intersect(f2), f_res1)
-        self.assertEqual(f2.intersect(f1), f_res2)
+        self.assertEqual(f1.intersect_with(f2), f_res1)
+        self.assertEqual(f2.intersect_with(f1), f_res2)
 
     def test_intersect_1C_3D_C_3diffExtr_sameMu_diffW_diffC_2D1Dcuboids(self):
         doms = {0:[0],1:[1,2]}       
@@ -865,8 +865,8 @@ class TestConcept(unittest.TestCase):
         w_res2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.6, 2:0.4}})
         f_res2 = Concept(s_res2, 1.00, 2.0, w_res2)
 
-        self.assertEqual(f1.intersect(f2), f_res1)
-        self.assertEqual(f2.intersect(f1), f_res2)
+        self.assertEqual(f1.intersect_with(f2), f_res1)
+        self.assertEqual(f2.intersect_with(f1), f_res2)
 
     def test_intersect_apple_pear(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -894,8 +894,8 @@ class TestConcept(unittest.TestCase):
         w_res2 = Weights({"color":0.50, "shape":1.375, "taste":1.125}, w_dim)
         f_res2 = Concept(s_res2, 0.791065315, 5.0, w_res2)
         
-        self.assertEqual(f_apple.intersect(f_pear), f_res1)
-        self.assertEqual(f_pear.intersect(f_apple), f_res2)
+        self.assertEqual(f_apple.intersect_with(f_pear), f_res1)
+        self.assertEqual(f_pear.intersect_with(f_apple), f_res2)
 
     def test_intersect_red_green(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -920,8 +920,8 @@ class TestConcept(unittest.TestCase):
         w_res2 = Weights({"color":1.0}, {"color":{0:1.0}})
         f_res2 = Concept(s_res2, 0.0301973834, 20.0, w_res2)
          
-        self.assertEqual(f_red.intersect(f_green), f_res1)
-        self.assertEqual(f_green.intersect(f_red), f_res2)
+        self.assertEqual(f_red.intersect_with(f_green), f_res1)
+        self.assertEqual(f_green.intersect_with(f_red), f_res2)
 
     def test_intersect_pathological_cones(self):
         doms = {0:[0],1:[1,2]}       
@@ -942,8 +942,8 @@ class TestConcept(unittest.TestCase):
         s_res2 = Core([c_res2], doms)
         f_res2 = Concept(s_res2, 0.8187307531, 1.0, w)
 
-        self.assertEqual(f1.intersect(f2), f_res1)
-        self.assertEqual(f2.intersect(f1), f_res2)
+        self.assertEqual(f1.intersect_with(f2), f_res1)
+        self.assertEqual(f2.intersect_with(f1), f_res2)
         
 
     # subset_of()
@@ -1055,7 +1055,7 @@ class TestConcept(unittest.TestCase):
         
         self.assertAlmostEqual(f_apple.implies(f_red), 0.3333333333333333)
 
-    # similarity()
+    # similarity_to()
     def test_similarity_naive_symmetric(self):
         doms = {0:[0],1:[1,2]}       
         cs.init(3, doms)
@@ -1067,8 +1067,8 @@ class TestConcept(unittest.TestCase):
         f1 = Concept(s1, 1.0, 1.0, w)
         f2 = Concept(s2, 1.0, 1.0, w)
         
-        self.assertAlmostEqual(f1.similarity(f2, "naive"), 0.3011942119122)
-        self.assertAlmostEqual(f2.similarity(f1, "naive"), f1.similarity(f2))
+        self.assertAlmostEqual(f1.similarity_to(f2, "naive"), 0.3011942119122)
+        self.assertAlmostEqual(f2.similarity_to(f1, "naive"), f1.similarity_to(f2))
 
     def test_similarity_naive_asymmetric(self):
         doms = {0:[0],1:[1,2]}       
@@ -1082,8 +1082,8 @@ class TestConcept(unittest.TestCase):
         f1 = Concept(s1, 1.0, 1.0, w1)
         f2 = Concept(s2, 1.0, 2.0, w2)
         
-        self.assertAlmostEqual(f1.similarity(f2, "naive"), 0.061968893864880734)
-        self.assertAlmostEqual(f2.similarity(f1, "naive"), 0.23444817280911917)
+        self.assertAlmostEqual(f1.similarity_to(f2, "naive"), 0.061968893864880734)
+        self.assertAlmostEqual(f2.similarity_to(f1, "naive"), 0.23444817280911917)
     
     def test_similarity_naive_apple_red(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -1099,8 +1099,8 @@ class TestConcept(unittest.TestCase):
         w_red = Weights({"color":1.0}, {"color":{0:1.0}})
         f_red = Concept(s_red, 1.0, 20.0, w_red)
         
-        self.assertAlmostEqual(f_apple.similarity(f_red), 0.018315638888734196)
-        self.assertAlmostEqual(f_red.similarity(f_apple), 0.3678794411714424)
+        self.assertAlmostEqual(f_apple.similarity_to(f_red), 0.018315638888734196)
+        self.assertAlmostEqual(f_red.similarity_to(f_apple), 0.3678794411714424)
 
     # between()
     def test_between_naive(self):

@@ -67,7 +67,7 @@ class Weights:
     def __ne__(self, other):
         return not self.__eq__(other)
     
-    def merge(self, other, s = 0.5, t = 0.5):
+    def merge_with(self, other, s = 0.5, t = 0.5):
         """Merge two weights, using the parameters s and t to interpolate between domain and dimension weights, respectively."""
         
         dom_weights = {}
@@ -93,7 +93,7 @@ class Weights:
         
         return Weights(dom_weights, dim_weights)
     
-    def project(self, new_domains):
+    def project_onto(self, new_domains):
         """Projects this set of weights onto a subset of domains."""
 
         dom_weights = {}

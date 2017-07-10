@@ -51,7 +51,7 @@ class Concept:
     def __ne__(self, other):
         return not self.__eq__(other)
     
-    def membership(self, point):
+    def membership_of(self, point):
         """Computes the membership of the point in this concept."""
         
         min_distance = reduce(min, map(lambda x: cs.distance(x, point, self._weights), self._core.find_closest_point_candidates(point)))
@@ -95,7 +95,7 @@ class Concept:
     def _intersect_fuzzy_cuboids(self, c1, c2, other):
         """Find the highest intersection of the two cuboids (c1 from this, c2 from the other concept)."""
         
-        crisp_intersection = c1.intersect(c2)
+        crisp_intersection = c1.intersect_with(c2)
         if (crisp_intersection != None):  # crisp cuboids already intersect
             return min(self._mu, other._mu), crisp_intersection
         
@@ -282,7 +282,7 @@ class Concept:
         
         return mu, cuboid
 
-    def intersect(self, other):
+    def intersect_with(self, other):
         """Computes the intersection of two concepts."""
 
         if not isinstance(other, Concept):
@@ -302,38 +302,38 @@ class Concept:
         
         # calculate new c and new weights
         c = min(self._c, other._c)
-        weights = self._weights.merge(other._weights, 0.5, 0.5)
+        weights = self._weights.merge_with(other._weights, 0.5, 0.5)
         
         return Concept(core, mu, c, weights)
 
-    def unify(self, other):
+    def unify_with(self, other):
         """Computes the union of two concepts."""
 
         if not isinstance(other, Concept):
             raise Exception("Not a valid concept")
         
-        core = self._core.unify(other._core) 
+        core = self._core.unify_with(other._core) 
         mu = max(self._mu, other._mu)
         c = min(self._c, other._c)
-        weights = self._weights.merge(other._weights, 0.5, 0.5)
+        weights = self._weights.merge_with(other._weights, 0.5, 0.5)
         
         return Concept(core, mu, c, weights)
         
-    def project(self, domains):
+    def project_onto(self, domains):
         """Computes the projection of this concept onto a subset of domains."""
         
         # no explicit check for domains - Core will take care of this
-        new_core = self._core.project(domains)
-        new_weights = self._weights.project(domains)
+        new_core = self._core.project_onto(domains)
+        new_weights = self._weights.project_onto(domains)
         
         return Concept(new_core, self._mu, self._c, new_weights)
 
-    def cut(self, dimension, value):
+    def cut_at(self, dimension, value):
         """Computes the result of cutting this concept into two parts (at the given value on the given dimension).
         
         Returns the lower part and the upper part as a tuple (lower, upper)."""
         
-        lower_core, upper_core = self._core.cut(dimension, value)
+        lower_core, upper_core = self._core.cut_at(dimension, value)
         lower_concept = None if lower_core == None else Concept(lower_core, self._mu, self._c, self._weights)
         upper_concept = None if upper_core == None else Concept(upper_core, self._mu, self._c, self._weights)
         
@@ -391,7 +391,7 @@ class Concept:
             outer_sum += inner_sum
         return factor * outer_sum
 
-    def hypervolume(self):
+    def size(self):
         """Computes the hypervolume of this concept."""
         
         hypervolume = 0.0
@@ -405,7 +405,7 @@ class Concept:
             for subset in subsets:
                 intersection = subset[0]
                 for cuboid in subset:
-                    intersection = intersection.intersect(cuboid)
+                    intersection = intersection.intersect_with(cuboid)
                 inner_sum += self._hypervolume_couboid(intersection)
                 
             hypervolume += inner_sum * (-1.0)**(l+1)
@@ -419,15 +419,15 @@ class Concept:
         for dom, dims in self._core._domains.iteritems():
             if dom in other._core._domains and other._core._domains[dom] == dims:
                 common_domains[dom] = dims
-        projected_self = self.project(common_domains)
-        projected_other = other.project(common_domains)
+        projected_self = self.project_onto(common_domains)
+        projected_other = other.project_onto(common_domains)
         
-        intersection = projected_self.intersect(projected_other)
+        intersection = projected_self.intersect_with(projected_other)
         intersection._c = projected_other._c
         intersection._weights = projected_other._weights
         projected_self._c = projected_other._c
         projected_self._weights = projected_other._weights
-        subsethood = intersection.hypervolume() / projected_self.hypervolume()
+        subsethood = intersection.size() / projected_self.size()
         return subsethood
 
     def implies(self, other, method="identity"):
@@ -442,7 +442,7 @@ class Concept:
         else:
             raise Exception("Unknown method")
     
-    def similarity(self, other, method="naive"):
+    def similarity_to(self, other, method="naive"):
         """Computes the similarity of this concept to the given other concept.
         
         Uses right now only the naive point-based approach."""

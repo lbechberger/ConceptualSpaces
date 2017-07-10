@@ -174,108 +174,108 @@ class TestCuboid(unittest.TestCase):
         self.assertFalse(c1 == x)
         self.assertTrue(c1 != x)
 
-    # intersect()
+    # intersect_with()
     def test_intersect_identity(self):
         self._create_cs()
         c = Cuboid([1,2,3],[7,8,9],{0:[0,1,2]})
-        self.assertEqual(c.intersect(c),c)
+        self.assertEqual(c.intersect_with(c),c)
 
     def test_intersect_empty(self):
         self._create_cs()
         c1 = Cuboid([0,0,0],[1,1,1],{0:[0,1,2]})
         c2 = Cuboid([2,2,2],[3,3,3],{0:[0,1,2]})
-        self.assertEqual(c1.intersect(c2), None)
+        self.assertEqual(c1.intersect_with(c2), None)
     
     def test_intersect_3d(self):
         self._create_cs()
         c1 = Cuboid([0,0,0],[2,2,2],{0:[0,1,2]})
         c2 = Cuboid([1,1,1],[3,3,3],{0:[0,1,2]})
         c3 = Cuboid([1,1,1],[2,2,2],{0:[0,1,2]})
-        self.assertEqual(c1.intersect(c2), c3)
+        self.assertEqual(c1.intersect_with(c2), c3)
 
     def test_intersect_2d(self):
         self._create_cs()
         c1 = Cuboid([0,0,0],[2,2,2],{0:[0,1,2]})
         c2 = Cuboid([2,1,1],[3,3,3],{0:[0,1,2]})
         c3 = Cuboid([2,1,1],[2,2,2],{0:[0,1,2]})
-        self.assertEqual(c1.intersect(c2), c3)
+        self.assertEqual(c1.intersect_with(c2), c3)
 
     def test_intersect_1d(self):
         self._create_cs()
         c1 = Cuboid([0,0,0],[2,2,2],{0:[0,1,2]})
         c2 = Cuboid([2,2,1],[3,3,3],{0:[0,1,2]})
         c3 = Cuboid([2,2,1],[2,2,2],{0:[0,1,2]})
-        self.assertEqual(c1.intersect(c2), c3)
+        self.assertEqual(c1.intersect_with(c2), c3)
 
     def test_intersect_0d(self):
         self._create_cs()
         c1 = Cuboid([0,0,0],[2,2,2],{0:[0,1,2]})
         c2 = Cuboid([2,2,2],[3,3,3],{0:[0,1,2]})
         c3 = Cuboid([2,2,2],[2,2,2],{0:[0,1,2]})
-        self.assertEqual(c1.intersect(c2), c3)
+        self.assertEqual(c1.intersect_with(c2), c3)
 
     def test_intersect_commutative(self):
         self._create_cs()
         c1 = Cuboid([0,0,0],[2,2,2],{0:[0,1,2]})
         c2 = Cuboid([1,1,1],[3,3,3],{0:[0,1,2]})
-        self.assertEqual(c1.intersect(c2), c2.intersect(c1))
+        self.assertEqual(c1.intersect_with(c2), c2.intersect_with(c1))
 
     def test_intersect_other_object(self):
         self._create_cs()
         c1 = Cuboid([0,0,0],[2,2,2],{0:[0,1,2]})
         x = 42
         with self.assertRaises(Exception):
-            c1.intersect(x)
+            c1.intersect_with(x)
     
     def test_intersect_one_infinity(self):
         cs.init(3, {0:[0,1], 1:[2]})
         c1 = Cuboid([0,0,float("-inf")],[2,2,float("inf")],{0:[0,1]})
         c2 = Cuboid([2,1,1],[3,3,3],{0:[0,1],1:[2]})
         c3 = Cuboid([2,1,1],[2,2,3],{0:[0,1],1:[2]})
-        self.assertEqual(c1.intersect(c2), c3)
-        self.assertEqual(c1.intersect(c2), c2.intersect(c1))
+        self.assertEqual(c1.intersect_with(c2), c3)
+        self.assertEqual(c1.intersect_with(c2), c2.intersect_with(c1))
 
     def test_intersect_two_infinity_same(self):
         cs.init(3, {0:[0,1], 1:[2]})
         c1 = Cuboid([0,0,float("-inf")],[2,2,float("inf")],{0:[0,1]})
         c2 = Cuboid([2,1,float("-inf")],[3,3,float("inf")],{0:[0,1]})
         c3 = Cuboid([2,1,float("-inf")],[2,2,float("inf")],{0:[0,1]})
-        self.assertEqual(c1.intersect(c2), c3)
-        self.assertEqual(c1.intersect(c2), c2.intersect(c1))
+        self.assertEqual(c1.intersect_with(c2), c3)
+        self.assertEqual(c1.intersect_with(c2), c2.intersect_with(c1))
 
     def test_intersect_two_infinity_different(self):
         cs.init(3, {0:[0], 1:[1], 2:[2]})
         c1 = Cuboid([0,0,float("-inf")],[2,2,float("inf")],{0:[0], 1:[1]})
         c2 = Cuboid([2,float("-inf"),1],[3,float("inf"),3],{0:[0], 2:[2]})
         c3 = Cuboid([2,0,1],[2,2,3],{0:[0], 1:[1], 2:[2]})
-        self.assertEqual(c1.intersect(c2), c3)
-        self.assertEqual(c1.intersect(c2), c2.intersect(c1))
+        self.assertEqual(c1.intersect_with(c2), c3)
+        self.assertEqual(c1.intersect_with(c2), c2.intersect_with(c1))
 
-    # project()
+    # project_onto()
     def test_project_illegal_domains_subdomain(self):
         self._create_cs()
         c1 = Cuboid([0,0,0],[2,2,2],{0:[0,1,2]})
         with self.assertRaises(Exception):
-            c1.project({0:[1,2]})
+            c1.project_onto({0:[1,2]})
     
     def test_project_illegal_domains_other_domain_name(self):
         self._create_cs()
         c1 = Cuboid([0,0,0],[2,2,2],{0:[0,1,2]})
         with self.assertRaises(Exception):
-            c1.project({1:[0,1,2]})
+            c1.project_onto({1:[0,1,2]})
 
     def test_project_identical_domains(self):
         self._create_cs()
         c1 = Cuboid([0,0,0],[2,2,2],{0:[0,1,2]})
-        self.assertEqual(c1.project({0:[0,1,2]}), c1)
+        self.assertEqual(c1.project_onto({0:[0,1,2]}), c1)
     
     def test_project_correct(self):
         cs.init(3, {0:[0,1], 1:[2]})
         c1 = Cuboid([0,1,2],[3,4,5],{0:[0,1], 1:[2]})
         c_res1 = Cuboid([0,1,float("-inf")],[3,4,float("inf")],{0:[0,1]})
         c_res2 = Cuboid([float("-inf"),float("-inf"),2],[float("inf"),float("inf"),5],{1:[2]})
-        self.assertEqual(c1.project({0:[0,1]}), c_res1)
-        self.assertEqual(c1.project({1:[2]}), c_res2)
+        self.assertEqual(c1.project_onto({0:[0,1]}), c_res1)
+        self.assertEqual(c1.project_onto({1:[2]}), c_res2)
         
     # get_closest_points()
     def test_get_closest_points_no_overlap_same_domains(self):

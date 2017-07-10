@@ -66,7 +66,7 @@ class Core:
         
         return map(lambda c: c.find_closest_point(point), self._cuboids)
     
-    def unify(self, other):
+    def unify_with(self, other):
         """Computes the union of this core with another core."""
         
         if not isinstance(other, Core):
@@ -80,7 +80,7 @@ class Core:
         return from_cuboids(extended_list, self._domains)
 
     
-    def cut(self, dimension, value):
+    def cut_at(self, dimension, value):
         """Cuts the given core into two parts (at the given value on the given dimension).
         
         Returns the lower part and the upper part as a tuple (lower, upper)."""
@@ -106,13 +106,13 @@ class Core:
         
         return lower_core, upper_core
     
-    def project(self, new_domains):
+    def project_onto(self, new_domains):
         """Projects this core onto the given set of new domains (must be a subset of the core's current domains)."""
         
         if not all(dom in self._domains.items() for dom in new_domains.items()):
             raise Exception("Illegal set of new domains!")
         
-        projected_cuboids = map(lambda c: c.project(new_domains), self._cuboids)
+        projected_cuboids = map(lambda c: c.project_onto(new_domains), self._cuboids)
         
         return Core(projected_cuboids, new_domains)
 
@@ -120,7 +120,7 @@ class Core:
         """Computes the midpoint of this core's central region."""
         central_region = self._cuboids[0]
         for c in self._cuboids:
-            central_region = central_region.intersect(c)
+            central_region = central_region.intersect_with(c)
         
         midpoint = map(lambda x, y: 0.5*(x + y), central_region._p_min, central_region._p_max)
         return midpoint
@@ -130,7 +130,7 @@ def check(cuboids, domains):
 
     intersection = cuboids[0]
     for c in cuboids:
-        intersection = intersection.intersect(c)
+        intersection = intersection.intersect_with(c)
         if intersection == None:
             return False
 

@@ -101,7 +101,7 @@ class Cuboid:
         dom_union.update(other._domains)
         return all(dom in cs._domains.items() for dom in dom_union.items())
     
-    def intersect(self, other):
+    def intersect_with(self, other):
         """Intersects this cuboid with another one and returns the result as a new cuboid. Returns None if intersection is empty"""
 
         if not self._compatible(other):
@@ -121,7 +121,7 @@ class Cuboid:
         
         return Cuboid(p_min, p_max, dom_union)
         
-    def project(self, new_domains):
+    def project_onto(self, new_domains):
         """Projects this cuboid onto the given domains (which must be a subset of the cuboid's current domains)."""
         
         if not all(dom in self._domains.items() for dom in new_domains.items()):

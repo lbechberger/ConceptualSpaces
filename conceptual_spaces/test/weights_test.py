@@ -82,13 +82,13 @@ class TestWeights(unittest.TestCase):
         self.assertTrue(w != w2)
         self.assertFalse(w == w2)
     
-    # merge()
+    # merge_with()
     def test_merge_identity(self):
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
 
         w = Weights(dom, dim)
-        self.assertEqual(w.merge(w), w)
+        self.assertEqual(w.merge_with(w), w)
     
     def test_merge_fifty_fifty_same_doms(self):
         dom = {0:2, 1:1}        
@@ -103,8 +103,8 @@ class TestWeights(unittest.TestCase):
         dim_res = {0:{0:0.5, 1:0.5}, 1:{2:0.55, 3:0.45}}
         w_res = Weights(dom_res, dim_res)
 
-        self.assertEqual(w.merge(w2), w_res)
-        self.assertEqual(w.merge(w2), w2.merge(w))        
+        self.assertEqual(w.merge_with(w2), w_res)
+        self.assertEqual(w.merge_with(w2), w2.merge_with(w))        
 
     def test_merge_three_to_one_same_doms(self):
         dom = {0:2, 1:1}        
@@ -119,8 +119,8 @@ class TestWeights(unittest.TestCase):
         dim_res = {0:{0:0.5, 1:0.5}, 1:{2:0.575, 3:0.42500000000000004}} # weird rounding error in python!
         w_res = Weights(dom_res, dim_res)
         
-        self.assertEqual(w.merge(w2, 0.75, 0.75), w_res)
-        self.assertEqual(w.merge(w2, 0.75, 0.75), w2.merge(w, 0.25, 0.25))        
+        self.assertEqual(w.merge_with(w2, 0.75, 0.75), w_res)
+        self.assertEqual(w.merge_with(w2, 0.75, 0.75), w2.merge_with(w, 0.25, 0.25))        
 
     def test_merge_overlapping_doms(self):
         dom = {0:2, 1:1}        
@@ -135,8 +135,8 @@ class TestWeights(unittest.TestCase):
         dim_res = {0:{0:0.5, 1:0.5}, 1:{2:0.55, 3:0.45}, 2:{4:0.25, 5:0.25, 6:0.5}}
         w_res = Weights(dom_res, dim_res)
 
-        self.assertEqual(w.merge(w2), w_res)
-        self.assertEqual(w.merge(w2), w2.merge(w))        
+        self.assertEqual(w.merge_with(w2), w_res)
+        self.assertEqual(w.merge_with(w2), w2.merge_with(w))        
 
     def test_merge_different_doms(self):
         dom = {1:1}        
@@ -151,10 +151,10 @@ class TestWeights(unittest.TestCase):
         dim_res = {0:{0:0.5, 1:0.5}, 1:{2:0.6, 3:0.4}}
         w_res = Weights(dom_res, dim_res)
 
-        self.assertEqual(w.merge(w2), w_res)
-        self.assertEqual(w.merge(w2), w2.merge(w))        
+        self.assertEqual(w.merge_with(w2), w_res)
+        self.assertEqual(w.merge_with(w2), w2.merge_with(w))        
         
-    # project()
+    # project_onto()
     def test_project_2_dom_to_1(self):
         dom = {0:2, 1:1}        
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
@@ -164,7 +164,7 @@ class TestWeights(unittest.TestCase):
         dim_res = {0:{0:1, 1:1}}
         w_res = Weights(dom_res, dim_res)
         
-        self.assertEqual(w.project({0:[0,1]}), w_res)
+        self.assertEqual(w.project_onto({0:[0,1]}), w_res)
  
     def test_project_3_dom_to_2(self):
         dom = {0:2, 1:1, 2:3}        
@@ -175,6 +175,6 @@ class TestWeights(unittest.TestCase):
         dim_res = {0:{0:1, 1:1}, 2:{4:1}}
         w_res = Weights(dom_res, dim_res)
         
-        self.assertEqual(w.project({0:[0,1], 2:[4]}), w_res)
+        self.assertEqual(w.project_onto({0:[0,1], 2:[4]}), w_res)
     
 unittest.main()
