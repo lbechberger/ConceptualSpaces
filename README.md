@@ -60,7 +60,7 @@ The folder `demo/images` contains some 2D and 3D visualizations of these concept
 We can display a concept by simply printing it:
 ```python
 print pear
-    core: {\[0.5, 0.4, 0.35\]-\[0.7, 0.6, 0.45\]}
+    core: {[0.5, 0.4, 0.35]-[0.7, 0.6, 0.45]}
     mu: 1.0
     c: 12.0
     weights: <{'color': 0.5, 'taste': 1.25, 'shape': 1.25},{'color': {0: 1.0}, 'taste': {2: 1.0}, 'shape': {1: 1.0}}>
