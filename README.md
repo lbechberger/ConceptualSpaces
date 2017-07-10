@@ -14,8 +14,8 @@ We provide a short overview of our framework in the following sections.
 A conceptual space can be defined as follows:
 ```python
 import cs.cs as space
-domains = {"color":\[0\], "shape":\[1\], "taste":\[2\]}
-space.init\(3, domains\)
+domains = {"color":[0], "shape":[1], "taste":[2]}
+space.init(3, domains)
 ```
 
 The first line imports the module responsible for representing the overall conceptual space.
@@ -29,13 +29,13 @@ The third line initializes the space with the desired number of dimensions and t
 
 We can now define a concept as follows:
 ```python
-c_pear = Cuboid\(\[0.5, 0.4, 0.35\], \[0.7, 0.6, 0.45\], domains\)
-s_pear = Core\(\[c_pear\], domains\)
+c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+s_pear = Core([c_pear], domains)
 w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
-w_pear = Weights\({"color":0.50, "shape":1.25, "taste":1.25}, w_dim\)
-pear = Concept\(s_pear, 1.0, 12.0, w_pear\)
+w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+pear = Concept(s_pear, 1.0, 12.0, w_pear)
 ```
-The first line defines a cuboid with the support points `p_min = \[0.5, 0.4, 0.35\]` and `p_max = \[0.7, 0.6, 0.45\]`. Note that this cuboid is defined on the whole space, as there are values for all three dimensions. This is also the reason why we pass the overall domain structure as a second argument - the cuboid is defined on all domains.
+The first line defines a cuboid with the support points `p_min = [0.5, 0.4, 0.35]` and `p_max = [0.7, 0.6, 0.45]`. Note that this cuboid is defined on the whole space, as there are values for all three dimensions. This is also the reason why we pass the overall domain structure as a second argument - the cuboid is defined on all domains.
 
 The second line builds a core out of this single cuboid. In theory, we can give a list of multiple cuboids as a first parameter to this constructor. The only constraint is that these cuboids need to have a nonempty intersection. We also need again to specify the set of domains on which this core is defined (which in this case is again the whole space).
 
