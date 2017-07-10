@@ -1,5 +1,5 @@
 # ConceptualSpaces
-Implementation of the conceptual spaces framework based on the formalization reported in [Lucas Bechberger and Kai-Uwe Kühnberger. "A Thorough Formalization of Conceptual Spaces". 40th German Conference on Artificial Intelligence, in press].
+Implementation of the conceptual spaces framework based on the formalization reported in [Lucas Bechberger and Kai-Uwe Kühnberger. "A Thorough Formalization of Conceptual Spaces". 40th German Conference on Artificial Intelligence, in press](https://arxiv.org/abs/1706.06366).
 
 ## About
 
