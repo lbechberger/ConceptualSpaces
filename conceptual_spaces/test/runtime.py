@@ -72,7 +72,7 @@ def runtime_intersection(n, num_samples, max_dim_per_domain):
     mean_time = sum(times) / num_samples
     std_time = sqrt(sum(map(lambda x: (x - mean_time)**2, times))/num_samples)
 
-    print "{0},{1},{2},{3},{4}".format(n, min_time*1000, max_time*1000, mean_time*1000, std_time*1000)    
+    print("{0},{1},{2},{3},{4}".format(n, min_time*1000, max_time*1000, mean_time*1000, std_time*1000))
 
 def runtime_hypervolume(n, num_samples, max_dim_per_domain):
     """Computes runtime statistics for the hypervolume operation of concepts.
@@ -111,7 +111,7 @@ def runtime_hypervolume(n, num_samples, max_dim_per_domain):
     mean_time = sum(times) / num_samples
     std_time = sqrt(sum(map(lambda x: (x - mean_time)**2, times))/num_samples)
 
-    print "{0},{1},{2},{3},{4}".format(n, min_time*1000, max_time*1000, mean_time*1000, std_time*1000)    
+    print("{0},{1},{2},{3},{4}".format(n, min_time*1000, max_time*1000, mean_time*1000, std_time*1000))
   
 ####################################################################################################################################  
 # MAIN: here we select what to run at all
@@ -120,13 +120,13 @@ run_hypervolume = False
 list_of_n = [1,2,4,8,16,32,64,128,256,512]
 
 if run_intersection: 
-    print "INTERSECTION"
-    print "n, min_time, max_time, mean_time, std_time"
+    print("INTERSECTION")
+    print("n, min_time, max_time, mean_time, std_time")
     for n in list_of_n:
         runtime_intersection(n, 10000, 5)
 
 if run_hypervolume: 
-    print "HYPERVOLUME"
-    print "n, min_time, max_time, mean_time, std_time"
+    print("HYPERVOLUME")
+    print("n, min_time, max_time, mean_time, std_time")
     for n in list_of_n:
         runtime_hypervolume(n, 10000, 5)
