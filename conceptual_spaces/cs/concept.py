@@ -430,17 +430,10 @@ class Concept:
         subsethood = intersection.size() / projected_self.size()
         return subsethood
 
-    def implies(self, other, method="identity"):
-        """Computes the degree of implication between this concept and a given other concept.
+    def implies(self, other):
+        """Computes the degree of implication between this concept and a given other concept."""
         
-        Possible methods: 'identity' (used as default), 'squared'"""
-        
-        if method == "identity":
-            return self.subset_of(other)
-        elif method == "squared":
-            return self.subset_of(other)**2
-        else:
-            raise Exception("Unknown method")
+        return self.subset_of(other)
     
     def similarity_to(self, other, method="naive"):
         """Computes the similarity of this concept to the given other concept.
