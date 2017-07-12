@@ -1,4 +1,6 @@
 # ConceptualSpaces
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.825459.svg)](https://doi.org/10.5281/zenodo.825459)
+
 Implementation of the conceptual spaces framework based on the formalization reported in [Lucas Bechberger and Kai-Uwe Kühnberger. "A Thorough Formalization of Conceptual Spaces". 40th German Conference on Artificial Intelligence, in press](https://arxiv.org/abs/1706.06366) and [Lucas Bechberger and Kai-Uwe Kühnberger. "Measuring Relations Between Concepts In Conceptual Spaces". submitted to 37th SGAI International Conference on Artificial Intelligence, under review](https://arxiv.org/abs/1707.02292).
 
 ## About
