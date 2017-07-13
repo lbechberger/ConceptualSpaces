@@ -1056,6 +1056,8 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(f_apple.implies(f_red), 0.3333333333333333)
 
     # similarity_to()
+
+    # 'naive'
     def test_similarity_naive_symmetric(self):
         doms = {0:[0],1:[1,2]}       
         cs.init(3, doms)
@@ -1099,9 +1101,406 @@ class TestConcept(unittest.TestCase):
         w_red = Weights({"color":1.0}, {"color":{0:1.0}})
         f_red = Concept(s_red, 1.0, 20.0, w_red)
         
-        self.assertAlmostEqual(f_apple.similarity_to(f_red), 0.018315638888734196)
-        self.assertAlmostEqual(f_red.similarity_to(f_apple), 0.3678794411714424)
+        self.assertAlmostEqual(f_apple.similarity_to(f_red, "naive"), 0.018315638888734196)
+        self.assertAlmostEqual(f_red.similarity_to(f_apple, "naive"), 0.3678794411714424)
 
+    def test_similarity_naive_identity(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertEqual(f1.similarity_to(f1, "naive"), 1.0)
+        self.assertEqual(f2.similarity_to(f2, "naive"), 1.0)
+
+    # 'Jaccard'
+    def test_similarity_Jaccard(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.50,0.60], doms)
+        c2 = Cuboid([0.40,0.40,0.60],[1.00,1.00,1.00], doms)
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1.00, 1:1.00}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertAlmostEqual(f1.similarity_to(f2, "Jaccard"), 0.2969857943280167)
+        self.assertAlmostEqual(f2.similarity_to(f1, "Jaccard"), 0.4940939754738745)
+
+    def test_similarity_Jaccard_no_overlap(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.30,0.10], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertAlmostEqual(f1.similarity_to(f2, "Jaccard"), 0.18320509717302705)
+        self.assertAlmostEqual(f2.similarity_to(f1, "Jaccard"), 0.307282681624636)
+    
+    def test_similarity_Jaccard_identity(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertEqual(f1.similarity_to(f1, "Jaccard"), 1.0)
+        self.assertEqual(f2.similarity_to(f2, "Jaccard"), 1.0)
+        
+    # 'subset'
+    def test_similarity_subset(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        f_pear = Concept(s_pear, 1.0, 10.0, w_pear)
+        
+        c_apple_1 = Cuboid([0.5, 0.65, 0.35], [0.8, 0.8, 0.5], domains)
+        c_apple_2 = Cuboid([0.65, 0.65, 0.4], [0.85, 0.8, 0.55], domains)
+        c_apple_3 = Cuboid([0.7, 0.65, 0.45], [1.0, 0.8, 0.6], domains)
+        s_apple = Core([c_apple_1, c_apple_2, c_apple_3], domains)
+        w_apple = Weights({"color":0.50, "shape":1.50, "taste":1.00}, w_dim)
+        f_apple = Concept(s_apple, 1.0, 5.0, w_apple)
+        
+        self.assertAlmostEqual(f_pear.subset_of(f_apple), 0.4520373228571429)
+        self.assertAlmostEqual(f_apple.subset_of(f_pear), 0.19069907388897037)
+
+    def test_similarity_subset_identity(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertEqual(f1.similarity_to(f1, "subset"), 1.0)
+        self.assertEqual(f2.similarity_to(f2, "subset"), 1.0)
+
+    # 'min_core'
+    def test_similarity_min_core(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.00,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertAlmostEqual(f1.similarity_to(f2, "min_core"), 0.20316732)
+        self.assertAlmostEqual(f2.similarity_to(f1, "min_core"), 0.4636068)
+
+    def test_similarity_min_core_identity(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertEqual(f1.similarity_to(f1, "min_core"), 1.0)
+        self.assertEqual(f2.similarity_to(f2, "min_core"), 1.0)
+
+    # 'max_core'
+    def test_similarity_max_core(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertAlmostEqual(f1.similarity_to(f2, "max_core"), 0.018315638888734186)
+        self.assertAlmostEqual(f2.similarity_to(f1, "max_core"), 0.1353352832366127)
+
+    # 'Hausdorff_core'
+    def test_similarity_Hausdorff_core(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertAlmostEqual(f1.similarity_to(f2, "Hausdorff_core"), 0.05767125507091008)
+        self.assertAlmostEqual(f2.similarity_to(f1, "Hausdorff_core"), 0.23753581495253084)
+    
+    def test_similarity_Hausdorff_core_identity(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertEqual(f1.similarity_to(f1, "Hausdorff_core"), 1.0)
+        self.assertEqual(f2.similarity_to(f2, "Hausdorff_core"), 1.0)
+        
+    # 'min_membership_core'
+    def test_similarity_min_membership_core(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertAlmostEqual(f1.similarity_to(f2, "min_membership_core"), 0.05767125507091008)
+        self.assertAlmostEqual(f2.similarity_to(f1, "min_membership_core"), 0.23753581495253084)            
+
+    def test_similarity_min_membership_core_identity(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertEqual(f1.similarity_to(f1, "min_membership_core"), 1.0)
+        self.assertEqual(f2.similarity_to(f2, "min_membership_core"), 1.0)
+
+    # 'max_membership_core'
+    def test_similarity_max_membership_core(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertAlmostEqual(f1.similarity_to(f2, "max_membership_core"), 0.20316732)
+        self.assertAlmostEqual(f2.similarity_to(f1, "max_membership_core"), 0.4636068)            
+
+    def test_similarity_max_membership_core_identity(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertEqual(f1.similarity_to(f1, "max_membership_core"), 1.0)
+        self.assertEqual(f2.similarity_to(f2, "max_membership_core"), 1.0)
+    
+    # 'min_center'
+    def test_similarity_min_center(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.00,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertAlmostEqual(f1.similarity_to(f2, "min_center"), 0.12045065174829248)
+        self.assertAlmostEqual(f2.similarity_to(f1, "min_center"), 0.35263265020521906)
+
+    def test_similarity_min_center_identity(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertEqual(f1.similarity_to(f1, "min_center"), 1.0)
+        self.assertEqual(f2.similarity_to(f2, "min_center"), 1.0)
+
+    # 'max_center'
+    def test_similarity_max_center(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertAlmostEqual(f1.similarity_to(f2, "max_center"), 0.021236669082903312)
+        self.assertAlmostEqual(f2.similarity_to(f1, "max_center"), 0.14737115075690613)
+    
+    # 'Hausdorff_center'
+    def test_similarity_Hausdorff_center(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertAlmostEqual(f1.similarity_to(f2, "Hausdorff_center"), 0.03868624516619911)
+        self.assertAlmostEqual(f2.similarity_to(f1, "Hausdorff_center"), 0.1845063669249684)
+
+    def test_similarity_Hausdorff_center_identity(self):
+        doms = {0:[0],1:[1,2]}
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertEqual(f1.similarity_to(f1, "Hausdorff_center"), 1.0)
+        self.assertEqual(f2.similarity_to(f2, "Hausdorff_center"), 1.0)
+    
+    # 'min_membership_center'
+    def test_similarity_min_membership_center(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertAlmostEqual(f1.similarity_to(f2, "min_membership_center"), 0.0663008293667595)
+        self.assertAlmostEqual(f2.similarity_to(f1, "min_membership_center"), 0.23753581495253084)
+        
+    def test_similarity_min_membership_center_identity(self):
+        doms = {0:[0],1:[1,2]}
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertEqual(f1.similarity_to(f1, "min_membership_center"), 1.0)
+        self.assertEqual(f2.similarity_to(f2, "min_membership_center"), 1.0)
+
+    # 'max_membership_center'
+    def test_similarity_max_membership_center(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertAlmostEqual(f1.similarity_to(f2, "max_membership_center"), 0.12045065174829248)
+        self.assertAlmostEqual(f2.similarity_to(f1, "max_membership_center"), 0.4636068)
+        
+    def test_similarity_max_membership_center_identity(self):
+        doms = {0:[0],1:[1,2]}
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertEqual(f1.similarity_to(f1, "max_membership_center"), 1.0)
+        self.assertEqual(f2.similarity_to(f2, "max_membership_center"), 1.0)
+    
     # between()
     def test_between_naive(self):
         doms = {0:[0],1:[1,2]}       

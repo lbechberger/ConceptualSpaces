@@ -389,5 +389,29 @@ class TestCore(unittest.TestCase):
         self.assertTrue(isnan(s.midpoint()[0]))
         self.assertEqual(s.midpoint()[1], 3.0)
         self.assertEqual(s.midpoint()[2], 3.5)
+    
+    # get_center()
+    def test_get_center_single_cuboid(self):
+        cs.init(3, {0:[0,1,2]})
+        c = Cuboid([1,2,3], [4,5,6], {0:[0,1,2]})
+        s = Core([c], {0:[0,1,2]})
+        self.assertEqual(c, s.get_center())
+    
+    def test_get_center_three_cuboids(self):
+        cs.init(3, {0:[0], 1:[1,2]})
+        c1 = Cuboid([1,2,3], [4,5,6], {0:[0], 1:[1,2]})
+        c2 = Cuboid([3,2,1], [6,5,4], {0:[0], 1:[1,2]})
+        c3 = Cuboid([1,3,2], [5,4,6], {0:[0], 1:[1,2]})
+        s = Core([c1,c2,c3], {0:[0], 1:[1,2]})
+        c_res = Cuboid([3,3,3], [4,4,4], {0:[0], 1:[1,2]})
+        self.assertEqual(s.get_center(), c_res)
+    
+    def test_get_center_two_cuboids_infinity(self):
+        cs.init(3, {0:[0], 1:[1,2]})
+        c1 = Cuboid([-float("inf"),2,3], [float("inf"),5,6], {1:[1,2]})
+        c2 = Cuboid([-float("inf"),1,1], [float("inf"),4,4], {1:[1,2]})
+        s = Core([c1,c2], {1:[1,2]})
+        c_res = Cuboid([-float("inf"),2,3], [float("inf"),4,4], {1:[1,2]})
+        self.assertEqual(s.get_center(), c_res)
 
 unittest.main()

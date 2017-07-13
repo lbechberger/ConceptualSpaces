@@ -330,4 +330,18 @@ class TestCuboid(unittest.TestCase):
         self.assertEqual(a, a2)
         self.assertEqual(b, b2)
 
+    # get_most_distant_points()
+    def test_get_most_distant_points_same_domains(self):
+        self._create_cs()
+        c1 = Cuboid([0,4,1],[2,5,6], {0:[0,1,2]})
+        c2 = Cuboid([1,1,2],[3,3,3], {0:[0,1,2]})
+        a_res = [0,5,6]
+        b_res = [3,1,2]
+        a, b = c1.get_most_distant_points(c2)
+        b2, a2 = c2.get_most_distant_points(c1)
+        self.assertEqual(a, a_res)
+        self.assertEqual(b, b_res)
+        self.assertEqual(a, a2)
+        self.assertEqual(b, b2)       
+
 unittest.main()

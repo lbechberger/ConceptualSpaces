@@ -71,6 +71,26 @@ class Cuboid:
 
         return a, b
 
+    def get_most_distant_points(self, other):
+        """Computes most distant points a in this and b in the other cuboid."""
+        a = []
+        b = []
+
+        for i in range(len(self._p_min)):
+            
+            # just brute force all combinations - most distance will always involve min and max points
+            dist_min_max = abs(self._p_min[i] - other._p_max[i])
+            dist_max_min = abs(self._p_max[i] - other._p_min[i])
+            
+            if dist_min_max > dist_max_min:
+                a.append(self._p_min[i])
+                b.append(other._p_max[i])
+            else:
+                a.append(self._p_max[i])
+                b.append(other._p_min[i])
+        
+        return a, b
+
     def __eq__(self, other):
         if isinstance(other, Cuboid):
             p_min_equal = reduce(lambda x,y: x and y, map(cs.equal, self._p_min, other._p_min))

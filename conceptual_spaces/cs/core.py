@@ -118,12 +118,17 @@ class Core:
 
     def midpoint(self):
         """Computes the midpoint of this core's central region."""
+        central_region = self.get_center()
+        midpoint = map(lambda x, y: 0.5*(x + y), central_region._p_min, central_region._p_max)
+        return midpoint
+        
+    def get_center(self):
+        """Computes the central region P of this core (i.e., the intersection of all cuboids)."""
         central_region = self._cuboids[0]
         for c in self._cuboids:
             central_region = central_region.intersect_with(c)
         
-        midpoint = map(lambda x, y: 0.5*(x + y), central_region._p_min, central_region._p_max)
-        return midpoint
+        return central_region
 
 def check(cuboids, domains):
     """Asserts that the intersection of all cuboids is nonempty and that they are defined on the same domains"""
