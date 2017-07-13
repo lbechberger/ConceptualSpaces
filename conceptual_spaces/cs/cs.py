@@ -102,16 +102,26 @@ def delete_concept(key):
     if key in this._concepts:
         del this._concepts[key]
 
-def between(first, middle, second, method="crisp"):
+def between(first, middle, second, weights=None, method="crisp"):
     """Computes the betweenness relation between the three given points.
     
     Right now only uses the crisp definition of betweenness (returns either 1.0 or 0.0)."""
+    
+    if weights == None:
+        weights = this._no_weights
     
     if method == "crisp":
         if (distance(first, middle, this._no_weights) + distance(middle, second, this._no_weights) - distance(first, second, this._no_weights)) < 0.00001:
             return 1.0
         else:
             return 0.0
+
+    elif method == "soft":
+        d1 = distance(first, middle, weights)
+        d2 = distance(middle, second, weights)
+        d3 = distance(first, second, weights)
+        return d3 / (d1 + d2)
+    
     else:
         raise Exception("Unknown method")
 

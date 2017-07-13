@@ -173,6 +173,7 @@ class TestConceptualSpace(unittest.TestCase):
         self.assertEqual(len(space._concepts), 0)
         
     # between()
+    # 'crisp'
     def test_between_crisp_4D2dom(self):
         space.init(4, {0:[0,1], 1:[2,3]})
         first = [0,0,0,0]
@@ -223,6 +224,109 @@ class TestConceptualSpace(unittest.TestCase):
         self.assertEqual(space.between(second,middle2,first, method="crisp"), 1.0)
         self.assertEqual(space.between(second,middle3,first, method="crisp"), 1.0)
         self.assertEqual(space.between(second,middle4,first, method="crisp"), 0.0)
+
+    # 'soft'
+    def test_between_soft_4D2dom(self):
+        space.init(4, {0:[0,1], 1:[2,3]})
+        first = [0,0,0,0]
+        middle1 = [0.5,1,0.5,0.75]
+        middle2 = [0.5,1,1,1.5]
+        middle3 = [0.5,0.5,1,1.5]
+        middle4 = [0.5,1,1,3.5]
+        middle5 = [2,3,4,5]
+        second = [1,2,2,3]
+        dom = {0:2, 1:1}        
+        dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
+        w = Weights(dom, dim)
+        self.assertAlmostEqual(space.between(first,middle1,second, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(first,middle2,second, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(first,middle3,second, method="soft"), 0.991147026)
+        self.assertAlmostEqual(space.between(first,middle4,second, method="soft"), 0.835214212)
+        self.assertAlmostEqual(space.between(first,middle5,second, method="soft"), 0.409900333)
+        self.assertAlmostEqual(space.between(second,middle1,first, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(second,middle2,first, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(second,middle3,first, method="soft"), 0.991147026)
+        self.assertAlmostEqual(space.between(second,middle4,first, method="soft"), 0.835214212)
+        self.assertAlmostEqual(space.between(second,middle5,first, method="soft"), 0.409900333)
+        
+        self.assertAlmostEqual(space.between(first,middle1,second, weights=w, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(first,middle2,second, weights=w, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(first,middle3,second, weights=w, method="soft"), 0.9870214460987412)
+        self.assertAlmostEqual(space.between(first,middle4,second, weights=w, method="soft"), 0.8845584238298809)
+        self.assertAlmostEqual(space.between(first,middle5,second, weights=w, method="soft"), 0.4148810445825626)
+        self.assertAlmostEqual(space.between(second,middle1,first, weights=w, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(second,middle2,first, weights=w, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(second,middle3,first, weights=w, method="soft"), 0.9870214460987412)
+        self.assertAlmostEqual(space.between(second,middle4,first, weights=w, method="soft"), 0.8845584238298809)
+        self.assertAlmostEqual(space.between(second,middle5,first, weights=w, method="soft"), 0.4148810445825626)
+        
+    def test_between_soft_4D1dom(self):
+        space.init(4, {0:[0,1,2,3]})
+        first = [0,0,0,0]
+        middle1 = [0.5,1,0.5,0.75]
+        middle2 = [0.5,1,1,1.5]
+        middle3 = [0.5,0.5,1,1.5]
+        middle4 = [0.5,1,1,3.5]
+        middle5 = [2,3,4,5]
+        second = [1,2,2,3]
+        dom = {0:1}        
+        dim = {0:{0:1, 1:1, 2:3, 3:2.0}}
+        w = Weights(dom, dim)
+        self.assertAlmostEqual(space.between(first,middle1,second, method="soft"), 0.972566185)
+        self.assertAlmostEqual(space.between(first,middle2,second, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(first,middle3,second, method="soft"), 0.978828304)
+        self.assertAlmostEqual(space.between(first,middle4,second, method="soft"), 0.787274206)
+        self.assertAlmostEqual(space.between(first,middle5,second, method="soft"), 0.403647878)
+        self.assertAlmostEqual(space.between(second,middle1,first, method="soft"), 0.972566185)
+        self.assertAlmostEqual(space.between(second,middle2,first, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(second,middle3,first, method="soft"), 0.978828304)
+        self.assertAlmostEqual(space.between(second,middle4,first, method="soft"), 0.787274206)
+        self.assertAlmostEqual(space.between(second,middle5,first, method="soft"), 0.403647878)
+
+        self.assertAlmostEqual(space.between(first,middle1,second, weights=w, method="soft"), 0.981903451)
+        self.assertAlmostEqual(space.between(first,middle2,second, weights=w, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(first,middle3,second, weights=w, method="soft"), 0.987543202)
+        self.assertAlmostEqual(space.between(first,middle4,second, weights=w, method="soft"), 0.784485287)
+        self.assertAlmostEqual(space.between(first,middle5,second, weights=w, method="soft"), 0.388549374)
+        self.assertAlmostEqual(space.between(second,middle1,first, weights=w, method="soft"), 0.981903451)
+        self.assertAlmostEqual(space.between(second,middle2,first, weights=w, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(second,middle3,first, weights=w, method="soft"), 0.987543202)
+        self.assertAlmostEqual(space.between(second,middle4,first, weights=w, method="soft"), 0.784485287)
+        self.assertAlmostEqual(space.between(second,middle5,first, weights=w, method="soft"), 0.388549374)
+
+    def test_between_soft_4D4dom(self):
+        space.init(4, {0:[0], 1:[1], 2:[2], 3:[3]})
+        first = [0,0,0,0]
+        middle1 = [0.5,1,0.5,0.75]
+        middle2 = [0.5,1,1,1.5]
+        middle3 = [0.5,0.5,1,1.5]
+        middle4 = [0.5,1,1,3.5]
+        middle5 = [2,3,4,5]
+        second = [1,2,2,3]
+        dom = {0:2, 1:1, 2:1, 3:3}        
+        dim = {0:{0:1}, 1:{1:1}, 2:{2:1}, 3:{3:1}}
+        w = Weights(dom, dim)
+        self.assertAlmostEqual(space.between(first,middle1,second, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(first,middle2,second, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(first,middle3,second, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(first,middle4,second, method="soft"), 0.8888888888888888)
+        self.assertAlmostEqual(space.between(first,middle5,second, method="soft"), 0.4)
+        self.assertAlmostEqual(space.between(second,middle1,first, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(second,middle2,first, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(second,middle3,first, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(second,middle4,first, method="soft"), 0.8888888888888888)
+        self.assertAlmostEqual(space.between(second,middle5,first, method="soft"), 0.4)
+    
+        self.assertAlmostEqual(space.between(first,middle1,second, weights=w, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(first,middle2,second, weights=w, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(first,middle3,second, weights=w, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(first,middle4,second, weights=w, method="soft"), 0.833333333)
+        self.assertAlmostEqual(space.between(first,middle5,second, weights=w, method="soft"), 0.405405405)
+        self.assertAlmostEqual(space.between(second,middle1,first, weights=w, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(second,middle2,first, weights=w, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(second,middle3,first, weights=w, method="soft"), 1.0)
+        self.assertAlmostEqual(space.between(second,middle4,first, weights=w, method="soft"), 0.833333333)
+        self.assertAlmostEqual(space.between(second,middle5,first, weights=w, method="soft"), 0.405405405)
     
     # round()
     def test_round(self):
