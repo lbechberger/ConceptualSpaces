@@ -441,6 +441,7 @@ class Concept:
         The following methods are avaliable:
             'naive':                  similarity of cores' midpoints (used as default)
             'Jaccard':                Jaccard similarity index (size of intersection over size of union)
+            'Jaccard_mod':            modified Jaccard similarity index (denominator: self.size() + other.size() - intersection.size())
             'subset':                 use value returned by subset_of()
             'min_core':               similarity based on minimum distance of cores
             'max_core':               similarity based on maximum distance of cores
@@ -480,6 +481,16 @@ class Concept:
             union._weights = other._weights
             
             sim = intersection.size() / union.size()
+            return sim
+        
+        elif method == "Jaccard_mod":
+            intersection = self.intersect_with(other)
+            self_copy = Concept(self._core, self._mu, other._c, other._weights)
+
+            intersection._c = other._c
+            intersection._weights = other._weights  
+            
+            sim = intersection.size() / (self_copy.size() + other.size() - intersection.size())
             return sim
         
         elif method == "subset":

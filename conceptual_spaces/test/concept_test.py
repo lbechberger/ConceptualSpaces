@@ -1166,6 +1166,53 @@ class TestConcept(unittest.TestCase):
         
         self.assertEqual(f1.similarity_to(f1, "Jaccard"), 1.0)
         self.assertEqual(f2.similarity_to(f2, "Jaccard"), 1.0)
+
+    # 'Jaccard_mod'
+    def test_similarity_Jaccard_mod(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.50,0.60], doms)
+        c2 = Cuboid([0.40,0.40,0.60],[1.00,1.00,1.00], doms)
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1.00, 1:1.00}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertAlmostEqual(f1.similarity_to(f2, "Jaccard_mod"), 0.2969857943280167)
+        self.assertAlmostEqual(f2.similarity_to(f1, "Jaccard_mod"), 0.4940939754738745)
+
+    def test_similarity_Jaccard_mod_no_overlap(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.30,0.10], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertAlmostEqual(f1.similarity_to(f2, "Jaccard_mod"), 0.2412730914306646)
+        self.assertAlmostEqual(f2.similarity_to(f1, "Jaccard_mod"), 0.33510692443592327)
+    
+    def test_similarity_Jaccard_mod_identity(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
+        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
+        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2], doms)
+        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
+        f1 = Concept(s1, 1.0, 1.0, w1)
+        f2 = Concept(s2, 1.0, 2.0, w2)
+        
+        self.assertEqual(f1.similarity_to(f1, "Jaccard_mod"), 1.0)
+        self.assertEqual(f2.similarity_to(f2, "Jaccard_mod"), 1.0)
         
     # 'subset'
     def test_similarity_subset(self):
