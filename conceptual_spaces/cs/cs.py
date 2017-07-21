@@ -19,15 +19,18 @@ this = sys.modules[__name__]
 
 this._n_dim = None
 this._domains = None
+this._dim_names = None
 this._concepts = None
 this._no_weights = None
 this._precision_digits = 10
 this._epsilon = 1e-10
 
-def init(n_dim, domains):
+def init(n_dim, domains, dim_names = None):
     """Initializes a conceptual space with the given numer of dimensions and the given set of domains.
     
-    'n_dim' is an integer >= 1 and 'domains' is a dictionary from domain ids to sets of dimensions."""
+    'n_dim' is an integer >= 1 and 'domains' is a dictionary from domain ids to sets of dimensions.
+    The optional argument 'dim_names' contains names for the individual dimensions. Its length must be identical to 'n_dim'.
+    If it is not given, numbered dimension names are generated."""
 
     if n_dim < 1:
         raise Exception("Need at least one dimension")
@@ -38,6 +41,15 @@ def init(n_dim, domains):
     this._n_dim = n_dim
     this._domains = domains
     this._concepts = {}
+    
+    # take care of dimension names
+    if dim_names != None:
+        if len(dim_names) != n_dim:
+            raise Exception("Invalid number of dimension names")
+        else:
+            this._dim_names = dim_names
+    else:
+        this._dim_names = ["dim_{0}".format(i) for i in range(n_dim)]
     
     # construct default weights
     dim_weights = {}
@@ -120,7 +132,7 @@ def between(first, middle, second, weights=None, method="crisp"):
         d1 = distance(first, middle, weights)
         d2 = distance(middle, second, weights)
         d3 = distance(first, second, weights)
-        return d3 / (d1 + d2)
+        return d3 / (d1 + d2) if d1 + d2 > 0 else 1.0
     
     else:
         raise Exception("Unknown method")

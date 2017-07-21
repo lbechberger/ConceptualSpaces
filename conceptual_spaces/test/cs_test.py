@@ -57,6 +57,30 @@ class TestConceptualSpace(unittest.TestCase):
         with self.assertRaises(Exception):        
             space.init(n, domains)
  
+    def test_constructor_no_dim_names(self):
+        n = 4        
+        domains = {0:[0,1], 1:[2,3]}        
+        res_names = ["dim_0", "dim_1", "dim_2", "dim_3"]
+
+        space.init(n, domains)        
+        self.assertEqual(space._dim_names, res_names)
+
+    def test_constructor_dim_names(self):
+        n = 4        
+        domains = {0:[0,1], 1:[2,3]}        
+        dim_names = ["hue", "saturation", "width", "height"]
+
+        space.init(n, domains, dim_names)        
+        self.assertEqual(space._dim_names, dim_names)
+
+    def test_constructor_dim_names_fail(self):
+        n = 4        
+        domains = {0:[0,1], 1:[2,3]}        
+        dim_names = ["hue", "saturation", "width"]
+
+        with self.assertRaises(Exception):
+            space.init(n, domains, dim_names)        
+ 
     # distance()
     def test_distance_illegal_point(self):
         n = 4        
