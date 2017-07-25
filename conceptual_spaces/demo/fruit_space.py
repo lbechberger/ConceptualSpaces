@@ -164,7 +164,7 @@ def demo():
     print("Variables for fruit concepts (with identifiers in parentheses): pear ('pear'), orange ('orange'), lemon ('lemon'), granny_smith ('Granny Smith'), apple ('apple'), banana ('banana')")
     print("Variables for properties: red ('red'), green, ('green'), blue ('blue'), non_sweet ('nonSweet')")
     print("")
-    print("The folder TODO contains some 2D and 3D visualizations of these concepts.")
+    print("The folder 'conceptual_spaces/demo/images' contains some 2D and 3D visualizations of these concepts.")
     wait_for_user()
     
     print("We can display a concept by simply printing it:")
@@ -252,6 +252,18 @@ def demo():
     print("    banana.between(granny_smith, pear)")
     print("        0.0")
     wait_for_user()
+
+    print("Our implementation provides also a visualization tool: The so-called ConceptInspector.")
+    print("You can execute it with the following code:")
+    print("    import visualization.concept_inspector as ci") 
+    print("    ci.init()")
+    print("The first line imports the necessary package.")
+    print("The second line calls the initialization method of the ConceptInspector.")
+    print("The ConceptInspector grabs all information about domains, dimensions, and concepts from the cs module. You should therefore only call 'ci.init()' once you have initialized your conceptual space and created all concepts.")
+    print("The ConceptInspector provides one 3D and three 2D visualizations of the conceptual space. You can interactively change the dimensions used for these visualizations as well as the set of concepts being displayed.")
+    print("If you have added, modified, or removed concepts after your call to 'ci.init()', you can tell the ConceptInspector to update its internal list of concepts:")
+    print("    ci.update()")
+    print("Only when this function is called, the ConceptInspector will update its internal list of concepts based on the concepts stored in the cs module.")
     
     print("This is already the end of our little tour. We hope it gave you an impression of how you can use our framework.")
     print("Feel free to play around with the fruit space a little bit more by typing in your own operations on the given concepts or by defining new ones.")

@@ -136,4 +136,21 @@ apple.between(lemon, orange)
     1.0
 banana.between(granny_smith, pear)
     0.0
+```
+
+### Visualization
+Our implementation provides also a visualization tool: The so-called ConceptInspector (see `conceptual_spaces/visualization/concept_inspector.py`). You can execute it with the following code:
+```python
+import visualization.concept_inspector as ci 
+ci.init()
+```
+The first line imports the necessary package. The second line calls the initialization method of the ConceptInspector.The ConceptInspector grabs all information about domains, dimensions, and concepts from the cs module. You should therefore only call `ci.init()` once you have initialized your conceptual space and created all concepts.
+
+![Screenshot of the ConceptInspector window](conceptual_spaces/demo/images/ConceptInspector.png)
+
+The ConceptInspector provides one 3D and three 2D visualizations of the conceptual space. You can interactively change the dimensions used for these visualizations as well as the set of concepts being displayed. If you have added, modified, or removed concepts after your call to `ci.init()`, you can tell the ConceptInspector to update its internal list of concepts:
+```python
+ci.update()
+```
+Only when this function is called, the ConceptInspector will update its internal list of concepts based on the concepts stored in the cs module.
 
