@@ -28,13 +28,18 @@ this._ax3d = None
 this._ax_2d = None
 this._radios = None
 this._checks = None
+this._checks_ax = None
 this._axis_ranges = None
+this._alpha_2d = None
+this._alpha_3d = None
 this._initialized = False
 
-def _box_data_3d(p_min, p_max, indices):
-    a = indices[0]
-    b = indices[1]
-    c = indices[2]    
+def _cuboid_data_3d(p_min, p_max):
+    """Returns the 3d information necessary for plotting a 3d cuboid."""
+    
+    a = this._current_3d_indices[0]
+    b = this._current_3d_indices[1]
+    c = this._current_3d_indices[2]    
     
     x = [[p_min[a], p_max[a], p_max[a], p_min[a], p_min[a]],  # bottom
          [p_min[a], p_max[a], p_max[a], p_min[a], p_min[a]],  # top
@@ -55,6 +60,8 @@ def _box_data_3d(p_min, p_max, indices):
 
 # TODO: make path for overall concept, not individual cuboids
 def _path_for_cuboid(p_min, p_max):
+    """Creates the 2d path for a cuboid."""
+    
     verts = [p_min, [p_min[0], p_max[1]], p_max, [p_max[0], p_min[1]], p_min]
     codes = [Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.CLOSEPOLY]
     
@@ -63,6 +70,8 @@ def _path_for_cuboid(p_min, p_max):
 
 # TODO: make path for overall alpha-cut, not individual cuboids
 def _path_for_cuboid_alpha_cut(p_min, p_max, epsilon_x, epsilon_y):
+    """Creates the 2d path for a cuboid's alpha-cut."""
+    
     verts = [[p_min[0] - epsilon_x, p_min[1]], [p_min[0] - epsilon_x, p_max[1]],
              [p_min[0], p_max[1] + epsilon_y], [p_max[0], p_max[1] + epsilon_y],
              [p_max[0] + epsilon_x, p_max[1]], [p_max[0] + epsilon_x, p_min[1]], 
@@ -74,6 +83,8 @@ def _path_for_cuboid_alpha_cut(p_min, p_max, epsilon_x, epsilon_y):
     return path
 
 def _init_ax_3d():
+    """Sets up the three-dimensional plot with respect to labels and axis ranges."""
+    
     first_dim = this._dimensions[this._current_3d_indices[0]]
     second_dim = this._dimensions[this._current_3d_indices[1]]
     third_dim = this._dimensions[this._current_3d_indices[2]]
@@ -87,6 +98,8 @@ def _init_ax_3d():
     this._ax_3d.set_zlim(this._axis_ranges[this._current_3d_indices[2]])
 
 def _init_ax_2d(idx):
+    """Sets up a two-dimensional plot with respect to labels and axis ranges."""
+    
     first_dim = this._dimensions[this._current_2d_indices[idx][0]]
     second_dim = this._dimensions[this._current_2d_indices[idx][1]]
     this._ax_2d[idx].clear()
@@ -95,9 +108,43 @@ def _init_ax_2d(idx):
     this._ax_2d[idx].set_xlim(this._axis_ranges[this._current_2d_indices[idx][0]])
     this._ax_2d[idx].set_ylabel(second_dim)
     this._ax_2d[idx].set_ylim(this._axis_ranges[this._current_2d_indices[idx][1]])
+
+def _draw_concept(concept, color, epsilons):
+    """Paints a single concept into all four plots."""
     
+    for cuboid in concept:
+        # plot cuboid in 3d
+        x, y, z = _cuboid_data_3d(cuboid[0], cuboid[1])
+        this._ax_3d.plot_surface(x, y, z, color=color, rstride=1, cstride=1, alpha=this._alpha_3d)
+        
+        # plot cuboid in 2d projections
+        for i in range(3):
+            idx = this._current_2d_indices[i]
+            cub_path = _path_for_cuboid([cuboid[0][idx[0]], cuboid[0][idx[1]]], [cuboid[1][idx[0]], cuboid[1][idx[1]]])
+            cub_patch = patches.PathPatch(cub_path, facecolor=color, lw=2, alpha=this._alpha_2d)
+            this._ax_2d[i].add_patch(cub_patch)
+            
+            alpha_path = _path_for_cuboid_alpha_cut([cuboid[0][idx[0]], cuboid[0][idx[1]]], [cuboid[1][idx[0]], cuboid[1][idx[1]]], epsilons[idx[0]], epsilons[idx[1]])
+            alpha_patch = patches.PathPatch(alpha_path, facecolor='none', edgecolor=color, linestyle='dashed')
+            this._ax_2d[i].add_patch(alpha_patch)
+
+def _repaint_everything():
+    """Repaints the whole window."""
+    
+    _init_ax_3d()
+    _init_ax_2d(0)
+    _init_ax_2d(1)
+    _init_ax_2d(2)
+    for concept_name in this._active_concepts:
+        concept, color, epsilons = this._concepts[concept_name]
+        _draw_concept(concept, color, epsilons)
+    this._fig.canvas.draw_idle()
+
+   
 def init():
+    """Initializes the ConceptInspector and displays it."""
     
+    # figure out dimensionality of our space and initialize the plots accordingly
     this._dimensions = list(space._dim_names)
     if len(this._dimensions) >= 3:
         this._current_2d_indices = [(0,1), (0,2), (1,2)]
@@ -109,6 +156,71 @@ def init():
         this._current_2d_indices = [(0,0), (0,0), (0,0)]
         this._current_3d_indices = [0,0,0]
 
+    # create the figure
+    this._fig = plt.figure(figsize=(20,14))
+    this._fig.canvas.set_window_title("ConceptInspector")
+
+    # set up plots    
+    this._ax_3d = this._fig.add_subplot(221, projection='3d')
+    this._ax_2d = []
+    this._ax_2d.append(this._fig.add_subplot(222))
+    this._ax_2d.append(this._fig.add_subplot(223))
+    this._ax_2d.append(this._fig.add_subplot(224))
+
+    # set alpha parameters
+    this._alpha_3d = 0.2    
+    this._alpha_2d = 0.4    
+    
+    # now add radio buttons for selecting dimensions
+    this._fig.subplots_adjust(left=0.2, right=0.98, top=0.95, bottom=0.05)
+    
+    first_dim_radios_ax = this._fig.add_axes([0.025, 0.95 - 0.03 * space._n_dim, 0.12, 0.03 * space._n_dim], axisbg='w') 
+    first_dim_radios_ax.set_title("First dimension")
+    first_dim_radios = RadioButtons(first_dim_radios_ax, this._dimensions, active=0)
+    def first_dim_click_handler(label):
+        idx = this._dimensions.index(label)
+        this._current_2d_indices[0] = (idx, this._current_2d_indices[0][1])
+        this._current_2d_indices[1] = (idx, this._current_2d_indices[1][1])
+        this._current_3d_indices[0] = idx
+        _repaint_everything()
+    first_dim_radios.on_clicked(first_dim_click_handler)
+    
+    second_dim_radios_ax = this._fig.add_axes([0.025, 0.95 - 0.06 * space._n_dim - 0.05, 0.12, 0.03 * space._n_dim], axisbg='w')
+    second_dim_radios_ax.set_title("Second dimension")
+    second_dim_radios = RadioButtons(second_dim_radios_ax, this._dimensions, active=1)
+    def second_dim_click_handler(label):
+        idx = this._dimensions.index(label)
+        this._current_2d_indices[0] = (this._current_2d_indices[0][0], idx)
+        this._current_2d_indices[2] = (idx, this._current_2d_indices[2][1])
+        this._current_3d_indices[1] = idx
+        _repaint_everything()
+        this._fig.canvas.draw_idle()
+    second_dim_radios.on_clicked(second_dim_click_handler)
+
+    third_dim_radios_ax = this._fig.add_axes([0.025, 0.95 - 0.09 * space._n_dim - 0.10, 0.12, 0.03 * space._n_dim], axisbg='w')
+    third_dim_radios_ax.set_title("Third dimension")
+    third_dim_radios = RadioButtons(third_dim_radios_ax, this._dimensions, active=2)
+    def third_dim_click_handler(label):
+        idx = this._dimensions.index(label)
+        this._current_2d_indices[1] = (this._current_2d_indices[1][0], idx)
+        this._current_2d_indices[2] = (this._current_2d_indices[2][0], idx)
+        this._current_3d_indices[2] = idx
+        _repaint_everything()
+    third_dim_radios.on_clicked(third_dim_click_handler)
+
+    this._radios = (first_dim_radios, second_dim_radios, third_dim_radios)    
+    
+    # add area for check boxes (concept selection)
+    this._checks_ax = this._fig.add_axes([0.025, 0.05, 0.12, 0.15], axisbg='w')
+
+    # load all concepts, draw everything, then display the window    
+    update()
+    plt.show()
+
+
+def update():
+    """Updates the list of concepts based on the dictionary of concepts stored in the cs module. Repaints everything. """
+    
     # set up the range for each of the dimensions
     this._axis_ranges = [(float('inf'), -float('inf'))] * space._n_dim
     for concept in space._concepts.values():
@@ -118,8 +230,8 @@ def init():
     # add a little space in each dimensions for the plots
     widths = list(map(lambda x: x[1] - x[0], this._axis_ranges))
     this._axis_ranges = map(lambda x, y: (x[0] - 0.1 * y, x[1] + 0.1 * y), this._axis_ranges, widths)
-    
-    # load the concepts  
+
+    # grab all concepts
     standard_colors = deque(['r', 'g', 'b', 'y', 'purple', 'orange', 'brown', 'gray'])
     this._concepts = {}
     for name in space._concepts.keys():
@@ -153,130 +265,28 @@ def init():
             epsilons.append(eps)
         this._concepts[name] = (cuboids, color, epsilons)
 
-    # create the figure
-    this._fig = plt.figure(figsize=(20,14))
-    this._fig.canvas.set_window_title("ConceptInspector")
+    # in the beginning, all concepts are active
+    if this._active_concepts == None:    
+        this._active_concepts = list(this._concepts.keys())
 
-    # set up 3d plot    
-    this._ax_3d = this._fig.add_subplot(221, projection='3d')
-    _init_ax_3d()
-
-    # set up 2d plots
-    this._ax_2d = []
-    this._ax_2d.append(this._fig.add_subplot(222))
-    _init_ax_2d(0)
-    this._ax_2d.append(this._fig.add_subplot(223))
-    _init_ax_2d(1)
-    this._ax_2d.append(this._fig.add_subplot(224))
-    _init_ax_2d(2)
-
-    alpha_3d = 0.3    
-    alpha_2d = 0.5    
+    # remove deleted concepts from our active list
+    for name in this._active_concepts:
+        if not name in this._concepts:
+            this._active_concepts.remove(name)
     
-    def draw_concept(concept, color, epsilons):
-        for cuboid in concept:
-            # plot cuboid in 3d
-            x, y, z = _box_data_3d(cuboid[0], cuboid[1], this._current_3d_indices)
-            this._ax_3d.plot_surface(x, y, z, color=color, rstride=1, cstride=1, alpha=alpha_3d)
-            
-            # plot cuboid in 2d projections
-            for i in range(3):
-                idx = this._current_2d_indices[i]
-                cub_path = _path_for_cuboid([cuboid[0][idx[0]], cuboid[0][idx[1]]], [cuboid[1][idx[0]], cuboid[1][idx[1]]])
-                cub_patch = patches.PathPatch(cub_path, facecolor=color, lw=2, alpha=alpha_2d)
-                this._ax_2d[i].add_patch(cub_patch)
-                
-                alpha_path = _path_for_cuboid_alpha_cut([cuboid[0][idx[0]], cuboid[0][idx[1]]], [cuboid[1][idx[0]], cuboid[1][idx[1]]], epsilons[idx[0]], epsilons[idx[1]])
-                alpha_patch = patches.PathPatch(alpha_path, facecolor='none', edgecolor=color, linestyle='dashed')
-                this._ax_2d[i].add_patch(alpha_patch)
- 
-    
-    this._active_concepts = list(this._concepts.keys())
-    
-    for concept_name in this._active_concepts:
-        concept, color, epsilons = this._concepts[concept_name]
-        draw_concept(concept, color, epsilons)
-    
-    # now add radio buttons for selecting dimensions
-    this._fig.subplots_adjust(left=0.2, right=0.98, top=0.95, bottom=0.05)
-    
-    first_dim_radios_ax = this._fig.add_axes([0.025, 0.75, 0.1, 0.15], axisbg='w')
-    first_dim_radios_ax.set_title("First dimension")
-    first_dim_radios = RadioButtons(first_dim_radios_ax, this._dimensions, active=0)
-    def first_dim_click_handler(label):
-        idx = this._dimensions.index(label)
-        this._current_2d_indices[0] = (idx, this._current_2d_indices[0][1])
-        this._current_2d_indices[1] = (idx, this._current_2d_indices[1][1])
-        this._current_3d_indices[0] = idx
-        _init_ax_3d()
-        _init_ax_2d(0)
-        _init_ax_2d(1)
-        _init_ax_2d(2)
-        for concept_name in this._active_concepts:
-            concept, color, epsilons = this._concepts[concept_name]
-            draw_concept(concept, color, epsilons)
-        this._fig.canvas.draw_idle()
-    first_dim_radios.on_clicked(first_dim_click_handler)
-    
-    second_dim_radios_ax = this._fig.add_axes([0.025, 0.55, 0.1, 0.15], axisbg='w')
-    second_dim_radios_ax.set_title("Second dimension")
-    second_dim_radios = RadioButtons(second_dim_radios_ax, this._dimensions, active=1)
-    def second_dim_click_handler(label):
-        idx = this._dimensions.index(label)
-        this._current_2d_indices[0] = (this._current_2d_indices[0][0], idx)
-        this._current_2d_indices[2] = (idx, this._current_2d_indices[2][1])
-        this._current_3d_indices[1] = idx
-        _init_ax_3d()
-        _init_ax_2d(0)
-        _init_ax_2d(1)
-        _init_ax_2d(2)
-        for concept_name in this._active_concepts:
-            concept, color, epsilons = this._concepts[concept_name]
-            draw_concept(concept, color, epsilons)
-        this._fig.canvas.draw_idle()
-    second_dim_radios.on_clicked(second_dim_click_handler)
-
-    third_dim_radios_ax = this._fig.add_axes([0.025, 0.35, 0.1, 0.15], axisbg='w')
-    third_dim_radios_ax.set_title("Third dimension")
-    third_dim_radios = RadioButtons(third_dim_radios_ax, this._dimensions, active=2)
-    def third_dim_click_handler(label):
-        idx = this._dimensions.index(label)
-        this._current_2d_indices[1] = (this._current_2d_indices[1][0], idx)
-        this._current_2d_indices[2] = (this._current_2d_indices[2][0], idx)
-        this._current_3d_indices[2] = idx
-        _init_ax_3d()
-        _init_ax_2d(0)
-        _init_ax_2d(1)
-        _init_ax_2d(2)
-        for concept_name in this._active_concepts:
-            concept, color, epsilons = this._concepts[concept_name]
-            draw_concept(concept, color, epsilons)
-        this._fig.canvas.draw_idle()
-    third_dim_radios.on_clicked(third_dim_click_handler)
-
-    this._radios = (first_dim_radios, second_dim_radios, third_dim_radios)    
-    
-    # add check boxes for selecting concepts
-    concept_checks_ax = this._fig.add_axes([0.025, 0.1, 0.1, 0.15], axisbg='w')
-    concept_checks_ax.set_title("Concepts")
-    concept_checks = CheckButtons(concept_checks_ax, list(this._active_concepts), [True]*len(this._concepts.keys()))
-    c = map(lambda x: x[1], list(this._concepts.values()))    # color them nicely
-    [rec.set_facecolor(c[i]) for i, rec in enumerate(concept_checks.rectangles)]
+    # recreate the check boxes
+    this._checks_ax.clear()
+    this._checks_ax.set_position([0.025, 0.95 - 0.09 * space._n_dim - 0.15 - 0.03 * len(this._concepts.keys()), 0.12, 0.03 * len(this._concepts.keys())])
+    this._checks_ax.set_title("Concepts")
+    this._checks = CheckButtons(this._checks_ax, list(sorted(this._concepts.keys())), list(map(lambda x: x in this._active_concepts, list(sorted(this._concepts.keys())))))
+    c = list(map(lambda x: this._concepts[x][1], list(sorted(this._concepts.keys()))))    # color them nicely
+    [rec.set_facecolor(c[i]) for i, rec in enumerate(this._checks.rectangles)]
     def concept_checks_click_handler(label):
         if label in this._active_concepts:
             this._active_concepts.remove(label)
         else:
             this._active_concepts.append(label)
-        _init_ax_3d()
-        _init_ax_2d(0)
-        _init_ax_2d(1)
-        _init_ax_2d(2)
-        for concept_name in this._active_concepts:
-            concept, color, epsilons = this._concepts[concept_name]
-            draw_concept(concept, color, epsilons)
-        this._fig.canvas.draw_idle()
-    concept_checks.on_clicked(concept_checks_click_handler)
+        _repaint_everything()
+    this._checks.on_clicked(concept_checks_click_handler)
     
-    this._checks = concept_checks
-    
-    plt.show()
+    _repaint_everything()    
