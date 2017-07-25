@@ -154,3 +154,13 @@ ci.update()
 ```
 Only when this function is called, the ConceptInspector will update its internal list of concepts based on the concepts stored in the cs module.
 
+The names that are displayed for the different dimensions are taken from the `cs.cs` module. When initializing this module, one can provide an array of dimension names:
+```python
+space.init(doms, 3, ["hue", "round", "sweet"])
+```
+If no such array of dimension names is provided, the ConceptInspector will generate names based on the indices: `dim_0, dim_1, ...`
+Finally, one can also provide for each concept the color with which it should be visualized. This happens when adding a concept to the dictionary:
+```python
+space.add_concept(apple, 'r')
+```
+The ConceptInspector will in this example make sure that the `apple` concept is visualized in red. If no such color is given, the ConceptInspector will loop through a list of predefined colors when drawing the different concepts.
