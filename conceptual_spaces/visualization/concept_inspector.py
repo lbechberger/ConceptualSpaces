@@ -144,6 +144,8 @@ def _repaint_everything():
 def init():
     """Initializes the ConceptInspector and displays it."""
     
+    if this._initialized:   # make sure we can only call init once!
+        return
     # figure out dimensionality of our space and initialize the plots accordingly
     this._dimensions = list(space._dim_names)
     if len(this._dimensions) >= 3:
@@ -214,6 +216,7 @@ def init():
     this._checks_ax = this._fig.add_axes([0.025, 0.05, 0.12, 0.15], axisbg='w')
 
     # load all concepts, draw everything, then display the window    
+    this._initialized = True
     update()
     plt.show()
 
@@ -221,6 +224,8 @@ def init():
 def update():
     """Updates the list of concepts based on the dictionary of concepts stored in the cs module. Repaints everything. """
     
+    if not this._initialized:   # if the figure is not initialized, yet, we cannot update it
+        return
     # set up the range for each of the dimensions
     this._axis_ranges = [(float('inf'), -float('inf'))] * space._n_dim
     for concept in space._concepts.values():
