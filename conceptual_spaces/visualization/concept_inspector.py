@@ -12,6 +12,7 @@ import matplotlib.patches as patches
 from matplotlib.widgets import RadioButtons, CheckButtons
 from collections import deque
 from math import log, sqrt, isinf
+import shapely.geometry
 
 import sys
 sys.path.append("..")
@@ -58,26 +59,47 @@ def _cuboid_data_3d(p_min, p_max):
     
     return x, y, z
 
-# TODO: make path for overall concept, not individual cuboids
-def _path_for_cuboid(p_min, p_max):
-    """Creates the 2d path for a cuboid."""
+def _path_for_core(cuboids, d1, d2):
+    """Creates the 2d path for a complete core."""
+
+    polygon = None    
+    for cuboid in cuboids:
+        p_min = cuboid[0]
+        p_max = cuboid[1]
+        cub = shapely.geometry.box(p_min[d1], p_min[d2], p_max[d1], p_max[d2])
+        if polygon == None:
+            polygon = cub
+        else:
+            polygon = polygon.union(cub)
     
-    verts = [p_min, [p_min[0], p_max[1]], p_max, [p_max[0], p_min[1]], p_min]
-    codes = [Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.CLOSEPOLY]
+    verts = list(polygon.exterior.coords)
+    codes = [Path.LINETO] * len(verts)
+    codes[0] = Path.MOVETO
+    codes[-1] = Path.CLOSEPOLY
     
     path = Path(verts, codes)
     return path
 
-# TODO: make path for overall alpha-cut, not individual cuboids
-def _path_for_cuboid_alpha_cut(p_min, p_max, epsilon_x, epsilon_y):
-    """Creates the 2d path for a cuboid's alpha-cut."""
+def _path_for_core_alpha_cut(cuboids, d1, d2, epsilon1, epsilon2):
+    """Creates the 2d path for a concept's 0.5 cut."""    
+    polygon = None
+    for cuboid in cuboids:
+        p_min = (cuboid[0][d1], cuboid[0][d2])
+        p_max = (cuboid[1][d1], cuboid[1][d2])
+        alphaCuboid = shapely.geometry.Polygon([[p_min[0] - epsilon1, p_min[1]], [p_min[0] - epsilon1, p_max[1]],
+             [p_min[0], p_max[1] + epsilon2], [p_max[0], p_max[1] + epsilon2],
+             [p_max[0] + epsilon1, p_max[1]], [p_max[0] + epsilon1, p_min[1]], 
+             [p_max[0], p_min[1] - epsilon2], [p_min[0], p_min[1] - epsilon2], [p_min[0] - epsilon1, p_min[1]]])
+        
+        if polygon == None:
+            polygon = alphaCuboid
+        else:
+            polygon = polygon.union(alphaCuboid)
     
-    verts = [[p_min[0] - epsilon_x, p_min[1]], [p_min[0] - epsilon_x, p_max[1]],
-             [p_min[0], p_max[1] + epsilon_y], [p_max[0], p_max[1] + epsilon_y],
-             [p_max[0] + epsilon_x, p_max[1]], [p_max[0] + epsilon_x, p_min[1]], 
-             [p_max[0], p_min[1] - epsilon_y], [p_min[0], p_min[1] - epsilon_y], p_min]
-    codes = [Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO, 
-             Path.LINETO, Path.LINETO, Path.LINETO, Path.LINETO,Path.CLOSEPOLY]
+    verts = list(polygon.exterior.coords)
+    codes = [Path.LINETO] * len(verts)
+    codes[0] = Path.MOVETO
+    codes[-1] = Path.CLOSEPOLY
     
     path = Path(verts, codes)
     return path
@@ -112,21 +134,21 @@ def _init_ax_2d(idx):
 def _draw_concept(concept, color, epsilons):
     """Paints a single concept into all four plots."""
     
+    # plot cuboids separately in 3d
     for cuboid in concept:
-        # plot cuboid in 3d
         x, y, z = _cuboid_data_3d(cuboid[0], cuboid[1])
         this._ax_3d.plot_surface(x, y, z, color=color, rstride=1, cstride=1, alpha=this._alpha_3d)
+    
+    # plot overall cores in 2d
+    for i in range(3):
+        d1, d2 = this._current_2d_indices[i]
+        core_path = _path_for_core(concept, d1, d2)
+        core_patch = patches.PathPatch(core_path, facecolor=color, lw=2, alpha=this._alpha_2d)
+        this._ax_2d[i].add_patch(core_patch)
         
-        # plot cuboid in 2d projections
-        for i in range(3):
-            idx = this._current_2d_indices[i]
-            cub_path = _path_for_cuboid([cuboid[0][idx[0]], cuboid[0][idx[1]]], [cuboid[1][idx[0]], cuboid[1][idx[1]]])
-            cub_patch = patches.PathPatch(cub_path, facecolor=color, lw=2, alpha=this._alpha_2d)
-            this._ax_2d[i].add_patch(cub_patch)
-            
-            alpha_path = _path_for_cuboid_alpha_cut([cuboid[0][idx[0]], cuboid[0][idx[1]]], [cuboid[1][idx[0]], cuboid[1][idx[1]]], epsilons[idx[0]], epsilons[idx[1]])
-            alpha_patch = patches.PathPatch(alpha_path, facecolor='none', edgecolor=color, linestyle='dashed')
-            this._ax_2d[i].add_patch(alpha_patch)
+        alpha_path = _path_for_core_alpha_cut(concept, d1, d2, epsilons[d1], epsilons[d2])
+        alpha_patch = patches.PathPatch(alpha_path, facecolor='none', edgecolor=color, linestyle='dashed')
+        this._ax_2d[i].add_patch(alpha_patch)
 
 def _repaint_everything():
     """Repaints the whole window."""

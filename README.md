@@ -5,7 +5,7 @@ Implementation of the conceptual spaces framework based on the formalization rep
 
 ## About
 
-Our implementation uses Python 2.7. Currently, our only dependency (outside of the standard library) is scipy. You should be able to install it by executing `pip install -r requirements.txt`. If you have trouble getting scipy to work, please refer to the [official scipy website](https://www.scipy.org/install.html) for further assistance.
+Our implementation uses Python 2.7. Currently, our code has the following dependencies (outside of the standard library): scipy, matplotlib, Shapely. You should be able to install them by executing `pip install -r requirements.txt`. If you have trouble getting scipy to work, please refer to the [official scipy website](https://www.scipy.org/install.html) for further assistance. Same holds for [matplotlib](https://matplotlib.org/users/installing.html).
 
 ## Overview
 
