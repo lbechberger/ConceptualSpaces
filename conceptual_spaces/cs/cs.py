@@ -21,6 +21,7 @@ this._n_dim = None
 this._domains = None
 this._dim_names = None
 this._concepts = None
+this._concept_colors = None
 this._no_weights = None
 this._precision_digits = 10
 this._epsilon = 1e-10
@@ -41,7 +42,7 @@ def init(n_dim, domains, dim_names = None):
     this._n_dim = n_dim
     this._domains = domains
     this._concepts = {}
-    
+    this._concept_colors = {}
     # take care of dimension names
     if dim_names != None:
         if len(dim_names) != n_dim:
@@ -101,18 +102,23 @@ def distance(x, y, weights):
     
     return distance
 
-def add_concept(key, concept):
+def add_concept(key, concept, color = None):
     """Adds a concept to the internal storage under the given key."""
     
     if not isinstance(concept, con.Concept):
         raise Exception("Not a valid concept")
     this._concepts[key] = concept
+    
+    if color != None:
+        this._concept_colors[key] = color
 
 def delete_concept(key):
     """Deletes the concept with the given key form the internal storage."""
     
     if key in this._concepts:
         del this._concepts[key]
+    if key in this._concept_colors:
+        del this._concept_colors[key]
 
 def between(first, middle, second, weights=None, method="crisp"):
     """Computes the betweenness relation between the three given points.

@@ -171,6 +171,13 @@ class TestConceptualSpace(unittest.TestCase):
         space.add_concept(42, f)
         self.assertTrue(42 in space._concepts)
         self.assertEqual(space._concepts[42], f)
+        self.assertFalse(42 in space._concept_colors)
+        
+        space.add_concept(43, f, 'r')
+        self.assertTrue(43 in space._concepts)
+        self.assertEqual(space._concepts[43], f)
+        self.assertTrue(43 in space._concept_colors)
+        self.assertEqual(space._concept_colors[43], 'r')
     
     def test_delete_concept(self):
         space.init(4, {0:[0,1], 1:[2,3]})
@@ -181,20 +188,38 @@ class TestConceptualSpace(unittest.TestCase):
         
         f = Concept(s, 0.5, 2.0, w)  
         
-        space.add_concept(42, f)
+        space.add_concept(42, f, 'r')
         self.assertTrue(42 in space._concepts)
         self.assertEqual(space._concepts[42], f)
+        self.assertTrue(42 in space._concept_colors)
+        self.assertTrue(space._concept_colors[42], 'r')
         
         space.delete_concept(43)
         self.assertTrue(42 in space._concepts)
         self.assertEqual(space._concepts[42], f)
+        self.assertTrue(42 in space._concept_colors)
+        self.assertTrue(space._concept_colors[42], 'r')
+       
+        space.delete_concept(42)
+        self.assertFalse(42 in space._concepts)
+        self.assertEqual(len(space._concepts), 0)
+        self.assertFalse(42 in space._concept_colors)
+        self.assertEqual(len(space._concept_colors), 0)
+       
+        space.delete_concept(1337)
+        self.assertEqual(len(space._concepts), 0)
+        self.assertEqual(len(space._concept_colors), 0)
+
+        space.add_concept(42, f)
+        self.assertTrue(42 in space._concepts)
+        self.assertEqual(space._concepts[42], f)
+        self.assertFalse(42 in space._concept_colors)
         
         space.delete_concept(42)
         self.assertFalse(42 in space._concepts)
         self.assertEqual(len(space._concepts), 0)
-        
-        space.delete_concept(1337)
-        self.assertEqual(len(space._concepts), 0)
+        self.assertFalse(42 in space._concept_colors)
+        self.assertEqual(len(space._concept_colors), 0)
         
     # between()
     # 'crisp'

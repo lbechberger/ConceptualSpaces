@@ -10,6 +10,8 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.path import Path
 import matplotlib.patches as patches
 from matplotlib.widgets import RadioButtons, CheckButtons
+from collections import deque
+from math import log, sqrt, isinf
 
 import sys
 sys.path.append("..")
@@ -17,16 +19,17 @@ import cs.cs as space
 
 this = sys.modules[__name__]
 this._dimensions = None
-this._current_dims = None
 this._concepts = None
 this._active_concepts = None
-this._plot_dim_indices = None
 this._current_2d_indices = None
 this._current_3d_indices = None
-this._initialized = False
 this._fig = None
 this._ax3d = None
 this._ax_2d = None
+this._radios = None
+this._checks = None
+this._axis_ranges = None
+this._initialized = False
 
 def _box_data_3d(p_min, p_max, indices):
     a = indices[0]
@@ -69,77 +72,103 @@ def _path_for_cuboid_alpha_cut(p_min, p_max, epsilon_x, epsilon_y):
     
     path = Path(verts, codes)
     return path
-    
-def test_concepts():
-    
-    this._dimensions = ["hue", "round", "sweet"]
-    this._current_dims = list(this._dimensions)
-    this._plot_dim_indices = [(0,1), (0,2), (1,2)]
-    this._current_2d_indices = list(this._plot_dim_indices)
-    this._current_3d_indices = [0,1,2]
-    
-    # define some concepts    
-    apple1 = ([0.5, 0.65, 0.35], [0.8, 0.8, 0.5])
-    apple2 = ([0.65, 0.65, 0.4], [0.85, 0.8, 0.55])
-    apple3 = ([0.7, 0.65, 0.45], [1.0, 0.8, 0.6])
-    apple = [apple1, apple2, apple3]    
-    
-    banana1 = ([0.5, 0.1, 0.35], [0.75, 0.30, 0.55])
-    banana2 = ([0.7, 0.1, 0.5], [0.8, 0.3, 0.7])
-    banana3 = ([0.75, 0.1, 0.5], [0.85, 0.3, 1.00])
-    banana = [banana1, banana2, banana3]    
-    
-    pear = [([0.5, 0.4, 0.35], [0.7, 0.6, 0.45])]
 
-    orange = [([0.8, 0.9, 0.6], [0.9, 1.0, 0.7])]
-    lemon = [([0.7, 0.45, 0.0], [0.8, 0.55, 0.1])]
-    granny_smith = [([0.55, 0.70, 0.35], [0.6, 0.8, 0.45])]
+def _init_ax_3d():
+    first_dim = this._dimensions[this._current_3d_indices[0]]
+    second_dim = this._dimensions[this._current_3d_indices[1]]
+    third_dim = this._dimensions[this._current_3d_indices[2]]
+    this._ax_3d.clear()
+    this._ax_3d.set_title("3D visualization - {0}, {1}, {2}".format(first_dim, second_dim, third_dim))
+    this._ax_3d.set_xlabel(first_dim)
+    this._ax_3d.set_xlim(this._axis_ranges[this._current_3d_indices[0]])
+    this._ax_3d.set_ylabel(second_dim)
+    this._ax_3d.set_ylim(this._axis_ranges[this._current_3d_indices[1]])
+    this._ax_3d.set_zlabel(third_dim)
+    this._ax_3d.set_zlim(this._axis_ranges[this._current_3d_indices[2]])
 
-    this._concepts = {"apple":(apple, 'r', (0.05, 0.10, 0.10)), "banana":(banana, 'y', (0.05, 0.02, 0.15)), 
-                "pear":(pear, 'g', (0.05, 0.10, 0.10)), "orange":(orange, 'orange', (0.05, 0.05, 0.05)), 
-                "lemon":(lemon, 'y', (0.05, 0.05, 0.01)), "Granny Smith":(granny_smith, 'g', (0.03, 0.03, 0.03))}    
+def _init_ax_2d(idx):
+    first_dim = this._dimensions[this._current_2d_indices[idx][0]]
+    second_dim = this._dimensions[this._current_2d_indices[idx][1]]
+    this._ax_2d[idx].clear()
+    this._ax_2d[idx].set_title("2D visualization - {0}, {1}".format(first_dim, second_dim))
+    this._ax_2d[idx].set_xlabel(first_dim)
+    this._ax_2d[idx].set_xlim(this._axis_ranges[this._current_2d_indices[idx][0]])
+    this._ax_2d[idx].set_ylabel(second_dim)
+    this._ax_2d[idx].set_ylim(this._axis_ranges[this._current_2d_indices[idx][1]])
     
+def init():
+    
+    this._dimensions = list(space._dim_names)
+    if len(this._dimensions) >= 3:
+        this._current_2d_indices = [(0,1), (0,2), (1,2)]
+        this._current_3d_indices = [0,1,2]
+    elif len(this._dimensions) == 2:
+        this._current_2d_indices = [(0,1), (1,0), (0,1)]
+        this._current_3d_indices = [0,1,1]
+    else:
+        this._current_2d_indices = [(0,0), (0,0), (0,0)]
+        this._current_3d_indices = [0,0,0]
+
+    # set up the range for each of the dimensions
+    this._axis_ranges = [(float('inf'), -float('inf'))] * space._n_dim
+    for concept in space._concepts.values():
+        for cuboid in concept._core._cuboids:
+            this._axis_ranges = list(map(lambda x, y: (min(x[0], y), x[1]) if not isinf(y) else x, this._axis_ranges, cuboid._p_min))
+            this._axis_ranges = list(map(lambda x, y: (x[0], max(x[1], y)) if not isinf(y) else x, this._axis_ranges, cuboid._p_max))
+    # add a little space in each dimensions for the plots
+    widths = list(map(lambda x: x[1] - x[0], this._axis_ranges))
+    this._axis_ranges = map(lambda x, y: (x[0] - 0.1 * y, x[1] + 0.1 * y), this._axis_ranges, widths)
+    
+    # load the concepts  
+    standard_colors = deque(['r', 'g', 'b', 'y', 'purple', 'orange', 'brown', 'gray'])
+    this._concepts = {}
+    for name in space._concepts.keys():
+        concept = space._concepts[name]
+        color = None
+        # take prespecified color or use next one in list
+        if name in space._concept_colors:
+            color = space._concept_colors[name]
+        else:
+            color = standard_colors.popleft()
+            standard_colors.append(color)
+
+        # collect all cuboids and replace infinities with boundaries of the plot
+        cuboids = list(map(lambda x: (map(lambda y, z: max(y, z[0] - 0.01), x._p_min, this._axis_ranges), 
+                                      map(lambda y, z: min(y, z[1] + 0.01), x._p_max, this._axis_ranges)), concept._core._cuboids))
+        
+        epsilons = []
+        for dim in range(space._n_dim):
+            eps = - (1.0 / concept._c) * log(0.5 / concept._mu)
+            w_dim = None
+            w_dom = None
+            for dom, dims in concept._core._domains.items():
+                if dim in dims:
+                    w_dom = concept._weights._domain_weights[dom]
+                    w_dim = concept._weights._dimension_weights[dom][dim]
+                    break
+            if w_dim == None or w_dom == None:
+                eps = 0
+            else:
+                eps = eps / (w_dom * sqrt(w_dim))
+            epsilons.append(eps)
+        this._concepts[name] = (cuboids, color, epsilons)
+
+    # create the figure
     this._fig = plt.figure(figsize=(20,14))
     this._fig.canvas.set_window_title("ConceptInspector")
 
     # set up 3d plot    
     this._ax_3d = this._fig.add_subplot(221, projection='3d')
-    def init_ax_3d():
-        first_dim = this._current_dims[0]
-        second_dim = this._current_dims[1]
-        third_dim = this._current_dims[2]
-        this._ax_3d.clear()
-        this._ax_3d.set_title("3D visualization - {0}, {1}, {2}".format(first_dim, second_dim, third_dim))
-        this._ax_3d.set_xlabel(first_dim)
-        this._ax_3d.set_xlim(-0.1, 1.1)
-        this._ax_3d.set_ylabel(second_dim)
-        this._ax_3d.set_ylim(-0.1, 1.1)
-        this._ax_3d.set_zlabel(third_dim)
-        this._ax_3d.set_zlim(-0.1, 1.1)
-    init_ax_3d()
+    _init_ax_3d()
 
+    # set up 2d plots
     this._ax_2d = []
-
-    # set up first 2d plot
     this._ax_2d.append(this._fig.add_subplot(222))
-    def init_ax_2d(idx):
-        first_dim = this._current_dims[this._plot_dim_indices[idx][0]]
-        second_dim = this._current_dims[this._plot_dim_indices[idx][1]]
-        this._ax_2d[idx].clear()
-        this._ax_2d[idx].set_title("2D visualization - {0}, {1}".format(first_dim, second_dim))
-        this._ax_2d[idx].set_xlabel(first_dim)
-        this._ax_2d[idx].set_xlim(-0.2,1.2)
-        this._ax_2d[idx].set_ylabel(second_dim)
-        this._ax_2d[idx].set_ylim(-0.2,1.2)
-    init_ax_2d(0)
-
-    # set up second 2d plot
+    _init_ax_2d(0)
     this._ax_2d.append(this._fig.add_subplot(223))
-    init_ax_2d(1)
-
-    # set up third 2d plot
+    _init_ax_2d(1)
     this._ax_2d.append(this._fig.add_subplot(224))
-    init_ax_2d(2)
+    _init_ax_2d(2)
 
     alpha_3d = 0.3    
     alpha_2d = 0.5    
@@ -169,21 +198,20 @@ def test_concepts():
         draw_concept(concept, color, epsilons)
     
     # now add radio buttons for selecting dimensions
-    this._fig.subplots_adjust(left=0.2, right=0.95)
+    this._fig.subplots_adjust(left=0.2, right=0.98, top=0.95, bottom=0.05)
     
     first_dim_radios_ax = this._fig.add_axes([0.025, 0.75, 0.1, 0.15], axisbg='w')
     first_dim_radios_ax.set_title("First dimension")
     first_dim_radios = RadioButtons(first_dim_radios_ax, this._dimensions, active=0)
     def first_dim_click_handler(label):
-        this._current_dims[0] = label
         idx = this._dimensions.index(label)
         this._current_2d_indices[0] = (idx, this._current_2d_indices[0][1])
         this._current_2d_indices[1] = (idx, this._current_2d_indices[1][1])
         this._current_3d_indices[0] = idx
-        init_ax_3d()
-        init_ax_2d(0)
-        init_ax_2d(1)
-        init_ax_2d(2)
+        _init_ax_3d()
+        _init_ax_2d(0)
+        _init_ax_2d(1)
+        _init_ax_2d(2)
         for concept_name in this._active_concepts:
             concept, color, epsilons = this._concepts[concept_name]
             draw_concept(concept, color, epsilons)
@@ -194,15 +222,14 @@ def test_concepts():
     second_dim_radios_ax.set_title("Second dimension")
     second_dim_radios = RadioButtons(second_dim_radios_ax, this._dimensions, active=1)
     def second_dim_click_handler(label):
-        this._current_dims[1] = label
         idx = this._dimensions.index(label)
         this._current_2d_indices[0] = (this._current_2d_indices[0][0], idx)
         this._current_2d_indices[2] = (idx, this._current_2d_indices[2][1])
         this._current_3d_indices[1] = idx
-        init_ax_3d()
-        init_ax_2d(0)
-        init_ax_2d(1)
-        init_ax_2d(2)
+        _init_ax_3d()
+        _init_ax_2d(0)
+        _init_ax_2d(1)
+        _init_ax_2d(2)
         for concept_name in this._active_concepts:
             concept, color, epsilons = this._concepts[concept_name]
             draw_concept(concept, color, epsilons)
@@ -213,25 +240,26 @@ def test_concepts():
     third_dim_radios_ax.set_title("Third dimension")
     third_dim_radios = RadioButtons(third_dim_radios_ax, this._dimensions, active=2)
     def third_dim_click_handler(label):
-        this._current_dims[2] = label
         idx = this._dimensions.index(label)
         this._current_2d_indices[1] = (this._current_2d_indices[1][0], idx)
         this._current_2d_indices[2] = (this._current_2d_indices[2][0], idx)
         this._current_3d_indices[2] = idx
-        init_ax_3d()
-        init_ax_2d(0)
-        init_ax_2d(1)
-        init_ax_2d(2)
+        _init_ax_3d()
+        _init_ax_2d(0)
+        _init_ax_2d(1)
+        _init_ax_2d(2)
         for concept_name in this._active_concepts:
             concept, color, epsilons = this._concepts[concept_name]
             draw_concept(concept, color, epsilons)
         this._fig.canvas.draw_idle()
     third_dim_radios.on_clicked(third_dim_click_handler)
+
+    this._radios = (first_dim_radios, second_dim_radios, third_dim_radios)    
     
     # add check boxes for selecting concepts
     concept_checks_ax = this._fig.add_axes([0.025, 0.1, 0.1, 0.15], axisbg='w')
     concept_checks_ax.set_title("Concepts")
-    concept_checks = CheckButtons(concept_checks_ax, list(this._active_concepts), [True]*6)
+    concept_checks = CheckButtons(concept_checks_ax, list(this._active_concepts), [True]*len(this._concepts.keys()))
     c = map(lambda x: x[1], list(this._concepts.values()))    # color them nicely
     [rec.set_facecolor(c[i]) for i, rec in enumerate(concept_checks.rectangles)]
     def concept_checks_click_handler(label):
@@ -239,20 +267,16 @@ def test_concepts():
             this._active_concepts.remove(label)
         else:
             this._active_concepts.append(label)
-        init_ax_3d()
-        init_ax_2d(0)
-        init_ax_2d(1)
-        init_ax_2d(2)
+        _init_ax_3d()
+        _init_ax_2d(0)
+        _init_ax_2d(1)
+        _init_ax_2d(2)
         for concept_name in this._active_concepts:
             concept, color, epsilons = this._concepts[concept_name]
             draw_concept(concept, color, epsilons)
         this._fig.canvas.draw_idle()
     concept_checks.on_clicked(concept_checks_click_handler)
-        
+    
+    this._checks = concept_checks
     
     plt.show()
-
-    return first_dim_radios, second_dim_radios, third_dim_radios, concept_checks
-        
-# MAIN:
-x = test_concepts()
