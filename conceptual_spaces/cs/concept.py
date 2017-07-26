@@ -648,7 +648,8 @@ class Concept:
             'naive':                  crisp betweenness of cores' midpoints (used as default)
             'naive_soft':             soft betweenness of cores' midpoints
             'subset':                 self.subset_of(first.unify_with(second))
-            'core':                   core of self is between (in crisp sense) cores of first and second"""
+            'core':                   core of self is between (in crisp sense) cores of first and second
+            'core_soft':              core of self is between (in soft sense) cores of first and second"""
 
         if method == "naive":        
             self_point = self._core.midpoint()
@@ -676,83 +677,150 @@ class Concept:
                         point.append(cuboid._p_max[i] if vec[i] else cuboid._p_min[i])
                     corner_points.append(point)
             
-            # store whether the ith corner point has already be shown to be between the two other cores
-            betweenness = [False]*len(corner_points)
+            betweenness = _check_crisp_betweenness(corner_points, first, second)
+            remaining_corners = list(itertools.compress(corner_points, map(lambda x: not x, betweenness)))
+            if len(remaining_corners) > 0:
+                return 0.0
+            return 1.0
+            
+        elif method == "core_soft":
+            # create all corner points of all cuboids of this concept
+            corner_points = []
+            corner_bounds = []
+            for cuboid in self._core._cuboids:
+                binary_vecs = itertools.product([False, True], repeat = cs._n_dim)
+                cuboid_bounds = zip(cuboid._p_min, cuboid._p_max)
+                for vec in binary_vecs:
+                    point = []
+                    for i in range(cs._n_dim):
+                        point.append(cuboid._p_max[i] if vec[i] else cuboid._p_min[i])
+                    corner_points.append(point)
+                    corner_bounds.append(cuboid_bounds)
+
+            # remove all corners that are already between in a crisp sense
+            crisp_betweenness = _check_crisp_betweenness(corner_points, first, second)
+            to_keep = map(lambda x: not x, crisp_betweenness)
+            remaining_corners = list(itertools.compress(corner_points, to_keep))
+            remaining_bounds = list(itertools.compress(corner_bounds, to_keep))
+
+            # completely between in crisp sense: can safely return 1.0
+            if len(remaining_corners) == 0:
+                return 1.0
+
+            # store the maximum betweenness value we have found starting from the ith corner point
+            max_betweenness = [0.0]*len(remaining_corners)            
             
             for c1 in first._core._cuboids:
                 for c2 in second._core._cuboids:
                     
                     if not c1._compatible(c2):
                         raise Exception("Incompatible cuboids")
-                    p_min = map(min, c1._p_min, c2._p_min)
-                    p_max = map(max, c1._p_max, c2._p_max)
-                    dom_union = dict(c1._domains)
-                    dom_union.update(c2._domains)         
-                    bounding_box = cub.Cuboid(p_min, p_max, dom_union)
-    
-                    local_betweenness = [True]*len(corner_points)                    
-                    # check if each corner point is contained in the bounding box
-                    for i in range(len(corner_points)):
-                        local_betweenness[i] = bounding_box.contains(corner_points[i])
-                    
-                    if reduce(lambda x,y: x or y, local_betweenness) == False:  # no need to check inequalities
-                        continue
-                    
-                    # check additional contraints for each domain
-                    for domain in dom_union.values():
-                        if len(domain) < 2: # we can safely ignore one-dimensional domains
-                            continue
                         
-                        for i in range(len(domain)):
-                            for j in range(i+1, len(domain)):
-                                # look at all pairs of dimensions within this domain                                
-                                d1 = domain[i]
-                                d2 = domain[j]
-
-                                # create list of inequalities
-                                inequalities = []
-                                def makeInequality(p1, p2, below):
-                                    sign = -1 if below else 1
-                                    a = (p2[1] - p1[1]) if p2[0] > p1[0] else (p1[1] - p2[1])
-                                    b = -abs(p1[0] - p2[0])
-                                    c = -1 * (a * p1[0] + b * p1[1])
-                                    return (lambda x: (sign * (a * x[0] + b * x[1] + c) <= 0))
-
-                                # different cases
-                                if c2._p_max[d1] > c1._p_max[d1] and c2._p_min[d2] > c1._p_min[d2]:
-                                    inequalities.append(makeInequality([c1._p_max[d1], c1._p_min[d2]], [c2._p_max[d1], c2._p_min[d2]], False))
-                                if c2._p_max[d1] > c1._p_max[d1] and c1._p_max[d2] > c2._p_max[d2]:
-                                    inequalities.append(makeInequality(c1._p_max, c2._p_max, True))
-                                if c2._p_min[d1] > c1._p_min[d1] and c2._p_max[d2] > c1._p_max[d2]:
-                                    inequalities.append(makeInequality([c1._p_min[d1], c1._p_max[d2]], [c2._p_min[d1], c2._p_max[d2]], True))
-                                if c2._p_min[d1] > c1._p_min[d1] and c2._p_min[d2] < c1._p_min[d2]:
-                                    inequalities.append(makeInequality(c1._p_min, c2._p_min, False))
-                                
-                                if c1._p_max[d1] > c2._p_max[d1] and c1._p_min[d2] > c2._p_min[d2]:
-                                    inequalities.append(makeInequality([c1._p_max[d1], c1._p_min[d2]], [c2._p_max[d1], c2._p_min[d2]], False))
-                                if c1._p_max[d1] > c2._p_max[d1] and c2._p_max[d2] > c1._p_max[d2]:
-                                    inequalities.append(makeInequality(c1._p_max, c2._p_max, True))
-                                if c1._p_min[d1] > c2._p_min[d1] and c1._p_max[d2] > c2._p_max[d2]:
-                                    inequalities.append(makeInequality([c1._p_min[d1], c1._p_max[d2]], [c2._p_min[d1], c2._p_max[d2]], True))
-                                if c1._p_min[d1] > c2._p_min[d1] and c1._p_min[d2] < c2._p_min[d2]:
-                                    inequalities.append(makeInequality(c1._p_min, c2._p_min, False))
-                                
-                                
-                                for k in range(len(corner_points)):
-                                    for ineq in inequalities:
-                                        local_betweenness[k] = local_betweenness[k] and ineq([corner_points[k][d1], corner_points[k][d2]])
-
-                                if not reduce(lambda x, y: x or y, local_betweenness):
-                                    break
-                            if not reduce(lambda x, y: x or y, local_betweenness):
-                                    break
-                        if not reduce(lambda x, y: x or y, local_betweenness):
-                                    break
-                                
-                    betweenness = map(lambda x, y: x or y, betweenness, local_betweenness)
-                    if reduce(lambda x, y: x and y, betweenness):
-                        return 1.0
-            return 1.0 if reduce(lambda x, y: x and y, betweenness) else 0.0
+                    x_bounds = zip(c1._p_min, c1._p_max) + zip(c2._p_min, c2._p_max)
+                    
+                    # maximizing over x in c1 and z in c2; for convenience, do this at the same time
+                    def inner_optimization(y):
+                        x_start = list(map(lambda x: 0.5*x[0] + 0.5*x[1], x_bounds))
+                        to_minimize_x = lambda x, y: -1*cs.between(x[:cs._n_dim], y, x[-cs._n_dim:], method='soft')
+                        opt = scipy.optimize.minimize(to_minimize_x, x_start, args=(y,), bounds=x_bounds, options={'gtol':cs._epsilon})
+                        if not opt.success:
+                            raise Exception("optimization failed")
+                        return opt
+                
+                    # minimizing over y in self
+                    for i in range(len(remaining_corners)):
+                        corner = remaining_corners[i]
+                        bounds = remaining_bounds[i]
+                        to_minimize_y = lambda y: -1 * inner_optimization(y).fun
+                        opt = scipy.optimize.minimize(to_minimize_y, corner, bounds=bounds, options={'gtol':cs._epsilon})
+                        if not opt.success:
+                            raise Exception("optimization failed")
+                        max_betweenness[i] = max(max_betweenness[i], opt.fun)
+            
+            return min(max_betweenness)
 
         else:
             raise Exception("Unknown method")
+
+
+def _check_crisp_betweenness(corner_points, first, second):
+    """Returns the subset of corner_points that are not strictly between the first and the second concept."""
+    
+    # store whether the ith corner point has already be shown to be between the two other cores
+    betweenness = [False]*len(corner_points)
+
+    for c1 in first._core._cuboids:
+        for c2 in second._core._cuboids:
+            
+            if not c1._compatible(c2):
+                raise Exception("Incompatible cuboids")
+            p_min = map(min, c1._p_min, c2._p_min)
+            p_max = map(max, c1._p_max, c2._p_max)
+            dom_union = dict(c1._domains)
+            dom_union.update(c2._domains)         
+            bounding_box = cub.Cuboid(p_min, p_max, dom_union)
+
+            local_betweenness = [True]*len(corner_points)                    
+            # check if each corner point is contained in the bounding box
+            for i in range(len(corner_points)):
+                local_betweenness[i] = bounding_box.contains(corner_points[i])
+            
+            if reduce(lambda x,y: x or y, local_betweenness) == False:  # no need to check inequalities
+                continue
+            
+            # check additional contraints for each domain
+            for domain in dom_union.values():
+                if len(domain) < 2: # we can safely ignore one-dimensional domains
+                    continue
+                
+                for i in range(len(domain)):
+                    for j in range(i+1, len(domain)):
+                        # look at all pairs of dimensions within this domain                                
+                        d1 = domain[i]
+                        d2 = domain[j]
+
+                        # create list of inequalities
+                        inequalities = []
+                        def makeInequality(p1, p2, below):
+                            sign = -1 if below else 1
+                            a = (p2[1] - p1[1]) if p2[0] > p1[0] else (p1[1] - p2[1])
+                            b = -abs(p1[0] - p2[0])
+                            c = -1 * (a * p1[0] + b * p1[1])
+                            return (lambda x: (sign * (a * x[0] + b * x[1] + c) <= 0))
+
+                        # different cases
+                        if c2._p_max[d1] > c1._p_max[d1] and c2._p_min[d2] > c1._p_min[d2]:
+                            inequalities.append(makeInequality([c1._p_max[d1], c1._p_min[d2]], [c2._p_max[d1], c2._p_min[d2]], False))
+                        if c2._p_max[d1] > c1._p_max[d1] and c1._p_max[d2] > c2._p_max[d2]:
+                            inequalities.append(makeInequality(c1._p_max, c2._p_max, True))
+                        if c2._p_min[d1] > c1._p_min[d1] and c2._p_max[d2] > c1._p_max[d2]:
+                            inequalities.append(makeInequality([c1._p_min[d1], c1._p_max[d2]], [c2._p_min[d1], c2._p_max[d2]], True))
+                        if c2._p_min[d1] > c1._p_min[d1] and c2._p_min[d2] < c1._p_min[d2]:
+                            inequalities.append(makeInequality(c1._p_min, c2._p_min, False))
+                        
+                        if c1._p_max[d1] > c2._p_max[d1] and c1._p_min[d2] > c2._p_min[d2]:
+                            inequalities.append(makeInequality([c1._p_max[d1], c1._p_min[d2]], [c2._p_max[d1], c2._p_min[d2]], False))
+                        if c1._p_max[d1] > c2._p_max[d1] and c2._p_max[d2] > c1._p_max[d2]:
+                            inequalities.append(makeInequality(c1._p_max, c2._p_max, True))
+                        if c1._p_min[d1] > c2._p_min[d1] and c1._p_max[d2] > c2._p_max[d2]:
+                            inequalities.append(makeInequality([c1._p_min[d1], c1._p_max[d2]], [c2._p_min[d1], c2._p_max[d2]], True))
+                        if c1._p_min[d1] > c2._p_min[d1] and c1._p_min[d2] < c2._p_min[d2]:
+                            inequalities.append(makeInequality(c1._p_min, c2._p_min, False))
+                        
+                        
+                        for k in range(len(corner_points)):
+                            for ineq in inequalities:
+                                local_betweenness[k] = local_betweenness[k] and ineq([corner_points[k][d1], corner_points[k][d2]])
+
+                        if not reduce(lambda x, y: x or y, local_betweenness):
+                            break
+                    if not reduce(lambda x, y: x or y, local_betweenness):
+                            break
+                if not reduce(lambda x, y: x or y, local_betweenness):
+                            break
+                        
+            betweenness = map(lambda x, y: x or y, betweenness, local_betweenness)
+            if reduce(lambda x, y: x and y, betweenness):
+                return betweenness
+    
+    return betweenness
