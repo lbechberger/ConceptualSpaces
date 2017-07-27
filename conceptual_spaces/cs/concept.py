@@ -641,7 +641,7 @@ class Concept:
         else:
             raise Exception("Unknown method")
 
-    def between(self, first, second, method="naive"):
+    def between(self, first, second, method="naive", n_samples=5000):
         """Computes the degree to which this concept is between the other two given concepts.
         
         The following methods are avaliable:
@@ -649,7 +649,9 @@ class Concept:
             'naive_soft':             soft betweenness of cores' midpoints
             'subset':                 self.subset_of(first.unify_with(second))
             'core':                   core of self is between (in crisp sense) cores of first and second
-            'core_soft':              core of self is between (in soft sense) cores of first and second"""
+            'core_soft':              core of self is between (in soft sense) cores of first and second
+            'Derrac_Schockaert':      approximation of Btw_3^R proposed by Derrac & Schockaert in 'Enriching Taxonomies of Place Types Using Flickr'
+                                      'n_samples' can be used to adjust the number of samples used for computing this approximation."""
 
         if method == "naive":        
             self_point = self._core.midpoint()
@@ -739,15 +741,84 @@ class Concept:
             
             return min(max_betweenness)
 
+        elif method == "Derrac_Schockaert":
+            # 1 / (size of self._core) * sum_{y in self._core}: max_{x in first._core, z in second._core} cs.between(x,y,z, method='soft')
+            # cannot compute this directly (infinitely many points in our cuboids), integral would be complicated
+            # --> approximate it by sampling points from self._core (using grids over cuboids)
+            
+            cuboid_widths = []
+            for cuboid in self._core._cuboids:
+                cuboid_widths.append(list(map(lambda x, y: 1.0 * (x - y), cuboid._p_max, cuboid._p_min)))
+            
+            cuboid_sizes = []
+            for vec in cuboid_widths:
+                cuboid_sizes.append(reduce(lambda x, y: x * y if y != 0 else x, vec))   # if we have 0 width, don't make overall size 0
+            overall_size = sum(cuboid_sizes)
+            
+            # larger cuboids get more samples than smaller ones
+            samples_per_cuboid = list(map(lambda x: round(1.0 * x * n_samples / overall_size), cuboid_sizes))
+            samples = []
+
+            # create a grid for each cuboid and its points to the samples
+            for i in range(len(self._core._cuboids)):
+                samples_per_dim = []
+                widths = cuboid_widths[i]
+                p_min = self._core._cuboids[i]._p_min
+                n_samples = samples_per_cuboid[i]
+                n_dim = sum(map(lambda x: 0.0 if isnan(x) else 1.0, widths))
+
+                n_0 = round(((1.0 * n_samples * (widths[0]) ** n_dim)/ cuboid_sizes[i]) ** (1.0/n_dim))
+                samples_per_dim.append(n_0)
+
+                for j in range(1, int(n_dim)):
+                    samples_per_dim.append(max(1.0, round(n_0 * (widths[j]/widths[0])))) # max takes care of dimensions with zero width
+                
+                step_sizes = list(map(lambda x, y: x / max(y - 1.0, 1.0), widths, samples_per_dim)) # max takes care of dimensions with zero width
+
+                coordinates = []
+                for j in range(int(n_dim)):
+                    local_coords = []
+                    for k in range(int(samples_per_dim[j])):
+                        local_coords.append(p_min[j] + k * step_sizes[j])
+                    coordinates.append(local_coords)
+                
+                samples = samples + list(itertools.product(*coordinates))
+
+            if len(samples) == 0:
+                print "ERROR"
+            crisp_between = _check_crisp_betweenness(samples, first, second)
+            betweenness = list(map(lambda x: 1.0 if x else 0.0, crisp_between))
+            for c1 in first._core._cuboids:
+                for c2 in second._core._cuboids:
+                    
+                    if not c1._compatible(c2):
+                        raise Exception("Incompatible cuboids")
+                        
+                    x_bounds = zip(c1._p_min, c1._p_max) + zip(c2._p_min, c2._p_max)
+                    x_start = list(map(lambda x: 0.5*x[0] + 0.5*x[1], x_bounds))
+                    for i in range(len(samples)):
+                        if crisp_between[i]:
+                            continue
+                        point = samples[i]
+                        to_minimize = lambda x: -1*cs.between(x[:cs._n_dim], point, x[-cs._n_dim:], self._weights, method='soft')
+                        opt = scipy.optimize.minimize(to_minimize, x_start, bounds=x_bounds)
+                        if not opt.success:
+                            print opt
+                            raise Exception("Optimization failed")
+                        if betweenness[i] < -1 * opt.fun:
+                            betweenness[i] = -1 * opt.fun
+                            
+            return sum(betweenness) / float(len(betweenness))
+
         else:
             raise Exception("Unknown method")
 
 
-def _check_crisp_betweenness(corner_points, first, second):
-    """Returns the subset of corner_points that are not strictly between the first and the second concept."""
+def _check_crisp_betweenness(points, first, second):
+    """Returns a list of boolean flags indicating which of the given points are strictly between the first and the second concept."""
     
-    # store whether the ith corner point has already be shown to be between the two other cores
-    betweenness = [False]*len(corner_points)
+    # store whether the ith point has already be shown to be between the two other cores
+    betweenness = [False]*len(points)
 
     for c1 in first._core._cuboids:
         for c2 in second._core._cuboids:
@@ -760,10 +831,10 @@ def _check_crisp_betweenness(corner_points, first, second):
             dom_union.update(c2._domains)         
             bounding_box = cub.Cuboid(p_min, p_max, dom_union)
 
-            local_betweenness = [True]*len(corner_points)                    
-            # check if each corner point is contained in the bounding box
-            for i in range(len(corner_points)):
-                local_betweenness[i] = bounding_box.contains(corner_points[i])
+            local_betweenness = [True]*len(points)                    
+            # check if each point is contained in the bounding box
+            for i in range(len(points)):
+                local_betweenness[i] = bounding_box.contains(points[i])
             
             if reduce(lambda x,y: x or y, local_betweenness) == False:  # no need to check inequalities
                 continue
@@ -808,9 +879,9 @@ def _check_crisp_betweenness(corner_points, first, second):
                             inequalities.append(makeInequality(c1._p_min, c2._p_min, False))
                         
                         
-                        for k in range(len(corner_points)):
+                        for k in range(len(points)):
                             for ineq in inequalities:
-                                local_betweenness[k] = local_betweenness[k] and ineq([corner_points[k][d1], corner_points[k][d2]])
+                                local_betweenness[k] = local_betweenness[k] and ineq([points[k][d1], points[k][d2]])
 
                         if not reduce(lambda x, y: x or y, local_betweenness):
                             break
