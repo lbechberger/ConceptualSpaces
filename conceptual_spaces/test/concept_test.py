@@ -1639,6 +1639,40 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(f5.between(f1, f2, method="subset"), 0.4418742326582702)
         self.assertAlmostEqual(f5.between(f2, f1, method="subset"), 0.4418742326582702)
 
+    def test_between_subset_fruits(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+
+        c_orange = Cuboid([0.8, 0.9, 0.6], [0.9, 1.0, 0.7], domains)
+        s_orange = Core([c_orange], domains)
+        w_orange = Weights({"color":1.0, "shape":1.0, "taste":1.0}, w_dim)
+        orange = Concept(s_orange, 1.0, 15.0, w_orange)
+        
+        c_apple_1 = Cuboid([0.5, 0.65, 0.35], [0.8, 0.8, 0.5], domains)
+        c_apple_2 = Cuboid([0.65, 0.65, 0.4], [0.85, 0.8, 0.55], domains)
+        c_apple_3 = Cuboid([0.7, 0.65, 0.45], [1.0, 0.8, 0.6], domains)
+        s_apple = Core([c_apple_1, c_apple_2, c_apple_3], domains)
+        w_apple = Weights({"color":0.50, "shape":1.50, "taste":1.00}, w_dim)
+        apple = Concept(s_apple, 1.0, 10.0, w_apple)
+
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_banana_1 = Cuboid([0.5, 0.1, 0.35], [0.75, 0.30, 0.55], domains)
+        c_banana_2 = Cuboid([0.7, 0.1, 0.5], [0.8, 0.3, 0.7], domains)
+        c_banana_3 = Cuboid([0.75, 0.1, 0.5], [0.85, 0.3, 1.00], domains)
+        s_banana = Core([c_banana_1, c_banana_2, c_banana_3], domains)
+        w_banana = Weights({"color":0.75, "shape":1.50, "taste":0.75}, w_dim)
+        banana = Concept(s_banana, 1.0, 10.0, w_banana)
+        
+        self.assertAlmostEqual(banana.between(apple, orange, method="subset"), 0.025060842806151205)
+        self.assertAlmostEqual(banana.between(orange, apple, method="subset"), 0.025060842806151205)
+        self.assertAlmostEqual(banana.between(banana, pear, method="subset"), 1.0)
+        self.assertAlmostEqual(banana.between(pear, banana, method="subset"), 1.0)
+
     # 'core'
     def test_between_core(self):
         doms = {0:[0],1:[1,2]}       
@@ -1739,7 +1773,7 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(f5.between(f1, f2, method="core"), 0.0)
         self.assertAlmostEqual(f5.between(f2, f1, method="core"), 0.0)
 
-    # 'core'
+    # 'core_soft'
     def test_between_core_soft_2d_simple(self):
         doms = {0:[0,1]}       
         cs.init(2, doms)
@@ -1854,6 +1888,38 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(f4.between(f2, f1, method="core_soft"), 0.9716852018885428)
         self.assertAlmostEqual(f5.between(f1, f2, method="core_soft"), 0.9318330092895645)
         self.assertAlmostEqual(f5.between(f2, f1, method="core_soft"), 0.9318330092895645)
+    
+    def test_between_core_soft_fruits(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+ 
+        c_lemon = Cuboid([0.7, 0.45, 0.0], [0.8, 0.55, 0.1], domains)
+        s_lemon = Core([c_lemon], domains)
+        w_lemon = Weights({"color":0.5, "shape":0.5, "taste":2.0}, w_dim)
+        lemon = Concept(s_lemon, 1.0, 20.0, w_lemon)
+
+        c_orange = Cuboid([0.8, 0.9, 0.6], [0.9, 1.0, 0.7], domains)
+        s_orange = Core([c_orange], domains)
+        w_orange = Weights({"color":1.0, "shape":1.0, "taste":1.0}, w_dim)
+        orange = Concept(s_orange, 1.0, 15.0, w_orange)
+
+        c_apple_1 = Cuboid([0.5, 0.65, 0.35], [0.8, 0.8, 0.5], domains)
+        c_apple_2 = Cuboid([0.65, 0.65, 0.4], [0.85, 0.8, 0.55], domains)
+        c_apple_3 = Cuboid([0.7, 0.65, 0.45], [1.0, 0.8, 0.6], domains)
+        s_apple = Core([c_apple_1, c_apple_2, c_apple_3], domains)
+        w_apple = Weights({"color":0.50, "shape":1.50, "taste":1.00}, w_dim)
+        apple = Concept(s_apple, 1.0, 10.0, w_apple)
+
+        self.assertAlmostEqual(pear.between(lemon, lemon, method="core_soft"), 0.2)
+        self.assertAlmostEqual(lemon.between(apple, pear, method="core_soft"), 0.40425531914893614)
+        self.assertAlmostEqual(lemon.between(pear, apple, method="core_soft"), 0.40425531914893614)
+        self.assertAlmostEqual(orange.between(apple, apple, method="core_soft"), 0.5555555555555556)
 
     # 'Derrac_Schockaert'
     def test_between_Derrac_Schockaert(self):
@@ -1877,13 +1943,13 @@ class TestConcept(unittest.TestCase):
         f4 = Concept(s4, 1.0, 1.0, w)
         f5 = Concept(s5, 1.0, 1.0, w)
         
-        self.assertAlmostEqual(f1.between(f1, f1, method="Derrac_Schockaert", n_samples=5000), 1.0)
-        self.assertAlmostEqual(f3.between(f1, f2, method="Derrac_Schockaert", n_samples=5000), 1.0)
-        self.assertAlmostEqual(f3.between(f2, f1, method="Derrac_Schockaert", n_samples=5000), 1.0)
-        self.assertAlmostEqual(f4.between(f1, f2, method="Derrac_Schockaert", n_samples=5000), 1.0)
-        self.assertAlmostEqual(f4.between(f2, f1, method="Derrac_Schockaert", n_samples=5000), 1.0)
-        self.assertAlmostEqual(f5.between(f1, f2, method="Derrac_Schockaert", n_samples=5000), 0.5441777853797151)
-        self.assertAlmostEqual(f5.between(f2, f1, method="Derrac_Schockaert", n_samples=5000), 0.5441777853797151)
+        self.assertAlmostEqual(f1.between(f1, f1, method="Derrac_Schockaert", n_samples=500), 1.0)
+        self.assertAlmostEqual(f3.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 1.0)
+        self.assertAlmostEqual(f3.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 1.0)
+        self.assertAlmostEqual(f4.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 1.0)
+        self.assertAlmostEqual(f4.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 1.0)
+        self.assertAlmostEqual(f5.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 0.5404654925486797)
+        self.assertAlmostEqual(f5.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 0.5404654925486797)
 
     def test_between_Derrac_Schockaert_two_cuboids_3d(self):
         doms = {0:[0,1,2]}       
@@ -1911,16 +1977,16 @@ class TestConcept(unittest.TestCase):
         f5 = Concept(s5, 1.0, 1.0, w)
         f6 = Concept(s6, 0.5, 5.0, w)
         
-        self.assertAlmostEqual(f1.between(f1, f1, method="Derrac_Schockaert", n_samples=5000), 1.0)
-        self.assertAlmostEqual(f1.between(f1, f2, method="Derrac_Schockaert", n_samples=5000), 1.0)
-        self.assertAlmostEqual(f3.between(f1, f2, method="Derrac_Schockaert", n_samples=5000), 1.0)
-        self.assertAlmostEqual(f3.between(f2, f1, method="Derrac_Schockaert", n_samples=5000), 1.0)
-        self.assertAlmostEqual(f4.between(f1, f2, method="Derrac_Schockaert", n_samples=5000), 0.9999999196121455)
-        self.assertAlmostEqual(f4.between(f2, f1, method="Derrac_Schockaert", n_samples=5000), 0.9999999196121455)
-        self.assertAlmostEqual(f5.between(f1, f2, method="Derrac_Schockaert", n_samples=5000), 0.9985583761587503)
-        self.assertAlmostEqual(f5.between(f2, f1, method="Derrac_Schockaert", n_samples=5000), 0.9985583761587503)
-        self.assertAlmostEqual(f6.between(f1, f2, method="Derrac_Schockaert", n_samples=5000), 0.9784930694132229)
-        self.assertAlmostEqual(f6.between(f2, f1, method="Derrac_Schockaert", n_samples=5000), 0.9784930694132229)
+        self.assertAlmostEqual(f1.between(f1, f1, method="Derrac_Schockaert", n_samples=500), 1.0)
+        self.assertAlmostEqual(f1.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 1.0)
+        self.assertAlmostEqual(f3.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 1.0)
+        self.assertAlmostEqual(f3.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 1.0)
+        self.assertAlmostEqual(f4.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 0.999999555590188)
+        self.assertAlmostEqual(f4.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 0.999999555590188)
+        self.assertAlmostEqual(f5.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 0.9985999257009579)
+        self.assertAlmostEqual(f5.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 0.9985999257009579)
+        self.assertAlmostEqual(f6.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 0.9768894261848579)
+        self.assertAlmostEqual(f6.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 0.9768894261848579)
 
     def test_between_Derrac_Schockaert_two_cuboids_2d(self):
         doms = {0:[0,1]}       
@@ -1946,13 +2012,31 @@ class TestConcept(unittest.TestCase):
         f4 = Concept(s4, 0.9, 15.0, w)
         f5 = Concept(s5, 0.9, 15.0, w)
         
-        self.assertAlmostEqual(f1.between(f1, f1, method="Derrac_Schockaert", n_samples=5000), 1.0)
-        self.assertAlmostEqual(f1.between(f1, f2, method="Derrac_Schockaert", n_samples=5000), 1.0)
-        self.assertAlmostEqual(f3.between(f1, f2, method="Derrac_Schockaert", n_samples=5000), 1.0)
-        self.assertAlmostEqual(f3.between(f2, f1, method="Derrac_Schockaert", n_samples=5000), 1.0)
-        self.assertAlmostEqual(f4.between(f1, f2, method="Derrac_Schockaert", n_samples=5000), 0.9994676702461072)
-        self.assertAlmostEqual(f4.between(f2, f1, method="Derrac_Schockaert", n_samples=5000), 0.9994676702461072)
-        self.assertAlmostEqual(f5.between(f1, f2, method="Derrac_Schockaert", n_samples=5000), 0.9693244096156499)
-        self.assertAlmostEqual(f5.between(f2, f1, method="Derrac_Schockaert", n_samples=5000), 0.9693244096156499)
+        self.assertAlmostEqual(f1.between(f1, f1, method="Derrac_Schockaert", n_samples=500), 1.0)
+        self.assertAlmostEqual(f1.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 1.0)
+        self.assertAlmostEqual(f3.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 1.0)
+        self.assertAlmostEqual(f3.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 1.0)
+        self.assertAlmostEqual(f4.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 0.9993689077892981)
+        self.assertAlmostEqual(f4.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 0.9993689077892981)
+        self.assertAlmostEqual(f5.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 0.9698658719503939)
+        self.assertAlmostEqual(f5.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 0.9698658719503939)
+
+    def test_between_Derrac_Schockaert_pear_lemon(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+ 
+        c_lemon = Cuboid([0.7, 0.45, 0.0], [0.8, 0.55, 0.1], domains)
+        s_lemon = Core([c_lemon], domains)
+        w_lemon = Weights({"color":0.5, "shape":0.5, "taste":2.0}, w_dim)
+        lemon = Concept(s_lemon, 1.0, 20.0, w_lemon)
+
+        self.assertAlmostEqual(pear.between(lemon, lemon, method="Derrac_Schockaert", n_samples=500), 0.25433084443516624)
+
 
 unittest.main()

@@ -150,21 +150,24 @@ def check(cuboids, domains):
 
 def from_cuboids(cuboids, domains):
     """Create a core from possibly non-intersecting cuboids by applying the repair mechanism."""
+
+    # first: simplify the cuboids to make life easier (and avoid weird results down the road)
+    cubs = simplify(cuboids)
     
-    if check(cuboids, domains):
-        return Core(cuboids, domains)  # all cuboids already intersect --> nothing to do
+    if check(cubs, domains):
+        return Core(cubs, domains)  # all cuboids already intersect --> nothing to do
     
     # need to perform repair mechanism        
     midpoints = []
-    for cuboid in cuboids: # midpoint of each cuboid
+    for cuboid in cubs: # midpoint of each cuboid
         midpoints.append(map(lambda x, y: 0.5*(x + y), cuboid._p_min, cuboid._p_max))
     # sum up all midpoints & divide by number of cuboids
     midpoint = reduce(lambda x, y: map(lambda a,b: a+b, x, y), midpoints)
-    midpoint = map(lambda x: x/len(cuboids), midpoint)
+    midpoint = map(lambda x: x/len(cubs), midpoint)
             
     # extend cuboids
     modified_cuboids = []
-    for cuboid in cuboids:
+    for cuboid in cubs:
         p_min = map(min, cuboid._p_min, midpoint)
         p_max = map(max, cuboid._p_max, midpoint)
         modified_cuboids.append(cub.Cuboid(p_min, p_max, cuboid._domains))

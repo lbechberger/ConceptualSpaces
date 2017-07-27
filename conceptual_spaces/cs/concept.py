@@ -143,8 +143,9 @@ class Concept:
             first_guess = map(lambda (x, y): (x + y)/2.0, bounds)
             to_minimize = lambda x: -membership(x, a, self._mu, self._c, self._weights)
             constr = [{"type":"eq", "fun":(lambda x: abs(membership(x, a, self._mu, self._c, self._weights) - membership(x, b, other._mu, other._c, other._weights)))}]
-            opt = scipy.optimize.minimize(to_minimize, first_guess, constraints = constr, bounds = bounds, options = {"eps":cs._epsilon})
-            if not opt.success:
+            opt = scipy.optimize.minimize(to_minimize, first_guess, constraints = constr, bounds = bounds, options = {"eps":cs._epsilon}) #, "maxiter":500
+            if not opt.success and abs(opt.fun - membership(opt.x, b, other._mu, other._c, other._weights)) < 1e-06:
+                # if optimizer failed to find exact solution, but managed to find approximate solution: take it
                 raise Exception("Optimizer failed!")
             # reconstruct full x by inserting fixed coordinates that will be extruded later
             x_star = []
@@ -723,6 +724,8 @@ class Concept:
                     # maximizing over x in c1 and z in c2; for convenience, do this at the same time
                     def inner_optimization(y):
                         x_start = list(map(lambda x: 0.5*x[0] + 0.5*x[1], x_bounds))
+                        if x_start[:cs._n_dim] == x_start[-cs._n_dim:]: # if x=z then btw = 0 and no gradient --> fix that
+                            x_start = map(lambda x, y: x + y, x_start, [-0.001]*cs._n_dim + [0.001]*cs._n_dim)
                         to_minimize_x = lambda x, y: -1*cs.between(x[:cs._n_dim], y, x[-cs._n_dim:], self._weights, method='soft')
                         opt = scipy.optimize.minimize(to_minimize_x, x_start, args=(y,), bounds=x_bounds, options={'gtol':cs._epsilon})
                         if not opt.success:
@@ -734,7 +737,7 @@ class Concept:
                         corner = remaining_corners[i]
                         bounds = remaining_bounds[i]
                         to_minimize_y = lambda y: -1 * inner_optimization(y).fun
-                        opt = scipy.optimize.minimize(to_minimize_y, corner, bounds=bounds, options={'gtol':cs._epsilon})
+                        opt = scipy.optimize.minimize(to_minimize_y, corner, bounds=bounds, options={'gtol':cs._epsilon, 'eps':cs._epsilon})
                         if not opt.success:
                             raise Exception("optimization failed")
                         max_betweenness[i] = max(max_betweenness[i], opt.fun)
@@ -796,6 +799,8 @@ class Concept:
                         
                     x_bounds = zip(c1._p_min, c1._p_max) + zip(c2._p_min, c2._p_max)
                     x_start = list(map(lambda x: 0.5*x[0] + 0.5*x[1], x_bounds))
+                    if x_start[:cs._n_dim] == x_start[-cs._n_dim:]: # if x=z then btw = 0 and no gradient --> fix that
+                        x_start = map(lambda x, y: x + y, x_start, [-0.001]*cs._n_dim + [0.001]*cs._n_dim)
                     for i in range(len(samples)):
                         if crisp_between[i]:
                             continue
