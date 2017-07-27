@@ -1782,8 +1782,8 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(f3.between(f2, f1, method="core_soft"), 1.0)
         self.assertAlmostEqual(f4.between(f1, f2, method="core_soft"), 1.0)
         self.assertAlmostEqual(f4.between(f2, f1, method="core_soft"), 1.0)
-        self.assertAlmostEqual(f5.between(f1, f2, method="core_soft"), 0.2718005674075077)
-        self.assertAlmostEqual(f5.between(f2, f1, method="core_soft"), 0.2718005674075077)
+        self.assertAlmostEqual(f5.between(f1, f2, method="core_soft"), 0.35229324842558896)
+        self.assertAlmostEqual(f5.between(f2, f1, method="core_soft"), 0.35229324842558896)
 
     def test_between_core_soft_two_cuboids_3d(self):
         doms = {0:[0,1,2]}       
@@ -1803,7 +1803,7 @@ class TestConcept(unittest.TestCase):
         s4 = Core([c4], doms)
         s5 = Core([c5_1,c5_2],doms)
         s6 = Core([c6], doms)
-        w = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w = Weights({0:1}, {0:{0:1, 1:0.5, 2:0.5}})
         f1 = Concept(s1, 1.0, 1.0, w)
         f2 = Concept(s2, 1.0, 1.0, w)
         f3 = Concept(s3, 1.0, 1.0, w)
@@ -1815,12 +1815,12 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(f1.between(f1, f2, method="core_soft"), 1.0)
         self.assertAlmostEqual(f3.between(f1, f2, method="core_soft"), 1.0)
         self.assertAlmostEqual(f3.between(f2, f1, method="core_soft"), 1.0)
-        self.assertAlmostEqual(f4.between(f1, f2, method="core_soft"), 0.999842135767609)
-        self.assertAlmostEqual(f4.between(f2, f1, method="core_soft"), 0.999842135767609)
-        self.assertAlmostEqual(f5.between(f1, f2, method="core_soft"), 0.9419779593789043)
-        self.assertAlmostEqual(f5.between(f2, f1, method="core_soft"), 0.9419779593789043)
-        self.assertAlmostEqual(f6.between(f1, f2, method="core_soft"), 0.829687471777429)
-        self.assertAlmostEqual(f6.between(f2, f1, method="core_soft"), 0.829687471777429)
+        self.assertAlmostEqual(f4.between(f1, f2, method="core_soft"), 0.999871265495708)
+        self.assertAlmostEqual(f4.between(f2, f1, method="core_soft"), 0.999871265495708)
+        self.assertAlmostEqual(f5.between(f1, f2, method="core_soft"), 0.9562871559899375)
+        self.assertAlmostEqual(f5.between(f2, f1, method="core_soft"), 0.9562871559899375)
+        self.assertAlmostEqual(f6.between(f1, f2, method="core_soft"), 0.8660254037844386)
+        self.assertAlmostEqual(f6.between(f2, f1, method="core_soft"), 0.8660254037844386)
 
     def test_between_core_soft_two_cuboids_2d(self):
         doms = {0:[0,1]}       
@@ -1839,7 +1839,7 @@ class TestConcept(unittest.TestCase):
         s3 = Core([c3_1, c3_2], doms)
         s4 = Core([c4_1, c4_2], doms)
         s5 = Core([c5], doms)
-        w = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w = Weights({0:1}, {0:{0:1, 1:2}})
         f1 = Concept(s1, 1.0, 1.0, w)
         f2 = Concept(s2, 1.0, 1.0, w)
         f3 = Concept(s3, 0.9, 15.0, w)
@@ -1850,10 +1850,10 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(f1.between(f1, f2, method="core_soft"), 1.0)
         self.assertAlmostEqual(f3.between(f1, f2, method="core_soft"), 1.0)
         self.assertAlmostEqual(f3.between(f2, f1, method="core_soft"), 1.0)
-        self.assertAlmostEqual(f4.between(f1, f2, method="core_soft"), 0.9815537092373232)
-        self.assertAlmostEqual(f4.between(f2, f1, method="core_soft"), 0.9815537092373232)
-        self.assertAlmostEqual(f5.between(f1, f2, method="core_soft"), 0.8958064164776166)
-        self.assertAlmostEqual(f5.between(f2, f1, method="core_soft"), 0.8958064164776166)
+        self.assertAlmostEqual(f4.between(f1, f2, method="core_soft"), 0.9716852018885428)
+        self.assertAlmostEqual(f4.between(f2, f1, method="core_soft"), 0.9716852018885428)
+        self.assertAlmostEqual(f5.between(f1, f2, method="core_soft"), 0.9318330092895645)
+        self.assertAlmostEqual(f5.between(f2, f1, method="core_soft"), 0.9318330092895645)
 
 
 unittest.main()

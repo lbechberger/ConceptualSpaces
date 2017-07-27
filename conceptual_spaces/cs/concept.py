@@ -655,7 +655,7 @@ class Concept:
             self_point = self._core.midpoint()
             first_point = first._core.midpoint()
             second_point = second._core.midpoint()
-            return cs.between(first_point, self_point, second_point, method="crisp")
+            return cs.between(first_point, self_point, second_point, self._weights, method="crisp")
         
         elif method == "naive_soft":
             self_point = self._core.midpoint()
@@ -721,7 +721,7 @@ class Concept:
                     # maximizing over x in c1 and z in c2; for convenience, do this at the same time
                     def inner_optimization(y):
                         x_start = list(map(lambda x: 0.5*x[0] + 0.5*x[1], x_bounds))
-                        to_minimize_x = lambda x, y: -1*cs.between(x[:cs._n_dim], y, x[-cs._n_dim:], method='soft')
+                        to_minimize_x = lambda x, y: -1*cs.between(x[:cs._n_dim], y, x[-cs._n_dim:], self._weights, method='soft')
                         opt = scipy.optimize.minimize(to_minimize_x, x_start, args=(y,), bounds=x_bounds, options={'gtol':cs._epsilon})
                         if not opt.success:
                             raise Exception("optimization failed")
