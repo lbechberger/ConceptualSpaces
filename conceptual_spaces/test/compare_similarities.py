@@ -6,8 +6,9 @@ Created on Wed Jul 12 15:26:56 2017
 """
 
 execfile("../demo/fruit_space.py")
+space.add_concept("apple-pear", apple.intersect_with(pear))
 
-fruits = ["apple", "banana", "pear", "lemon", "orange", "Granny Smith"]
+fruits = ["apple", "banana", "pear", "lemon", "orange", "Granny Smith", "apple-pear"]
 colors = ["red", "green", "blue"]
 methods = ["naive", "Jaccard", "Jaccard_mod", "subset", "min_core", "max_core", "Hausdorff_core", "min_membership_core", 
            "max_membership_core", "min_center", "max_center", "Hausdorff_center", "min_membership_center", "max_membership_center"]

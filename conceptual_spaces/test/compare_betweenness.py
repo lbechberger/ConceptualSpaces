@@ -9,7 +9,7 @@ execfile("../demo/fruit_space.py")
 
 fruits = ["apple", "banana", "pear", "lemon", "orange", "Granny Smith"]
 colors = ["red", "green", "blue"]
-methods = ["naive", "naive_soft", "subset", "core", "core_soft", "Derrac_Schockaert"]
+methods = ["naive", "naive_soft", "subset", "core", "core_soft", "Derrac_Schockaert", "core_soft_avg"]
 
 # raw values
 print("first, second, third, {0}".format(", ".join(methods)))

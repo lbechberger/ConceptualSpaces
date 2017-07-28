@@ -2038,5 +2038,122 @@ class TestConcept(unittest.TestCase):
 
         self.assertAlmostEqual(pear.between(lemon, lemon, method="Derrac_Schockaert", n_samples=500), 0.25433084443516624)
 
+    # 'core_soft_avg'
+    def test_between_core_soft_avg(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([0.30,0.40,0.30],[0.40,0.40,0.50], doms)
+        c4 = Cuboid([0.30,0.30,0.30],[0.40,0.40,0.50], doms)
+        c5_1 = Cuboid([0.8, 1.1, 0.8],[2.0, 1.6, 1.4], doms)
+        c5_2 = Cuboid([1.4, 0.9, 1.3],[2.9, 1.5, 2.0], doms)
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], doms)
+        s4 = Core([c4], doms)
+        s5 = Core([c5_1,c5_2],doms)
+        w = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        f1 = Concept(s1, 1.0, 1.0, w)
+        f2 = Concept(s2, 1.0, 1.0, w)
+        f3 = Concept(s3, 1.0, 1.0, w)
+        f4 = Concept(s4, 1.0, 1.0, w)
+        f5 = Concept(s5, 1.0, 1.0, w)
+        
+        self.assertAlmostEqual(f1.between(f1, f1, method="core_soft_avg", n_samples=500), 1.0)
+        self.assertAlmostEqual(f3.between(f1, f2, method="core_soft_avg", n_samples=500), 1.0)
+        self.assertAlmostEqual(f3.between(f2, f1, method="core_soft_avg", n_samples=500), 1.0)
+        self.assertAlmostEqual(f4.between(f1, f2, method="core_soft_avg", n_samples=500), 1.0)
+        self.assertAlmostEqual(f4.between(f2, f1, method="core_soft_avg", n_samples=500), 1.0)
+        self.assertAlmostEqual(f5.between(f1, f2, method="core_soft_avg", n_samples=500), 0.4256712666175846)
+        self.assertAlmostEqual(f5.between(f2, f1, method="core_soft_avg", n_samples=500), 0.4256712666175846)
+
+    def test_between_core_soft_avg_two_cuboids_3d(self):
+        doms = {0:[0,1,2]}       
+        cs.init(3, doms)
+        c1_1 = Cuboid([0.00,0.70,0.90],[0.40,1.00,1.00], doms)
+        c1_2 = Cuboid([0.00,0.50,0.70],[0.20,1.00,1.00], doms)
+        c2_1 = Cuboid([0.80,0.00,0.00],[1.00,0.30,0.40], doms)
+        c2_2 = Cuboid([0.80,0.00,0.00],[1.00,0.50,0.20], doms)
+        c3 = Cuboid([0.40,0.40,0.40],[0.70,0.70,0.50], doms)
+        c4 = Cuboid([0.40,0.40,0.30],[0.70,0.70,0.50], doms)
+        c5_1 = Cuboid([0.40,0.40,0.40],[0.70,0.70,0.50], doms)
+        c5_2 = Cuboid([0.40,0.40,0.40],[0.50,0.50,1.00], doms)
+        c6 = Cuboid([0.40, 0.40, 0.40], [0.60, 0.70, 1.20], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2_1, c2_2], doms)
+        s3 = Core([c3], doms)
+        s4 = Core([c4], doms)
+        s5 = Core([c5_1,c5_2],doms)
+        s6 = Core([c6], doms)
+        w = Weights({0:1}, {0:{0:1, 1:0.5, 2:0.5}})
+        f1 = Concept(s1, 1.0, 1.0, w)
+        f2 = Concept(s2, 1.0, 1.0, w)
+        f3 = Concept(s3, 1.0, 1.0, w)
+        f4 = Concept(s4, 1.0, 1.0, w)
+        f5 = Concept(s5, 1.0, 1.0, w)
+        f6 = Concept(s6, 0.5, 5.0, w)
+        
+        self.assertAlmostEqual(f1.between(f1, f1, method="core_soft_avg", n_samples=500), 1.0)
+        self.assertAlmostEqual(f1.between(f1, f2, method="core_soft_avg", n_samples=500), 1.0)
+        self.assertAlmostEqual(f3.between(f1, f2, method="core_soft_avg", n_samples=500), 1.0)
+        self.assertAlmostEqual(f3.between(f2, f1, method="core_soft_avg", n_samples=500), 1.0)
+        self.assertAlmostEqual(f4.between(f1, f2, method="core_soft_avg", n_samples=500), 0.9999839081869635)
+        self.assertAlmostEqual(f4.between(f2, f1, method="core_soft_avg", n_samples=500), 0.9999839081869635)
+        self.assertAlmostEqual(f5.between(f1, f2, method="core_soft_avg", n_samples=500), 0.9890717889974844)
+        self.assertAlmostEqual(f5.between(f2, f1, method="core_soft_avg", n_samples=500), 0.9890717889974844)
+        self.assertAlmostEqual(f6.between(f1, f2, method="core_soft_avg", n_samples=500), 0.9337296274993809)
+        self.assertAlmostEqual(f6.between(f2, f1, method="core_soft_avg", n_samples=500), 0.9337296274993809)
+
+    def test_between_core_soft_avg_two_cuboids_2d(self):
+        doms = {0:[0,1]}       
+        cs.init(2, doms)
+        c1_1 = Cuboid([0.10,0.80],[0.40,0.90], doms)
+        c1_2 = Cuboid([0.10,0.60],[0.20,1.00], doms)
+        c2_1 = Cuboid([0.70,0.10],[0.90,0.40], doms)
+        c2_2 = Cuboid([0.80,0.30],[1.00,0.70], doms)
+        c3_1 = Cuboid([0.40,0.40],[0.70,0.50], doms)
+        c3_2 = Cuboid([0.60,0.30],[0.70,0.80], doms)
+        c4_1 = Cuboid([0.40,0.40],[0.70,0.50], doms)
+        c4_2 = Cuboid([0.60,0.30],[0.70,0.90], doms)
+        c5 = Cuboid([0.90,0.20],[1.00,0.30], doms)
+        s1 = Core([c1_1, c1_2], doms)
+        s2 = Core([c2_1, c2_2], doms)
+        s3 = Core([c3_1, c3_2], doms)
+        s4 = Core([c4_1, c4_2], doms)
+        s5 = Core([c5], doms)
+        w = Weights({0:1}, {0:{0:1, 1:2}})
+        f1 = Concept(s1, 1.0, 1.0, w)
+        f2 = Concept(s2, 1.0, 1.0, w)
+        f3 = Concept(s3, 0.9, 15.0, w)
+        f4 = Concept(s4, 0.9, 15.0, w)
+        f5 = Concept(s5, 0.9, 15.0, w)
+        
+        self.assertAlmostEqual(f1.between(f1, f1, method="core_soft_avg", n_samples=500), 1.0)
+        self.assertAlmostEqual(f1.between(f1, f2, method="core_soft_avg", n_samples=500), 1.0)
+        self.assertAlmostEqual(f3.between(f1, f2, method="core_soft_avg", n_samples=500), 1.0)
+        self.assertAlmostEqual(f3.between(f2, f1, method="core_soft_avg", n_samples=500), 1.0)
+        self.assertAlmostEqual(f4.between(f1, f2, method="core_soft_avg", n_samples=500), 0.9929213004721357)
+        self.assertAlmostEqual(f4.between(f2, f1, method="core_soft_avg", n_samples=500), 0.9929213004721357)
+        self.assertAlmostEqual(f5.between(f1, f2, method="core_soft_avg", n_samples=500), 0.9829582523223912)
+        self.assertAlmostEqual(f5.between(f2, f1, method="core_soft_avg", n_samples=500), 0.9829582523223912)
+
+    def test_between_core_soft_avg_pear_lemon(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+ 
+        c_lemon = Cuboid([0.7, 0.45, 0.0], [0.8, 0.55, 0.1], domains)
+        s_lemon = Core([c_lemon], domains)
+        w_lemon = Weights({"color":0.5, "shape":0.5, "taste":2.0}, w_dim)
+        lemon = Concept(s_lemon, 1.0, 20.0, w_lemon)
+
+        self.assertAlmostEqual(pear.between(lemon, lemon, method="core_soft_avg", n_samples=500), 0.21538461538461545)
+
 
 unittest.main()

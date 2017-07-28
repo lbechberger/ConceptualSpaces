@@ -652,7 +652,9 @@ class Concept:
             'core':                   core of self is between (in crisp sense) cores of first and second
             'core_soft':              core of self is between (in soft sense) cores of first and second
             'Derrac_Schockaert':      approximation of Btw_3^R proposed by Derrac & Schockaert in 'Enriching Taxonomies of Place Types Using Flickr'
-                                      'n_samples' can be used to adjust the number of samples used for computing this approximation."""
+                                      'n_samples' can be used to adjust the number of samples used for computing this approximation.
+            'core_soft_max':          average betweenness (in soft sense) of self's corner points wrt. cores of first and second
+                                      compromise between 'core_soft' (uses min over corners) and 'Derrac_Schokaert' (uses avg over everything)"""
 
         if method == "naive":        
             self_point = self._core.midpoint()
@@ -686,7 +688,7 @@ class Concept:
                 return 0.0
             return 1.0
             
-        elif method == "core_soft":
+        elif method == "core_soft" or method == "core_soft_avg":
             # create all corner points of all cuboids of this concept
             corner_points = []
             corner_bounds = []
@@ -742,7 +744,12 @@ class Concept:
                             raise Exception("optimization failed")
                         max_betweenness[i] = max(max_betweenness[i], opt.fun)
             
-            return min(max_betweenness)
+            if method == "core_soft":
+                # return the minimum over all corner points
+                return min(max_betweenness)
+            else: # method == "core_soft_avg"
+                # return the average over all corner points (note that max_betweenness contains only values for points not crisply between)
+                return (sum(max_betweenness) + 1.0*crisp_betweenness.count(True)) / len(corner_points)
 
         elif method == "Derrac_Schockaert":
             # 1 / (size of self._core) * sum_{y in self._core}: max_{x in first._core, z in second._core} cs.between(x,y,z, method='soft')
