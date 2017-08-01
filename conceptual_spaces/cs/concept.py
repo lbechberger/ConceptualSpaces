@@ -442,7 +442,6 @@ class Concept:
         The following methods are avaliable:
             'naive':                  similarity of cores' midpoints (used as default)
             'Jaccard':                Jaccard similarity index (size of intersection over size of union)
-            'Jaccard_mod':            modified Jaccard similarity index (denominator: self.size() + other.size() - intersection.size())
             'subset':                 use value returned by subset_of()
             'min_core':               similarity based on minimum distance of cores
             'max_core':               similarity based on maximum distance of cores
@@ -455,75 +454,66 @@ class Concept:
             'min_membership_center':  minimal membership of any point in self's central region to other
             'max_membership_center':  maximal membership of any point in self's central region to other"""
         
+        # project both concepts onto their common domains to find a common ground                              
+        common_domains = {}
+        for dom, dims in self._core._domains.iteritems():
+            if dom in other._core._domains and other._core._domains[dom] == dims:
+                common_domains[dom] = dims
+        if len(common_domains) == 0:
+            # can't really compare them because they have no common domains --> return 0.0
+            return 0.0
+        projected_self = self.project_onto(common_domains)
+        projected_other = other.project_onto(common_domains)
+
         if method == "naive":
-            self_midpoint = self._core.midpoint()
-            other_midpoint = other._core.midpoint()
+            self_midpoint = projected_self._core.midpoint()
+            other_midpoint = projected_other._core.midpoint()
             
-            # if the concepts are defined on different domains, choose the midpoints such that their distance is minimized
-            for dim in range(cs._n_dim):
-                if isnan(self_midpoint[dim]) and isnan(other_midpoint[dim]):
-                    self_midpoint[dim] = 0
-                    other_midpoint[dim] = 0
-                elif isnan(self_midpoint[dim]):
-                    self_midpoint[dim] = other_midpoint[dim]
-                elif isnan(other_midpoint[dim]):
-                    other_midpoint[dim] = self_midpoint[dim]
-                    
-            sim = exp(-other._c * cs.distance(self_midpoint, other_midpoint, other._weights))
+            sim = exp(-projected_other._c * cs.distance(self_midpoint, other_midpoint, projected_other._weights))
             return sim
         
         elif method == "Jaccard":
-            intersection = self.intersect_with(other)
-            union = self.unify_with(other)
+            intersection = projected_self.intersect_with(projected_other)
+            union = projected_self.unify_with(projected_other)
 
-            intersection._c = other._c
-            union._c = other._c
-            intersection._weights = other._weights  
-            union._weights = other._weights
+            intersection._c = projected_other._c
+            union._c = projected_other._c
+            intersection._weights = projected_other._weights  
+            union._weights = projected_other._weights
             
             sim = intersection.size() / union.size()
             return sim
         
-        elif method == "Jaccard_mod":
-            intersection = self.intersect_with(other)
-            self_copy = Concept(self._core, self._mu, other._c, other._weights)
-
-            intersection._c = other._c
-            intersection._weights = other._weights  
-            
-            sim = intersection.size() / (self_copy.size() + other.size() - intersection.size())
-            return sim
-        
         elif method == "subset":
-            return self.subset_of(other)
+            return projected_self.subset_of(projected_other)
             
         elif method == "min_core":
             min_dist = float("inf")
-            for c1 in self._core._cuboids:
-                for c2 in other._core._cuboids:
+            for c1 in projected_self._core._cuboids:
+                for c2 in projected_other._core._cuboids:
                     a_range, b_range = c1.get_closest_points(c2)
                     a = map(lambda x: x[0], a_range)
                     b = map(lambda x: x[0], b_range)
-                    dist = cs.distance(a, b, other._weights)
+                    dist = cs.distance(a, b, projected_other._weights)
                     min_dist = min(min_dist, dist)
-            sim = exp(-other._c * min_dist)
+            sim = exp(-projected_other._c * min_dist)
             return sim
         
         elif method == "max_core":
             max_dist = 0
-            for c1 in self._core._cuboids:
-                for c2 in other._core._cuboids:
+            for c1 in projected_self._core._cuboids:
+                for c2 in projected_other._core._cuboids:
                     a, b = c1.get_most_distant_points(c2)
-                    dist = cs.distance(a, b, other._weights)
+                    dist = cs.distance(a, b, projected_other._weights)
                     max_dist = max(max_dist, dist)
-            sim = exp(-other._c * max_dist)
+            sim = exp(-projected_other._c * max_dist)
             return sim
         
         elif method == "Hausdorff_core":
             self_candidates = []
             other_candidates = []
-            for c1 in self._core._cuboids:
-                for c2 in other._core._cuboids:
+            for c1 in projected_self._core._cuboids:
+                for c2 in projected_other._core._cuboids:
                     a, b = c1.get_most_distant_points(c2)
                     self_candidates.append(a)
                     other_candidates.append(b)
@@ -531,65 +521,65 @@ class Concept:
             max_dist = 0
             for self_candidate in self_candidates:
                 min_dist = float("inf")
-                for c2 in other._core._cuboids:
+                for c2 in projected_other._core._cuboids:
                     p = c2.find_closest_point(self_candidate)
-                    min_dist = min(min_dist, cs.distance(self_candidate, p, other._weights))
+                    min_dist = min(min_dist, cs.distance(self_candidate, p, projected_other._weights))
                 max_dist = max(max_dist, min_dist)
             for other_candidate in other_candidates:
                 min_dist = float("inf")
-                for c1 in self._core._cuboids:
+                for c1 in projected_self._core._cuboids:
                     p = c1.find_closest_point(other_candidate)
-                    min_dist = min(min_dist, cs.distance(other_candidate, p, other._weights))
+                    min_dist = min(min_dist, cs.distance(other_candidate, p, projected_other._weights))
                 max_dist = max(max_dist, min_dist)
             
-            sim = exp(-other._c * max_dist)
+            sim = exp(-projected_other._c * max_dist)
             return sim
         
         elif method == "min_membership_core":
             candidates = []
-            for c1 in self._core._cuboids:
-                for c2 in other._core._cuboids:
+            for c1 in projected_self._core._cuboids:
+                for c2 in projected_other._core._cuboids:
                     a, b = c1.get_most_distant_points(c2)
                     candidates.append(a)
 
             min_membership = 1.0            
             for candidate in candidates:
-                min_membership = min(min_membership, other.membership_of(candidate))
+                min_membership = min(min_membership, projected_other.membership_of(candidate))
             
             return min_membership
         
         elif method == "max_membership_core":
             candidates = []
-            for c1 in self._core._cuboids:
-                for c2 in other._core._cuboids:
+            for c1 in projected_self._core._cuboids:
+                for c2 in projected_other._core._cuboids:
                     a, b = c1.get_closest_points(c2)
                     candidates.append(map(lambda x: x[0], a))
 
             max_membership = 0.0            
             for candidate in candidates:
-                max_membership = max(max_membership, other.membership_of(candidate))
+                max_membership = max(max_membership, projected_other.membership_of(candidate))
             
             return max_membership
         
         elif method == "min_center":
-            p1 = self._core.get_center()
-            p2 = other._core.get_center()
+            p1 = projected_self._core.get_center()
+            p2 = projected_other._core.get_center()
             a_range, b_range = p1.get_closest_points(p2)
             a = map(lambda x: x[0], a_range)
             b = map(lambda x: x[0], b_range)
-            sim = exp(-other._c * cs.distance(a, b, other._weights))
+            sim = exp(-projected_other._c * cs.distance(a, b, projected_other._weights))
             return sim
         
         elif method == "max_center":
-            p1 = self._core.get_center()
-            p2 = other._core.get_center()
+            p1 = projected_self._core.get_center()
+            p2 = projected_other._core.get_center()
             a, b = p1.get_most_distant_points(p2)
-            sim = exp(-other._c * cs.distance(a, b, other._weights))
+            sim = exp(-projected_other._c * cs.distance(a, b, projected_other._weights))
             return sim
         
         elif method == "Hausdorff_center":
-            p1 = self._core.get_center()
-            p2 = other._core.get_center()
+            p1 = projected_self._core.get_center()
+            p2 = projected_other._core.get_center()
             a_distant, b_distant = p1.get_most_distant_points(p2)
             a_close, b_close = p1.get_closest_points(p2)
             
@@ -610,39 +600,39 @@ class Concept:
                 else:
                     b.append(b_close[i][1])
             
-            first_dist = cs.distance(a_distant, b, other._weights)                  
-            second_dist = cs.distance(b_distant, a, other._weights)
-            sim = exp(-other._c * max(first_dist, second_dist))
+            first_dist = cs.distance(a_distant, b, projected_other._weights)                  
+            second_dist = cs.distance(b_distant, a, projected_other._weights)
+            sim = exp(-projected_other._c * max(first_dist, second_dist))
             return sim
 
         elif method == "min_membership_center":
-            center = self._core.get_center()
+            center = projected_self._core.get_center()
             candidates = []
-            for c2 in other._core._cuboids:
+            for c2 in projected_other._core._cuboids:
                 a, b = center.get_most_distant_points(c2)
                 candidates.append(a)
             
             min_membership = 1.0
             for candidate in candidates:
-                min_membership = min(min_membership, other.membership_of(candidate))
+                min_membership = min(min_membership, projected_other.membership_of(candidate))
             return min_membership
         
         elif method == "max_membership_center":
-            center = self._core.get_center()
+            center = projected_self._core.get_center()
             candidates = []
-            for c2 in other._core._cuboids:
+            for c2 in projected_other._core._cuboids:
                 a, b = center.get_closest_points(c2)
                 candidates.append(map(lambda x: x[0], a))
             
             max_membership = 0.0
             for candidate in candidates:
-                max_membership = max(max_membership, other.membership_of(candidate))
+                max_membership = max(max_membership, projected_other.membership_of(candidate))
             return max_membership
         
         else:
             raise Exception("Unknown method")
 
-    def between(self, first, second, method="naive", n_samples=5000):
+    def between(self, first, second, method="naive"):
         """Computes the degree to which this concept is between the other two given concepts.
         
         The following methods are avaliable:
@@ -650,60 +640,62 @@ class Concept:
             'naive_soft':             soft betweenness of cores' midpoints
             'subset':                 self.subset_of(first.unify_with(second))
             'core':                   core of self is between (in crisp sense) cores of first and second
-            'core_soft':              core of self is between (in soft sense) cores of first and second
-            'Derrac_Schockaert':      approximation of Btw_3^R proposed by Derrac & Schockaert in 'Enriching Taxonomies of Place Types Using Flickr'
-                                      'n_samples' can be used to adjust the number of samples used for computing this approximation.
-            'core_soft_max':          average betweenness (in soft sense) of self's corner points wrt. cores of first and second
-                                      compromise between 'core_soft' (uses min over corners) and 'Derrac_Schokaert' (uses avg over everything)"""
+            'core_soft':              core of self is between (in soft sense) cores of first and second (min over all corner points of self)
+            'core_soft_avg':          average betweenness (in soft sense) of self's corner points wrt. cores of first and second
+                                      Btw_3^R proposed by Derrac & Schockaert in 'Enriching Taxonomies of Place Types Using Flickr'"""
+        
+        # project all concepts onto their common domains to find a common ground                              
+        common_domains = {}
+        common_dims = []
+        for dom, dims in self._core._domains.iteritems():
+            if dom in first._core._domains and first._core._domains[dom] == dims and dom in second._core._domains and second._core._domains[dom] == dims:
+                common_domains[dom] = dims
+                common_dims = common_dims + dims
+        common_dims = sorted(common_dims)
+        n_common_dims = len(common_dims)
+        if len(common_domains) == 0:
+            # can't really compare them because they have no common domains --> return 0.0
+            return 0.0
+        projected_self = self.project_onto(common_domains)
+        projected_first = first.project_onto(common_domains)
+        projected_second = second.project_onto(common_domains)
 
         if method == "naive":        
-            self_point = self._core.midpoint()
-            first_point = first._core.midpoint()
-            second_point = second._core.midpoint()
+            self_point = projected_self._core.midpoint()
+            first_point = projected_first._core.midpoint()
+            second_point = projected_second._core.midpoint()
             return cs.between(first_point, self_point, second_point, self._weights, method="crisp")
         
         elif method == "naive_soft":
-            self_point = self._core.midpoint()
-            first_point = first._core.midpoint()
-            second_point = second._core.midpoint()
+            self_point = projected_self._core.midpoint()
+            first_point = projected_first._core.midpoint()
+            second_point = projected_second._core.midpoint()
             return cs.between(first_point, self_point, second_point, self._weights, method="soft")
 
         elif method == "subset":
-            return self.subset_of(first.unify_with(second))
+            return projected_self.subset_of(projected_first.unify_with(projected_second))
 
-        elif method == "core":
-            # create all corner points of all cuboids of this concept
-            corner_points = []
-            for cuboid in self._core._cuboids:
-                binary_vecs = itertools.product([False, True], repeat = cs._n_dim)
-                for vec in binary_vecs:
-                    point = []
-                    for i in range(cs._n_dim):
-                        point.append(cuboid._p_max[i] if vec[i] else cuboid._p_min[i])
-                    corner_points.append(point)
-            
-            betweenness = _check_crisp_betweenness(corner_points, first, second)
-            remaining_corners = list(itertools.compress(corner_points, map(lambda x: not x, betweenness)))
-            if len(remaining_corners) > 0:
-                return 0.0
-            return 1.0
-            
-        elif method == "core_soft" or method == "core_soft_avg":
+        elif method == "core" or method == "core_soft" or method == "core_soft_avg":
             # create all corner points of all cuboids of this concept
             corner_points = []
             corner_bounds = []
-            for cuboid in self._core._cuboids:
-                binary_vecs = itertools.product([False, True], repeat = cs._n_dim)
+            for cuboid in projected_self._core._cuboids:
+                binary_vecs = itertools.product([False, True], repeat = n_common_dims)
                 cuboid_bounds = zip(cuboid._p_min, cuboid._p_max)
                 for vec in binary_vecs:
                     point = []
+                    j = 0
                     for i in range(cs._n_dim):
-                        point.append(cuboid._p_max[i] if vec[i] else cuboid._p_min[i])
+                        if i in common_dims:
+                            point.append(cuboid._p_max[i] if vec[j] else cuboid._p_min[i])
+                            j += 1
+                        else:
+                            point.append(0.0)
                     corner_points.append(point)
                     corner_bounds.append(cuboid_bounds)
 
             # remove all corners that are already between in a crisp sense
-            crisp_betweenness = _check_crisp_betweenness(corner_points, first, second)
+            crisp_betweenness = _check_crisp_betweenness(corner_points, projected_first, projected_second)
             to_keep = map(lambda x: not x, crisp_betweenness)
             remaining_corners = list(itertools.compress(corner_points, to_keep))
             remaining_bounds = list(itertools.compress(corner_bounds, to_keep))
@@ -712,24 +704,51 @@ class Concept:
             if len(remaining_corners) == 0:
                 return 1.0
 
+            # if not completely in crisp sense: return 0.0 for 'core'
+            if method == "core":
+                return 0.0
+
             # store the maximum betweenness value we have found starting from the ith corner point
             max_betweenness = [0.0]*len(remaining_corners)            
             
-            for c1 in first._core._cuboids:
-                for c2 in second._core._cuboids:
+            for c1 in projected_first._core._cuboids:
+                for c2 in projected_second._core._cuboids:
                     
                     if not c1._compatible(c2):
                         raise Exception("Incompatible cuboids")
                         
-                    x_bounds = zip(c1._p_min, c1._p_max) + zip(c2._p_min, c2._p_max)
+                    x_bounds = []
+                    x_start = []
+                    for i in common_dims:
+                        x_bounds.append((c1._p_min[i], c1._p_max[i]))
+                        x_start.append(0.5 * c1._p_min[i] + 0.5 * c1._p_max[i])
+                    for i in common_dims:
+                        x_bounds.append((c2._p_min[i], c2._p_max[i]))
+                        x_start.append(0.5 * c2._p_min[i] + 0.5 * c2._p_max[i])
+                    # if x=z then btw = 0 and no gradient --> fix that
+                    if x_start[:cs._n_dim] == x_start[-cs._n_dim:]: 
+                        x_start = map(lambda x, y: x + y, x_start, [-0.001]*n_common_dims + [0.001]*n_common_dims)
+                    
+                    def neg_betweenness(x,y):
+                        x_new = []
+                        y_new = []
+                        z_new = []
+                        j = 0
+                        for i in range(cs._n_dim):
+                            if i in common_dims:
+                                x_new.append(x[j])
+                                y_new.append(y[j])
+                                z_new.append(x[len(x)/2 + j])
+                                j += 1
+                            else:
+                                x_new.append(0)
+                                y_new.append(0)
+                                z_new.append(0)
+                        return -1.0 * cs.between(x_new, y_new, z_new, projected_self._weights, method='soft')
                     
                     # maximizing over x in c1 and z in c2; for convenience, do this at the same time
                     def inner_optimization(y):
-                        x_start = list(map(lambda x: 0.5*x[0] + 0.5*x[1], x_bounds))
-                        if x_start[:cs._n_dim] == x_start[-cs._n_dim:]: # if x=z then btw = 0 and no gradient --> fix that
-                            x_start = map(lambda x, y: x + y, x_start, [-0.001]*cs._n_dim + [0.001]*cs._n_dim)
-                        to_minimize_x = lambda x, y: -1*cs.between(x[:cs._n_dim], y, x[-cs._n_dim:], self._weights, method='soft')
-                        opt = scipy.optimize.minimize(to_minimize_x, x_start, args=(y,), bounds=x_bounds, options={'gtol':cs._epsilon})
+                        opt = scipy.optimize.minimize(neg_betweenness, x_start, args=(y,), bounds=x_bounds, options={'gtol':cs._epsilon})
                         if not opt.success:
                             raise Exception("optimization failed")
                         return opt
@@ -738,8 +757,15 @@ class Concept:
                     for i in range(len(remaining_corners)):
                         corner = remaining_corners[i]
                         bounds = remaining_bounds[i]
+
+                        modified_corner = []
+                        modified_bounds = []
+                        for j in common_dims:
+                            modified_corner.append(corner[j])
+                            modified_bounds.append(bounds[j])
+                        
                         to_minimize_y = lambda y: -1 * inner_optimization(y).fun
-                        opt = scipy.optimize.minimize(to_minimize_y, corner, bounds=bounds, options={'gtol':cs._epsilon, 'eps':cs._epsilon})
+                        opt = scipy.optimize.minimize(to_minimize_y, modified_corner, bounds=modified_bounds, options={'gtol':cs._epsilon, 'eps':cs._epsilon})
                         if not opt.success:
                             raise Exception("optimization failed")
                         max_betweenness[i] = max(max_betweenness[i], opt.fun)
@@ -750,77 +776,6 @@ class Concept:
             else: # method == "core_soft_avg"
                 # return the average over all corner points (note that max_betweenness contains only values for points not crisply between)
                 return (sum(max_betweenness) + 1.0*crisp_betweenness.count(True)) / len(corner_points)
-
-        elif method == "Derrac_Schockaert":
-            # 1 / (size of self._core) * sum_{y in self._core}: max_{x in first._core, z in second._core} cs.between(x,y,z, method='soft')
-            # cannot compute this directly (infinitely many points in our cuboids), integral would be complicated
-            # --> approximate it by sampling points from self._core (using grids over cuboids)
-            
-            cuboid_widths = []
-            for cuboid in self._core._cuboids:
-                cuboid_widths.append(list(map(lambda x, y: 1.0 * (x - y), cuboid._p_max, cuboid._p_min)))
-            
-            cuboid_sizes = []
-            for vec in cuboid_widths:
-                cuboid_sizes.append(reduce(lambda x, y: x * y if y != 0 else x, vec))   # if we have 0 width, don't make overall size 0
-            overall_size = sum(cuboid_sizes)
-            
-            # larger cuboids get more samples than smaller ones
-            samples_per_cuboid = list(map(lambda x: round(1.0 * x * n_samples / overall_size), cuboid_sizes))
-            samples = []
-
-            # create a grid for each cuboid and its points to the samples
-            for i in range(len(self._core._cuboids)):
-                samples_per_dim = []
-                widths = cuboid_widths[i]
-                p_min = self._core._cuboids[i]._p_min
-                n_samples = samples_per_cuboid[i]
-                n_dim = sum(map(lambda x: 0.0 if isnan(x) else 1.0, widths))
-
-                n_0 = round(((1.0 * n_samples * (widths[0]) ** n_dim)/ cuboid_sizes[i]) ** (1.0/n_dim))
-                samples_per_dim.append(n_0)
-
-                for j in range(1, int(n_dim)):
-                    samples_per_dim.append(max(1.0, round(n_0 * (widths[j]/widths[0])))) # max takes care of dimensions with zero width
-                
-                step_sizes = list(map(lambda x, y: x / max(y - 1.0, 1.0), widths, samples_per_dim)) # max takes care of dimensions with zero width
-
-                coordinates = []
-                for j in range(int(n_dim)):
-                    local_coords = []
-                    for k in range(int(samples_per_dim[j])):
-                        local_coords.append(p_min[j] + k * step_sizes[j])
-                    coordinates.append(local_coords)
-                
-                samples = samples + list(itertools.product(*coordinates))
-
-            if len(samples) == 0:
-                print "ERROR"
-            crisp_between = _check_crisp_betweenness(samples, first, second)
-            betweenness = list(map(lambda x: 1.0 if x else 0.0, crisp_between))
-            for c1 in first._core._cuboids:
-                for c2 in second._core._cuboids:
-                    
-                    if not c1._compatible(c2):
-                        raise Exception("Incompatible cuboids")
-                        
-                    x_bounds = zip(c1._p_min, c1._p_max) + zip(c2._p_min, c2._p_max)
-                    x_start = list(map(lambda x: 0.5*x[0] + 0.5*x[1], x_bounds))
-                    if x_start[:cs._n_dim] == x_start[-cs._n_dim:]: # if x=z then btw = 0 and no gradient --> fix that
-                        x_start = map(lambda x, y: x + y, x_start, [-0.001]*cs._n_dim + [0.001]*cs._n_dim)
-                    for i in range(len(samples)):
-                        if crisp_between[i]:
-                            continue
-                        point = samples[i]
-                        to_minimize = lambda x: -1*cs.between(x[:cs._n_dim], point, x[-cs._n_dim:], self._weights, method='soft')
-                        opt = scipy.optimize.minimize(to_minimize, x_start, bounds=x_bounds)
-                        if not opt.success:
-                            print opt
-                            raise Exception("Optimization failed")
-                        if betweenness[i] < -1 * opt.fun:
-                            betweenness[i] = -1 * opt.fun
-                            
-            return sum(betweenness) / float(len(betweenness))
 
         else:
             raise Exception("Unknown method")

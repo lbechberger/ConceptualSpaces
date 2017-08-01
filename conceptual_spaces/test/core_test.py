@@ -386,9 +386,7 @@ class TestCore(unittest.TestCase):
         c1 = Cuboid([-float("inf"),2,3], [float("inf"),5,6], {1:[1,2]})
         c2 = Cuboid([-float("inf"),1,1], [float("inf"),4,4], {1:[1,2]})
         s = Core([c1,c2], {1:[1,2]})
-        self.assertTrue(isnan(s.midpoint()[0]))
-        self.assertEqual(s.midpoint()[1], 3.0)
-        self.assertEqual(s.midpoint()[2], 3.5)
+        self.assertEqual(s.midpoint(), [0, 3, 3.5])
     
     # get_center()
     def test_get_center_single_cuboid(self):

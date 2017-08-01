@@ -1102,7 +1102,7 @@ class TestConcept(unittest.TestCase):
         f_red = Concept(s_red, 1.0, 20.0, w_red)
         
         self.assertAlmostEqual(f_apple.similarity_to(f_red, "naive"), 0.018315638888734196)
-        self.assertAlmostEqual(f_red.similarity_to(f_apple, "naive"), 0.3678794411714424)
+        self.assertAlmostEqual(f_red.similarity_to(f_apple, "naive"), 0.13533528323661276)
 
     def test_similarity_naive_identity(self):
         doms = {0:[0],1:[1,2]}       
@@ -1119,6 +1119,77 @@ class TestConcept(unittest.TestCase):
         
         self.assertEqual(f1.similarity_to(f1, "naive"), 1.0)
         self.assertEqual(f2.similarity_to(f2, "naive"), 1.0)
+
+    def test_similarity_naive_properties(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
+
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.similarity_to(green, "naive"), 0.13533528323661276)
+        self.assertAlmostEqual(green.similarity_to(pear, "naive"), 0.3011942119122022)
+        self.assertAlmostEqual(pear.similarity_to(red, "naive"), 0.0009118819655545162)
+        self.assertAlmostEqual(red.similarity_to(pear, "naive"), 0.014995576820477717)
+        self.assertAlmostEqual(pear.similarity_to(non_sweet, "naive"), 0.12245642825298185)
+        self.assertAlmostEqual(non_sweet.similarity_to(pear, "naive"), 0.027323722447292545)
+        self.assertAlmostEqual(non_sweet.similarity_to(red, "naive"), 0.0)
+        self.assertAlmostEqual(red.similarity_to(non_sweet, "naive"), 0.0)
+
+    def test_similarity_naive_combined_space_properties(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {0:[0]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_c)
+        
+        self.assertAlmostEqual(f1.similarity_to(f1, method="naive"), 1.0)
+        self.assertAlmostEqual(f1.similarity_to(f2, method="naive"), 0.301194211912202)
+        self.assertAlmostEqual(f2.similarity_to(f1, method="naive"), 0.301194211912202)
+        self.assertAlmostEqual(f1.similarity_to(f3, method="naive"), 0.818730753077981)
+        self.assertAlmostEqual(f3.similarity_to(f1, method="naive"), 0.818730753077981)
+        self.assertAlmostEqual(f3.similarity_to(f2, method="naive"), 0.6703200460356393)
+        self.assertAlmostEqual(f2.similarity_to(f3, method="naive"), 0.6703200460356393)
+        self.assertAlmostEqual(f4.similarity_to(f1, method="naive"), 0.8607079764250578)
+        self.assertAlmostEqual(f1.similarity_to(f4, method="naive"), 0.8607079764250578)
+        self.assertAlmostEqual(f5.similarity_to(f1, method="naive"), 0.3328710836980796)
+        self.assertAlmostEqual(f1.similarity_to(f5, method="naive"), 0.3328710836980796)
+        self.assertAlmostEqual(f5.similarity_to(f2, method="naive"), 0.6065306597126335)
+        self.assertAlmostEqual(f2.similarity_to(f5, method="naive"), 0.6065306597126335)
+
 
     # 'Jaccard'
     def test_similarity_Jaccard(self):
@@ -1167,53 +1238,77 @@ class TestConcept(unittest.TestCase):
         self.assertEqual(f1.similarity_to(f1, "Jaccard"), 1.0)
         self.assertEqual(f2.similarity_to(f2, "Jaccard"), 1.0)
 
-    # 'Jaccard_mod'
-    def test_similarity_Jaccard_mod(self):
-        doms = {0:[0],1:[1,2]}       
-        cs.init(3, doms)
-        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.50,0.60], doms)
-        c2 = Cuboid([0.40,0.40,0.60],[1.00,1.00,1.00], doms)
-        s1 = Core([c1], doms)
-        s2 = Core([c2], doms)
-        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
-        w2 = Weights({0:1.00, 1:1.00}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
-        f1 = Concept(s1, 1.0, 1.0, w1)
-        f2 = Concept(s2, 1.0, 2.0, w2)
+    def test_similarity_Jaccard_properties(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
         
-        self.assertAlmostEqual(f1.similarity_to(f2, "Jaccard_mod"), 0.2969857943280167)
-        self.assertAlmostEqual(f2.similarity_to(f1, "Jaccard_mod"), 0.4940939754738745)
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
 
-    def test_similarity_Jaccard_mod_no_overlap(self):
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.similarity_to(green, "Jaccard"), 0.4285714285714287)
+        self.assertAlmostEqual(green.similarity_to(pear, "Jaccard"), 0.52)
+        self.assertAlmostEqual(pear.similarity_to(red, "Jaccard"), 0.037188359949999986)
+        self.assertAlmostEqual(red.similarity_to(pear, "Jaccard"), 0.055782540224999996)
+        self.assertAlmostEqual(pear.similarity_to(non_sweet, "Jaccard"), 0.20008611526213585)
+        self.assertAlmostEqual(non_sweet.similarity_to(pear, "Jaccard"), 0.1392491207297297)
+        self.assertAlmostEqual(non_sweet.similarity_to(red, "Jaccard"), 0.0)
+        self.assertAlmostEqual(red.similarity_to(non_sweet, "Jaccard"), 0.0)
+
+    def test_similarity_Jaccard_combined_space_properties(self):
         doms = {0:[0],1:[1,2]}       
         cs.init(3, doms)
-        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.30,0.10], doms)
-        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
         s1 = Core([c1], doms)
         s2 = Core([c2], doms)
-        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
-        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
-        f1 = Concept(s1, 1.0, 1.0, w1)
-        f2 = Concept(s2, 1.0, 2.0, w2)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {0:[0]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_c)
         
-        self.assertAlmostEqual(f1.similarity_to(f2, "Jaccard_mod"), 0.2412730914306646)
-        self.assertAlmostEqual(f2.similarity_to(f1, "Jaccard_mod"), 0.33510692443592327)
-    
-    def test_similarity_Jaccard_mod_identity(self):
-        doms = {0:[0],1:[1,2]}       
-        cs.init(3, doms)
-        c1_1 = Cuboid([0.00,0.10,0.00],[0.40,0.30,0.10], doms)
-        c1_2 = Cuboid([0.00,0.00,0.00],[0.20,0.20,0.40], doms)
-        c2 = Cuboid([0.80,0.60,0.70],[1.00,1.00,1.00], doms)
-        s1 = Core([c1_1, c1_2], doms)
-        s2 = Core([c2], doms)
-        w1 = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
-        w2 = Weights({0:1, 1:1}, {0:{0:1}, 1:{1:0.75, 2:0.25}})
-        f1 = Concept(s1, 1.0, 1.0, w1)
-        f2 = Concept(s2, 1.0, 2.0, w2)
-        
-        self.assertEqual(f1.similarity_to(f1, "Jaccard_mod"), 1.0)
-        self.assertEqual(f2.similarity_to(f2, "Jaccard_mod"), 1.0)
-        
+        self.assertAlmostEqual(f1.similarity_to(f1, method="Jaccard"), 1.0)
+        self.assertAlmostEqual(f1.similarity_to(f2, method="Jaccard"), 0.41035721838281464)
+        self.assertAlmostEqual(f2.similarity_to(f1, method="Jaccard"), 0.41035721838281464)
+        self.assertAlmostEqual(f1.similarity_to(f3, method="Jaccard"), 0.845983028439801)
+        self.assertAlmostEqual(f3.similarity_to(f1, method="Jaccard"), 0.841360081563084)
+        self.assertAlmostEqual(f3.similarity_to(f2, method="Jaccard"), 0.7025978438108056)
+        self.assertAlmostEqual(f2.similarity_to(f3, method="Jaccard"), 0.7124631852465618)
+        self.assertAlmostEqual(f4.similarity_to(f1, method="Jaccard"), 0.8749999999999999)
+        self.assertAlmostEqual(f1.similarity_to(f4, method="Jaccard"), 0.8749999999999999)
+        self.assertAlmostEqual(f5.similarity_to(f1, method="Jaccard"), 0.3943059094117647)
+        self.assertAlmostEqual(f1.similarity_to(f5, method="Jaccard"), 0.3943059094117647)
+        self.assertAlmostEqual(f5.similarity_to(f2, method="Jaccard"), 0.6463124414285716)
+        self.assertAlmostEqual(f2.similarity_to(f5, method="Jaccard"), 0.6463124414285716)
+
+
     # 'subset'
     def test_similarity_subset(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -1250,6 +1345,77 @@ class TestConcept(unittest.TestCase):
         self.assertEqual(f1.similarity_to(f1, "subset"), 1.0)
         self.assertEqual(f2.similarity_to(f2, "subset"), 1.0)
 
+    def test_similarity_subset_properties(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
+
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.similarity_to(green, "subset"), 0.5)
+        self.assertAlmostEqual(green.similarity_to(pear, "subset"), 0.8125)
+        self.assertAlmostEqual(pear.similarity_to(red, "subset"), 0.07437671989999999)
+        self.assertAlmostEqual(red.similarity_to(pear, "subset"), 0.13945635056250003)
+        self.assertAlmostEqual(pear.similarity_to(non_sweet, "subset"), 0.38164573837037025)
+        self.assertAlmostEqual(non_sweet.similarity_to(pear, "subset"), 0.23419170304545447)
+        self.assertAlmostEqual(non_sweet.similarity_to(red, "subset"), 0.0)
+        self.assertAlmostEqual(red.similarity_to(non_sweet, "subset"), 0.0)
+
+    def test_similarity_subset_combined_space_properties(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {0:[0]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_c)
+        
+        self.assertAlmostEqual(f1.similarity_to(f1, method="subset"), 1.0)
+        self.assertAlmostEqual(f1.similarity_to(f2, method="subset"), 0.6036357034764092)
+        self.assertAlmostEqual(f2.similarity_to(f1, method="subset"), 0.6036357034764092)
+        self.assertAlmostEqual(f1.similarity_to(f3, method="subset"), 0.8573456925407419)
+        self.assertAlmostEqual(f3.similarity_to(f1, method="subset"), 0.9784616581266496)
+        self.assertAlmostEqual(f3.similarity_to(f2, method="subset"), 0.8808291122258447)
+        self.assertAlmostEqual(f2.similarity_to(f3, method="subset"), 0.7768064048632629)
+        self.assertAlmostEqual(f4.similarity_to(f1, method="subset"), 1.0)
+        self.assertAlmostEqual(f1.similarity_to(f4, method="subset"), 0.8749999999999999)
+        self.assertAlmostEqual(f5.similarity_to(f1, method="subset"), 0.6093818599999999)
+        self.assertAlmostEqual(f1.similarity_to(f5, method="subset"), 0.5586000383333333)
+        self.assertAlmostEqual(f5.similarity_to(f2, method="subset"), 0.8225794709090909)
+        self.assertAlmostEqual(f2.similarity_to(f5, method="subset"), 0.7540311816666666)
+
+
     # 'min_core'
     def test_similarity_min_core(self):
         doms = {0:[0],1:[1,2]}       
@@ -1283,6 +1449,76 @@ class TestConcept(unittest.TestCase):
         self.assertEqual(f1.similarity_to(f1, "min_core"), 1.0)
         self.assertEqual(f2.similarity_to(f2, "min_core"), 1.0)
 
+    def test_similarity_min_core_properties(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
+
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.similarity_to(green, "min_core"), 1.0)
+        self.assertAlmostEqual(green.similarity_to(pear, "min_core"), 1.0)
+        self.assertAlmostEqual(pear.similarity_to(red, "min_core"), 0.018315638888734147)
+        self.assertAlmostEqual(red.similarity_to(pear, "min_core"), 0.09071795328941243)
+        self.assertAlmostEqual(pear.similarity_to(non_sweet, "min_core"), 0.34993774911115544)
+        self.assertAlmostEqual(non_sweet.similarity_to(pear, "min_core"), 0.16529888822158662)
+        self.assertAlmostEqual(non_sweet.similarity_to(red, "min_core"), 0.0)
+        self.assertAlmostEqual(red.similarity_to(non_sweet, "min_core"), 0.0)
+
+    def test_similarity_min_core_combined_space_properties(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {0:[0]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_c)
+        
+        self.assertAlmostEqual(f1.similarity_to(f1, method="min_core"), 1.0)
+        self.assertAlmostEqual(f1.similarity_to(f2, method="min_core"), 0.6703200460356393)
+        self.assertAlmostEqual(f2.similarity_to(f1, method="min_core"), 0.6703200460356393)
+        self.assertAlmostEqual(f1.similarity_to(f3, method="min_core"), 1.0)
+        self.assertAlmostEqual(f3.similarity_to(f1, method="min_core"), 1.0)
+        self.assertAlmostEqual(f3.similarity_to(f2, method="min_core"), 0.8537525485232971)
+        self.assertAlmostEqual(f2.similarity_to(f3, method="min_core"), 0.8350384028320719)
+        self.assertAlmostEqual(f4.similarity_to(f1, method="min_core"), 1.0)
+        self.assertAlmostEqual(f1.similarity_to(f4, method="min_core"), 1.0)
+        self.assertAlmostEqual(f5.similarity_to(f1, method="min_core"), 0.4493289641172216)
+        self.assertAlmostEqual(f1.similarity_to(f5, method="min_core"), 0.4493289641172216)
+        self.assertAlmostEqual(f5.similarity_to(f2, method="min_core"), 0.8187307530779819)
+        self.assertAlmostEqual(f2.similarity_to(f5, method="min_core"), 0.8187307530779819)
+
     # 'max_core'
     def test_similarity_max_core(self):
         doms = {0:[0],1:[1,2]}       
@@ -1299,6 +1535,77 @@ class TestConcept(unittest.TestCase):
         
         self.assertAlmostEqual(f1.similarity_to(f2, "max_core"), 0.018315638888734186)
         self.assertAlmostEqual(f2.similarity_to(f1, "max_core"), 0.1353352832366127)
+
+    def test_similarity_max_core_properties(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
+
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.similarity_to(green, "max_core"), 0.006737946999085473)
+        self.assertAlmostEqual(green.similarity_to(pear, "max_core"), 0.049787068367863986)
+        self.assertAlmostEqual(pear.similarity_to(red, "max_core"), 4.5399929762484854e-05)
+        self.assertAlmostEqual(red.similarity_to(pear, "max_core"), 0.0024787521766663585)
+        self.assertAlmostEqual(pear.similarity_to(non_sweet, "max_core"), 0.04285212686704019)
+        self.assertAlmostEqual(non_sweet.similarity_to(pear, "max_core"), 0.004516580942612666)
+        self.assertAlmostEqual(non_sweet.similarity_to(red, "max_core"), 0.0)
+        self.assertAlmostEqual(red.similarity_to(non_sweet, "max_core"), 0.0)
+
+    def test_similarity_max_core_combined_space_properties(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {0:[0]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_c)
+        
+        self.assertAlmostEqual(f1.similarity_to(f1, method="max_core"), 0.44932896411722156)
+        self.assertAlmostEqual(f1.similarity_to(f2, method="max_core"), 0.1353352832366127)
+        self.assertAlmostEqual(f2.similarity_to(f1, method="max_core"), 0.1353352832366127)
+        self.assertAlmostEqual(f1.similarity_to(f3, method="max_core"), 0.6523329504061428)
+        self.assertAlmostEqual(f3.similarity_to(f1, method="max_core"), 0.6358648381197989)
+        self.assertAlmostEqual(f3.similarity_to(f2, method="max_core"), 0.5210442851671513)
+        self.assertAlmostEqual(f2.similarity_to(f3, method="max_core"), 0.5344600979696976)
+        self.assertAlmostEqual(f4.similarity_to(f1, method="max_core"), 0.6703200460356393)
+        self.assertAlmostEqual(f1.similarity_to(f4, method="max_core"), 0.6703200460356393)
+        self.assertAlmostEqual(f5.similarity_to(f1, method="max_core"), 0.2465969639416065)
+        self.assertAlmostEqual(f1.similarity_to(f5, method="max_core"), 0.2465969639416065)
+        self.assertAlmostEqual(f5.similarity_to(f2, method="max_core"), 0.4493289641172216)
+        self.assertAlmostEqual(f2.similarity_to(f5, method="max_core"), 0.4493289641172216)
+
 
     # 'Hausdorff_core'
     def test_similarity_Hausdorff_core(self):
@@ -1332,6 +1639,77 @@ class TestConcept(unittest.TestCase):
         
         self.assertEqual(f1.similarity_to(f1, "Hausdorff_core"), 1.0)
         self.assertEqual(f2.similarity_to(f2, "Hausdorff_core"), 1.0)
+
+    def test_similarity_Hausdorff_core_properties(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
+
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.similarity_to(green, "Hausdorff_core"), 0.049787068367864035)
+        self.assertAlmostEqual(green.similarity_to(pear, "Hausdorff_core"), 0.16529888822158673)
+        self.assertAlmostEqual(pear.similarity_to(red, "Hausdorff_core"), 0.00033546262790251185)
+        self.assertAlmostEqual(red.similarity_to(pear, "Hausdorff_core"), 0.008229747049020023)
+        self.assertAlmostEqual(pear.similarity_to(non_sweet, "Hausdorff_core"), 0.08629358649937054)
+        self.assertAlmostEqual(non_sweet.similarity_to(pear, "Hausdorff_core"), 0.014995576820477717)
+        self.assertAlmostEqual(non_sweet.similarity_to(red, "Hausdorff_core"), 0.0)
+        self.assertAlmostEqual(red.similarity_to(non_sweet, "Hausdorff_core"), 0.0)
+
+    def test_similarity_Hausdorff_core_combined_space_properties(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {0:[0]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_c)
+        
+        self.assertAlmostEqual(f1.similarity_to(f1, method="Hausdorff_core"), 1.0)
+        self.assertAlmostEqual(f1.similarity_to(f2, method="Hausdorff_core"), 0.30119421191220214)
+        self.assertAlmostEqual(f2.similarity_to(f1, method="Hausdorff_core"), 0.30119421191220214)
+        self.assertAlmostEqual(f1.similarity_to(f3, method="Hausdorff_core"), 0.6855788769448593)
+        self.assertAlmostEqual(f3.similarity_to(f1, method="Hausdorff_core"), 0.7021885013265596)
+        self.assertAlmostEqual(f3.similarity_to(f2, method="Hausdorff_core"), 0.575642741676695)
+        self.assertAlmostEqual(f2.similarity_to(f3, method="Hausdorff_core"), 0.5617894576850913)
+        self.assertAlmostEqual(f4.similarity_to(f1, method="Hausdorff_core"), 0.7408182206817179)
+        self.assertAlmostEqual(f1.similarity_to(f4, method="Hausdorff_core"), 0.7408182206817179)
+        self.assertAlmostEqual(f5.similarity_to(f1, method="Hausdorff_core"), 0.30119421191220214)
+        self.assertAlmostEqual(f1.similarity_to(f5, method="Hausdorff_core"), 0.30119421191220214)
+        self.assertAlmostEqual(f5.similarity_to(f2, method="Hausdorff_core"), 0.5488116360940264)
+        self.assertAlmostEqual(f2.similarity_to(f5, method="Hausdorff_core"), 0.5488116360940264)
+
         
     # 'min_membership_core'
     def test_similarity_min_membership_core(self):
@@ -1366,6 +1744,77 @@ class TestConcept(unittest.TestCase):
         self.assertEqual(f1.similarity_to(f1, "min_membership_core"), 1.0)
         self.assertEqual(f2.similarity_to(f2, "min_membership_core"), 1.0)
 
+    def test_similarity_min_membership_core_properties(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
+
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.similarity_to(green, "min_membership_core"), 0.049787068367864035)
+        self.assertAlmostEqual(green.similarity_to(pear, "min_membership_core"), 0.5488116360940265)
+        self.assertAlmostEqual(pear.similarity_to(red, "min_membership_core"), 0.00033546262790251185)
+        self.assertAlmostEqual(red.similarity_to(pear, "min_membership_core"), 0.027323722447292545)
+        self.assertAlmostEqual(pear.similarity_to(non_sweet, "min_membership_core"), 0.17377394345044514)
+        self.assertAlmostEqual(non_sweet.similarity_to(pear, "min_membership_core"), 0.014995576820477717)
+        self.assertAlmostEqual(non_sweet.similarity_to(red, "min_membership_core"), 0.0)
+        self.assertAlmostEqual(red.similarity_to(non_sweet, "min_membership_core"), 0.0)
+
+    def test_similarity_min_membership_core_combined_space_properties(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {0:[0]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_c)
+        
+        self.assertAlmostEqual(f1.similarity_to(f1, method="min_membership_core"), 1.0)
+        self.assertAlmostEqual(f1.similarity_to(f2, method="min_membership_core"), 0.30119421191220214)
+        self.assertAlmostEqual(f2.similarity_to(f1, method="min_membership_core"), 0.30119421191220214)
+        self.assertAlmostEqual(f1.similarity_to(f3, method="min_membership_core"), 0.6855788769448593)
+        self.assertAlmostEqual(f3.similarity_to(f1, method="min_membership_core"), 0.9317314234233945)
+        self.assertAlmostEqual(f3.similarity_to(f2, method="min_membership_core"), 0.774954488646956)
+        self.assertAlmostEqual(f2.similarity_to(f3, method="min_membership_core"), 0.5617894576850913)
+        self.assertAlmostEqual(f4.similarity_to(f1, method="min_membership_core"), 1.0)
+        self.assertAlmostEqual(f1.similarity_to(f4, method="min_membership_core"), 0.7408182206817179)
+        self.assertAlmostEqual(f5.similarity_to(f1, method="min_membership_core"), 0.3678794411714424)
+        self.assertAlmostEqual(f1.similarity_to(f5, method="min_membership_core"), 0.30119421191220214)
+        self.assertAlmostEqual(f5.similarity_to(f2, method="min_membership_core"), 0.6703200460356393)
+        self.assertAlmostEqual(f2.similarity_to(f5, method="min_membership_core"), 0.5488116360940264)
+
+
     # 'max_membership_core'
     def test_similarity_max_membership_core(self):
         doms = {0:[0],1:[1,2]}       
@@ -1398,6 +1847,77 @@ class TestConcept(unittest.TestCase):
         
         self.assertEqual(f1.similarity_to(f1, "max_membership_core"), 1.0)
         self.assertEqual(f2.similarity_to(f2, "max_membership_core"), 1.0)
+
+    def test_similarity_max_membership_core_properties(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
+
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.similarity_to(green, "max_membership_core"), 1.0)
+        self.assertAlmostEqual(green.similarity_to(pear, "max_membership_core"), 1.0)
+        self.assertAlmostEqual(pear.similarity_to(red, "max_membership_core"), 0.018315638888734147)
+        self.assertAlmostEqual(red.similarity_to(pear, "max_membership_core"), 0.09071795328941243)
+        self.assertAlmostEqual(pear.similarity_to(non_sweet, "max_membership_core"), 0.34993774911115544)
+        self.assertAlmostEqual(non_sweet.similarity_to(pear, "max_membership_core"), 0.16529888822158662)
+        self.assertAlmostEqual(non_sweet.similarity_to(red, "max_membership_core"), 0.0)
+        self.assertAlmostEqual(red.similarity_to(non_sweet, "max_membership_core"), 0.0)
+
+    def test_similarity_max_membership_core_combined_space_properties(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {0:[0]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_c)
+        
+        self.assertAlmostEqual(f1.similarity_to(f1, method="max_membership_core"), 1.0)
+        self.assertAlmostEqual(f1.similarity_to(f2, method="max_membership_core"), 0.6703200460356393)
+        self.assertAlmostEqual(f2.similarity_to(f1, method="max_membership_core"), 0.6703200460356393)
+        self.assertAlmostEqual(f1.similarity_to(f3, method="max_membership_core"), 1.0)
+        self.assertAlmostEqual(f3.similarity_to(f1, method="max_membership_core"), 1.0)
+        self.assertAlmostEqual(f3.similarity_to(f2, method="max_membership_core"), 0.8537525485232971)
+        self.assertAlmostEqual(f2.similarity_to(f3, method="max_membership_core"), 0.8350384028320719)
+        self.assertAlmostEqual(f4.similarity_to(f1, method="max_membership_core"), 1.0)
+        self.assertAlmostEqual(f1.similarity_to(f4, method="max_membership_core"), 1.0)
+        self.assertAlmostEqual(f5.similarity_to(f1, method="max_membership_core"), 0.4493289641172216)
+        self.assertAlmostEqual(f1.similarity_to(f5, method="max_membership_core"), 0.4493289641172216)
+        self.assertAlmostEqual(f5.similarity_to(f2, method="max_membership_core"), 0.8187307530779819)
+        self.assertAlmostEqual(f2.similarity_to(f5, method="max_membership_core"), 0.8187307530779819)
+
     
     # 'min_center'
     def test_similarity_min_center(self):
@@ -1432,6 +1952,77 @@ class TestConcept(unittest.TestCase):
         self.assertEqual(f1.similarity_to(f1, "min_center"), 1.0)
         self.assertEqual(f2.similarity_to(f2, "min_center"), 1.0)
 
+    def test_similarity_min_center_properties(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
+
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.similarity_to(green, "min_center"), 1.0)
+        self.assertAlmostEqual(green.similarity_to(pear, "min_center"), 1.0)
+        self.assertAlmostEqual(pear.similarity_to(red, "min_center"), 0.018315638888734147)
+        self.assertAlmostEqual(red.similarity_to(pear, "min_center"), 0.09071795328941243)
+        self.assertAlmostEqual(pear.similarity_to(non_sweet, "min_center"), 0.34993774911115544)
+        self.assertAlmostEqual(non_sweet.similarity_to(pear, "min_center"), 0.16529888822158662)
+        self.assertAlmostEqual(non_sweet.similarity_to(red, "min_center"), 0.0)
+        self.assertAlmostEqual(red.similarity_to(non_sweet, "min_center"), 0.0)
+
+    def test_similarity_min_center_combined_space_properties(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {0:[0]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_c)
+        
+        self.assertAlmostEqual(f1.similarity_to(f1, method="min_center"), 1.0)
+        self.assertAlmostEqual(f1.similarity_to(f2, method="min_center"), 0.6703200460356393)
+        self.assertAlmostEqual(f2.similarity_to(f1, method="min_center"), 0.6703200460356393)
+        self.assertAlmostEqual(f1.similarity_to(f3, method="min_center"), 1.0)
+        self.assertAlmostEqual(f3.similarity_to(f1, method="min_center"), 1.0)
+        self.assertAlmostEqual(f3.similarity_to(f2, method="min_center"), 0.8537525485232971)
+        self.assertAlmostEqual(f2.similarity_to(f3, method="min_center"), 0.8350384028320719)
+        self.assertAlmostEqual(f4.similarity_to(f1, method="min_center"), 1.0)
+        self.assertAlmostEqual(f1.similarity_to(f4, method="min_center"), 1.0)
+        self.assertAlmostEqual(f5.similarity_to(f1, method="min_center"), 0.4493289641172216)
+        self.assertAlmostEqual(f1.similarity_to(f5, method="min_center"), 0.4493289641172216)
+        self.assertAlmostEqual(f5.similarity_to(f2, method="min_center"), 0.8187307530779819)
+        self.assertAlmostEqual(f2.similarity_to(f5, method="min_center"), 0.8187307530779819)
+
+
     # 'max_center'
     def test_similarity_max_center(self):
         doms = {0:[0],1:[1,2]}       
@@ -1448,6 +2039,76 @@ class TestConcept(unittest.TestCase):
         
         self.assertAlmostEqual(f1.similarity_to(f2, "max_center"), 0.021236669082903312)
         self.assertAlmostEqual(f2.similarity_to(f1, "max_center"), 0.14737115075690613)
+
+    def test_similarity_max_center_properties(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
+
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.similarity_to(green, "max_center"), 0.006737946999085473)
+        self.assertAlmostEqual(green.similarity_to(pear, "max_center"), 0.049787068367863986)
+        self.assertAlmostEqual(pear.similarity_to(red, "max_center"), 4.5399929762484854e-05)
+        self.assertAlmostEqual(red.similarity_to(pear, "max_center"), 0.0024787521766663585)
+        self.assertAlmostEqual(pear.similarity_to(non_sweet, "max_center"), 0.04285212686704019)
+        self.assertAlmostEqual(non_sweet.similarity_to(pear, "max_center"), 0.004516580942612666)
+        self.assertAlmostEqual(non_sweet.similarity_to(red, "max_center"), 0.0)
+        self.assertAlmostEqual(red.similarity_to(non_sweet, "max_center"), 0.0)
+
+    def test_similarity_max_center_combined_space_properties(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {0:[0]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_c)
+        
+        self.assertAlmostEqual(f1.similarity_to(f1, method="max_center"), 0.44932896411722156)
+        self.assertAlmostEqual(f1.similarity_to(f2, method="max_center"), 0.1353352832366127)
+        self.assertAlmostEqual(f2.similarity_to(f1, method="max_center"), 0.1353352832366127)
+        self.assertAlmostEqual(f1.similarity_to(f3, method="max_center"), 0.6523329504061428)
+        self.assertAlmostEqual(f3.similarity_to(f1, method="max_center"), 0.6358648381197989)
+        self.assertAlmostEqual(f3.similarity_to(f2, method="max_center"), 0.5210442851671513)
+        self.assertAlmostEqual(f2.similarity_to(f3, method="max_center"), 0.5344600979696976)
+        self.assertAlmostEqual(f4.similarity_to(f1, method="max_center"), 0.6703200460356393)
+        self.assertAlmostEqual(f1.similarity_to(f4, method="max_center"), 0.6703200460356393)
+        self.assertAlmostEqual(f5.similarity_to(f1, method="max_center"), 0.2465969639416065)
+        self.assertAlmostEqual(f1.similarity_to(f5, method="max_center"), 0.2465969639416065)
+        self.assertAlmostEqual(f5.similarity_to(f2, method="max_center"), 0.4493289641172216)
+        self.assertAlmostEqual(f2.similarity_to(f5, method="max_center"), 0.4493289641172216)
     
     # 'Hausdorff_center'
     def test_similarity_Hausdorff_center(self):
@@ -1481,6 +2142,76 @@ class TestConcept(unittest.TestCase):
         
         self.assertEqual(f1.similarity_to(f1, "Hausdorff_center"), 1.0)
         self.assertEqual(f2.similarity_to(f2, "Hausdorff_center"), 1.0)
+
+    def test_similarity_Hausdorff_center_properties(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
+
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.similarity_to(green, "Hausdorff_center"), 0.049787068367864035)
+        self.assertAlmostEqual(green.similarity_to(pear, "Hausdorff_center"), 0.16529888822158673)
+        self.assertAlmostEqual(pear.similarity_to(red, "Hausdorff_center"), 0.00033546262790251185)
+        self.assertAlmostEqual(red.similarity_to(pear, "Hausdorff_center"), 0.008229747049020023)
+        self.assertAlmostEqual(pear.similarity_to(non_sweet, "Hausdorff_center"), 0.08629358649937054)
+        self.assertAlmostEqual(non_sweet.similarity_to(pear, "Hausdorff_center"), 0.014995576820477717)
+        self.assertAlmostEqual(non_sweet.similarity_to(red, "Hausdorff_center"), 0.0)
+        self.assertAlmostEqual(red.similarity_to(non_sweet, "Hausdorff_center"), 0.0)
+
+    def test_similarity_Hausdorff_center_combined_space_properties(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {0:[0]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_c)
+        
+        self.assertAlmostEqual(f1.similarity_to(f1, method="Hausdorff_center"), 1.0)
+        self.assertAlmostEqual(f1.similarity_to(f2, method="Hausdorff_center"), 0.30119421191220214)
+        self.assertAlmostEqual(f2.similarity_to(f1, method="Hausdorff_center"), 0.30119421191220214)
+        self.assertAlmostEqual(f1.similarity_to(f3, method="Hausdorff_center"), 0.6855788769448593)
+        self.assertAlmostEqual(f3.similarity_to(f1, method="Hausdorff_center"), 0.7021885013265596)
+        self.assertAlmostEqual(f3.similarity_to(f2, method="Hausdorff_center"), 0.575642741676695)
+        self.assertAlmostEqual(f2.similarity_to(f3, method="Hausdorff_center"), 0.5617894576850913)
+        self.assertAlmostEqual(f4.similarity_to(f1, method="Hausdorff_center"), 0.7408182206817179)
+        self.assertAlmostEqual(f1.similarity_to(f4, method="Hausdorff_center"), 0.7408182206817179)
+        self.assertAlmostEqual(f5.similarity_to(f1, method="Hausdorff_center"), 0.30119421191220214)
+        self.assertAlmostEqual(f1.similarity_to(f5, method="Hausdorff_center"), 0.30119421191220214)
+        self.assertAlmostEqual(f5.similarity_to(f2, method="Hausdorff_center"), 0.5488116360940264)
+        self.assertAlmostEqual(f2.similarity_to(f5, method="Hausdorff_center"), 0.5488116360940264)
     
     # 'min_membership_center'
     def test_similarity_min_membership_center(self):
@@ -1515,6 +2246,76 @@ class TestConcept(unittest.TestCase):
         self.assertEqual(f1.similarity_to(f1, "min_membership_center"), 1.0)
         self.assertEqual(f2.similarity_to(f2, "min_membership_center"), 1.0)
 
+    def test_similarity_min_membership_center_properties(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
+
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.similarity_to(green, "min_membership_center"), 0.049787068367864035)
+        self.assertAlmostEqual(green.similarity_to(pear, "min_membership_center"), 0.5488116360940265)
+        self.assertAlmostEqual(pear.similarity_to(red, "min_membership_center"), 0.00033546262790251185)
+        self.assertAlmostEqual(red.similarity_to(pear, "min_membership_center"), 0.027323722447292545)
+        self.assertAlmostEqual(pear.similarity_to(non_sweet, "min_membership_center"), 0.17377394345044514)
+        self.assertAlmostEqual(non_sweet.similarity_to(pear, "min_membership_center"), 0.014995576820477717)
+        self.assertAlmostEqual(non_sweet.similarity_to(red, "min_membership_center"), 0.0)
+        self.assertAlmostEqual(red.similarity_to(non_sweet, "min_membership_center"), 0.0)
+
+    def test_similarity_min_membership_center_combined_space_properties(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {0:[0]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_c)
+        
+        self.assertAlmostEqual(f1.similarity_to(f1, method="min_membership_center"), 1.0)
+        self.assertAlmostEqual(f1.similarity_to(f2, method="min_membership_center"), 0.30119421191220214)
+        self.assertAlmostEqual(f2.similarity_to(f1, method="min_membership_center"), 0.30119421191220214)
+        self.assertAlmostEqual(f1.similarity_to(f3, method="min_membership_center"), 0.6855788769448593)
+        self.assertAlmostEqual(f3.similarity_to(f1, method="min_membership_center"), 0.9317314234233945)
+        self.assertAlmostEqual(f3.similarity_to(f2, method="min_membership_center"), 0.774954488646956)
+        self.assertAlmostEqual(f2.similarity_to(f3, method="min_membership_center"), 0.5617894576850913)
+        self.assertAlmostEqual(f4.similarity_to(f1, method="min_membership_center"), 1.0)
+        self.assertAlmostEqual(f1.similarity_to(f4, method="min_membership_center"), 0.7408182206817179)
+        self.assertAlmostEqual(f5.similarity_to(f1, method="min_membership_center"), 0.3678794411714424)
+        self.assertAlmostEqual(f1.similarity_to(f5, method="min_membership_center"), 0.30119421191220214)
+        self.assertAlmostEqual(f5.similarity_to(f2, method="min_membership_center"), 0.6703200460356393)
+        self.assertAlmostEqual(f2.similarity_to(f5, method="min_membership_center"), 0.5488116360940264)
+
     # 'max_membership_center'
     def test_similarity_max_membership_center(self):
         doms = {0:[0],1:[1,2]}       
@@ -1547,6 +2348,78 @@ class TestConcept(unittest.TestCase):
         
         self.assertEqual(f1.similarity_to(f1, "max_membership_center"), 1.0)
         self.assertEqual(f2.similarity_to(f2, "max_membership_center"), 1.0)
+
+    def test_similarity_max_membership_center_properties(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
+
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.similarity_to(green, "max_membership_center"), 1.0)
+        self.assertAlmostEqual(green.similarity_to(pear, "max_membership_center"), 1.0)
+        self.assertAlmostEqual(pear.similarity_to(red, "max_membership_center"), 0.018315638888734147)
+        self.assertAlmostEqual(red.similarity_to(pear, "max_membership_center"), 0.09071795328941243)
+        self.assertAlmostEqual(pear.similarity_to(non_sweet, "max_membership_center"), 0.34993774911115544)
+        self.assertAlmostEqual(non_sweet.similarity_to(pear, "max_membership_center"), 0.16529888822158662)
+        self.assertAlmostEqual(non_sweet.similarity_to(red, "max_membership_center"), 0.0)
+        self.assertAlmostEqual(red.similarity_to(non_sweet, "max_membership_center"), 0.0)
+
+    def test_similarity_max_membership_center_combined_space_properties(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {0:[0]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_c)
+        
+        self.assertAlmostEqual(f1.similarity_to(f1, method="max_membership_center"), 1.0)
+        self.assertAlmostEqual(f1.similarity_to(f2, method="max_membership_center"), 0.6703200460356393)
+        self.assertAlmostEqual(f2.similarity_to(f1, method="max_membership_center"), 0.6703200460356393)
+        self.assertAlmostEqual(f1.similarity_to(f3, method="max_membership_center"), 1.0)
+        self.assertAlmostEqual(f3.similarity_to(f1, method="max_membership_center"), 1.0)
+        self.assertAlmostEqual(f3.similarity_to(f2, method="max_membership_center"), 0.8537525485232971)
+        self.assertAlmostEqual(f2.similarity_to(f3, method="max_membership_center"), 0.8350384028320719)
+        self.assertAlmostEqual(f4.similarity_to(f1, method="max_membership_center"), 1.0)
+        self.assertAlmostEqual(f1.similarity_to(f4, method="max_membership_center"), 1.0)
+        self.assertAlmostEqual(f5.similarity_to(f1, method="max_membership_center"), 0.4493289641172216)
+        self.assertAlmostEqual(f1.similarity_to(f5, method="max_membership_center"), 0.4493289641172216)
+        self.assertAlmostEqual(f5.similarity_to(f2, method="max_membership_center"), 0.8187307530779819)
+        self.assertAlmostEqual(f2.similarity_to(f5, method="max_membership_center"), 0.8187307530779819)
+        
+
     
     # between()
     # 'naive'
@@ -1579,6 +2452,79 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(f5.between(f1, f2, method="naive"), 0.0)
         self.assertAlmostEqual(f5.between(f2, f1, method="naive"), 0.0)
 
+    def test_between_naive_properties(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        dimension_names = ["hue", "round", "sweet"]
+        cs.init(3, domains, dimension_names)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
+
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.between(red, green, method="naive"), 1.0)     
+        self.assertAlmostEqual(pear.between(non_sweet, red, method="naive"), 0.0)
+        self.assertAlmostEqual(pear.between(non_sweet, green, method="naive"), 0.0)
+        self.assertAlmostEqual(green.between(pear, red, method="naive"), 0.0)
+        self.assertAlmostEqual(red.between(pear, green, method="naive"), 0.0)
+
+    def test_between_naive_combined_space_properties(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([float("-inf"),0.40,0.50],[float("inf"),0.70,0.50], {1:[1,2]})
+        c6 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
+        c7 = Cuboid([float("-inf"),0.70,0.10],[float("inf"),0.90,0.30], {1:[1,2]})
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {1:[1,2]})
+        s6 = Core([c6], {0:[0]})
+        s7 = Core([c7], {1:[1,2]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_b)
+        f6 = Concept(s6, 1.0, 1.0, w_c)
+        f7 = Concept(s7, 1.0, 1.0, w_b)
+        
+        self.assertAlmostEqual(f1.between(f1, f1, method="naive"), 1.0)
+        self.assertAlmostEqual(f3.between(f1, f2, method="naive"), 1.0)
+        self.assertAlmostEqual(f3.between(f2, f1, method="naive"), 1.0)
+        self.assertAlmostEqual(f4.between(f1, f2, method="naive"), 1.0)
+        self.assertAlmostEqual(f4.between(f2, f1, method="naive"), 1.0)
+        self.assertAlmostEqual(f5.between(f1, f2, method="naive"), 0.0)
+        self.assertAlmostEqual(f5.between(f2, f1, method="naive"), 0.0)
+        self.assertAlmostEqual(f6.between(f2, f1, method="naive"), 0.0)
+        self.assertAlmostEqual(f6.between(f2, f1, method="naive"), 0.0)
+        self.assertAlmostEqual(f7.between(f2, f1, method="naive"), 0.0)
+        self.assertAlmostEqual(f7.between(f2, f1, method="naive"), 0.0)
+                
+
     # 'naive_soft'
     def test_between_naive_soft(self):
         doms = {0:[0],1:[1,2]}       
@@ -1608,6 +2554,79 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(f4.between(f2, f1, method="naive_soft"), 0.996350972)
         self.assertAlmostEqual(f5.between(f1, f2, method="naive_soft"), 0.343935417)
         self.assertAlmostEqual(f5.between(f2, f1, method="naive_soft"), 0.343935417)
+
+    def test_between_naive_soft_properties(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        dimension_names = ["hue", "round", "sweet"]
+        cs.init(3, domains, dimension_names)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
+
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.between(red, green, method="naive_soft"), 1.0)     
+        self.assertAlmostEqual(pear.between(non_sweet, red, method="naive_soft"), 0.0)
+        self.assertAlmostEqual(pear.between(non_sweet, green, method="naive_soft"), 0.0)
+        self.assertAlmostEqual(green.between(pear, red, method="naive_soft"), 0.6363636363636364)
+        self.assertAlmostEqual(red.between(pear, green, method="naive_soft"), 0.12499999999999999)
+
+    def test_between_naive_soft_combined_space_properties(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([float("-inf"),0.40,0.50],[float("inf"),0.70,0.50], {1:[1,2]})
+        c6 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
+        c7 = Cuboid([float("-inf"),0.70,0.10],[float("inf"),0.90,0.30], {1:[1,2]})
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {1:[1,2]})
+        s6 = Core([c6], {0:[0]})
+        s7 = Core([c7], {1:[1,2]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_b)
+        f6 = Concept(s6, 1.0, 1.0, w_c)
+        f7 = Concept(s7, 1.0, 1.0, w_b)
+        
+        self.assertAlmostEqual(f1.between(f1, f1, method="naive_soft"), 1.0)
+        self.assertAlmostEqual(f3.between(f1, f2, method="naive_soft"), 1.0)
+        self.assertAlmostEqual(f3.between(f2, f1, method="naive_soft"), 1.0)
+        self.assertAlmostEqual(f4.between(f1, f2, method="naive_soft"), 1.0)
+        self.assertAlmostEqual(f4.between(f2, f1, method="naive_soft"), 1.0)
+        self.assertAlmostEqual(f5.between(f1, f2, method="naive_soft"), 0.997365168538648)
+        self.assertAlmostEqual(f5.between(f2, f1, method="naive_soft"), 0.997365168538648)
+        self.assertAlmostEqual(f6.between(f2, f1, method="naive_soft"), 0.37500000000000017)
+        self.assertAlmostEqual(f6.between(f2, f1, method="naive_soft"), 0.37500000000000017)
+        self.assertAlmostEqual(f7.between(f2, f1, method="naive_soft"), 0.7320508075688773)
+        self.assertAlmostEqual(f7.between(f2, f1, method="naive_soft"), 0.7320508075688773)
+
 
     # 'subset'
     def test_between_subset(self):
@@ -1672,6 +2691,78 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(banana.between(orange, apple, method="subset"), 0.025060842806151205)
         self.assertAlmostEqual(banana.between(banana, pear, method="subset"), 1.0)
         self.assertAlmostEqual(banana.between(pear, banana, method="subset"), 1.0)
+
+    def test_between_subset_properties(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        dimension_names = ["hue", "round", "sweet"]
+        cs.init(3, domains, dimension_names)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
+
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.between(red, green, method="subset"), 1.0)     
+        self.assertAlmostEqual(pear.between(non_sweet, red, method="subset"), 0.0)
+        self.assertAlmostEqual(pear.between(non_sweet, green, method="subset"), 0.0)
+        self.assertAlmostEqual(green.between(pear, red, method="subset"), 0.8125000000000001)
+        self.assertAlmostEqual(red.between(pear, green, method="subset"), 0.13945635056250003)
+
+    def test_between_subset_combined_space_properties(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([float("-inf"),0.40,0.50],[float("inf"),0.70,0.50], {1:[1,2]})
+        c6 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
+        c7 = Cuboid([float("-inf"),0.70,0.10],[float("inf"),0.90,0.30], {1:[1,2]})
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {1:[1,2]})
+        s6 = Core([c6], {0:[0]})
+        s7 = Core([c7], {1:[1,2]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_b)
+        f6 = Concept(s6, 1.0, 1.0, w_c)
+        f7 = Concept(s7, 1.0, 1.0, w_b)
+        
+        self.assertAlmostEqual(f1.between(f1, f1, method="subset"), 1.0)
+        self.assertAlmostEqual(f3.between(f1, f2, method="subset"), 1.0)
+        self.assertAlmostEqual(f3.between(f2, f1, method="subset"), 1.0)
+        self.assertAlmostEqual(f4.between(f1, f2, method="subset"), 1.0)
+        self.assertAlmostEqual(f4.between(f2, f1, method="subset"), 1.0)
+        self.assertAlmostEqual(f5.between(f1, f2, method="subset"), 0.9999999999999999)
+        self.assertAlmostEqual(f5.between(f2, f1, method="subset"), 0.9999999999999999)
+        self.assertAlmostEqual(f6.between(f2, f1, method="subset"), 0.8225794709090909)
+        self.assertAlmostEqual(f6.between(f2, f1, method="subset"), 0.8225794709090909)
+        self.assertAlmostEqual(f7.between(f2, f1, method="subset"), 0.9015234059197218)
+        self.assertAlmostEqual(f7.between(f2, f1, method="subset"), 0.9015234059197218)
 
     # 'core'
     def test_between_core(self):
@@ -1772,6 +2863,79 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(f4.between(f2, f1, method="core"), 0.0)
         self.assertAlmostEqual(f5.between(f1, f2, method="core"), 0.0)
         self.assertAlmostEqual(f5.between(f2, f1, method="core"), 0.0)
+
+    def test_between_core_properties(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        dimension_names = ["hue", "round", "sweet"]
+        cs.init(3, domains, dimension_names)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
+
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.between(red, green, method="core"), 1.0)     
+        self.assertAlmostEqual(pear.between(non_sweet, red, method="core"), 0.0)
+        self.assertAlmostEqual(pear.between(non_sweet, green, method="core"), 0.0)
+        self.assertAlmostEqual(green.between(pear, red, method="core"), 0.0)
+        self.assertAlmostEqual(red.between(pear, green, method="core"), 0.0)
+
+    def test_between_core_combined_space_properties(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([float("-inf"),0.40,0.50],[float("inf"),0.70,0.50], {1:[1,2]})
+        c6 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
+        c7 = Cuboid([float("-inf"),0.70,0.10],[float("inf"),0.90,0.30], {1:[1,2]})
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {1:[1,2]})
+        s6 = Core([c6], {0:[0]})
+        s7 = Core([c7], {1:[1,2]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_b)
+        f6 = Concept(s6, 1.0, 1.0, w_c)
+        f7 = Concept(s7, 1.0, 1.0, w_b)
+        
+        self.assertAlmostEqual(f1.between(f1, f1, method="core"), 1.0)
+        self.assertAlmostEqual(f3.between(f1, f2, method="core"), 1.0)
+        self.assertAlmostEqual(f3.between(f2, f1, method="core"), 1.0)
+        self.assertAlmostEqual(f4.between(f1, f2, method="core"), 1.0)
+        self.assertAlmostEqual(f4.between(f2, f1, method="core"), 1.0)
+        self.assertAlmostEqual(f5.between(f1, f2, method="core"), 1.0)
+        self.assertAlmostEqual(f5.between(f2, f1, method="core"), 1.0)
+        self.assertAlmostEqual(f6.between(f2, f1, method="core"), 0.0)
+        self.assertAlmostEqual(f6.between(f2, f1, method="core"), 0.0)
+        self.assertAlmostEqual(f7.between(f2, f1, method="core"), 0.0)
+        self.assertAlmostEqual(f7.between(f2, f1, method="core"), 0.0)
+
 
     # 'core_soft'
     def test_between_core_soft_2d_simple(self):
@@ -1921,122 +3085,78 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(lemon.between(pear, apple, method="core_soft"), 0.40425531914893614)
         self.assertAlmostEqual(orange.between(apple, apple, method="core_soft"), 0.5555555555555556)
 
-    # 'Derrac_Schockaert'
-    def test_between_Derrac_Schockaert(self):
-        doms = {0:[0],1:[1,2]}       
-        cs.init(3, doms)
-        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
-        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
-        c3 = Cuboid([0.30,0.40,0.30],[0.40,0.40,0.50], doms)
-        c4 = Cuboid([0.30,0.30,0.30],[0.40,0.40,0.50], doms)
-        c5_1 = Cuboid([0.8, 1.1, 0.8],[2.0, 1.6, 1.4], doms)
-        c5_2 = Cuboid([1.4, 0.9, 1.3],[2.9, 1.5, 2.0], doms)
-        s1 = Core([c1], doms)
-        s2 = Core([c2], doms)
-        s3 = Core([c3], doms)
-        s4 = Core([c4], doms)
-        s5 = Core([c5_1,c5_2],doms)
-        w = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
-        f1 = Concept(s1, 1.0, 1.0, w)
-        f2 = Concept(s2, 1.0, 1.0, w)
-        f3 = Concept(s3, 1.0, 1.0, w)
-        f4 = Concept(s4, 1.0, 1.0, w)
-        f5 = Concept(s5, 1.0, 1.0, w)
-        
-        self.assertAlmostEqual(f1.between(f1, f1, method="Derrac_Schockaert", n_samples=500), 1.0)
-        self.assertAlmostEqual(f3.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 1.0)
-        self.assertAlmostEqual(f3.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 1.0)
-        self.assertAlmostEqual(f4.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 1.0)
-        self.assertAlmostEqual(f4.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 1.0)
-        self.assertAlmostEqual(f5.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 0.5404654925486797)
-        self.assertAlmostEqual(f5.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 0.5404654925486797)
-
-    def test_between_Derrac_Schockaert_two_cuboids_3d(self):
-        doms = {0:[0,1,2]}       
-        cs.init(3, doms)
-        c1_1 = Cuboid([0.00,0.70,0.90],[0.40,1.00,1.00], doms)
-        c1_2 = Cuboid([0.00,0.50,0.70],[0.20,1.00,1.00], doms)
-        c2_1 = Cuboid([0.80,0.00,0.00],[1.00,0.30,0.40], doms)
-        c2_2 = Cuboid([0.80,0.00,0.00],[1.00,0.50,0.20], doms)
-        c3 = Cuboid([0.40,0.40,0.40],[0.70,0.70,0.50], doms)
-        c4 = Cuboid([0.40,0.40,0.30],[0.70,0.70,0.50], doms)
-        c5_1 = Cuboid([0.40,0.40,0.40],[0.70,0.70,0.50], doms)
-        c5_2 = Cuboid([0.40,0.40,0.40],[0.50,0.50,1.00], doms)
-        c6 = Cuboid([0.40, 0.40, 0.40], [0.60, 0.70, 1.20], doms)
-        s1 = Core([c1_1, c1_2], doms)
-        s2 = Core([c2_1, c2_2], doms)
-        s3 = Core([c3], doms)
-        s4 = Core([c4], doms)
-        s5 = Core([c5_1,c5_2],doms)
-        s6 = Core([c6], doms)
-        w = Weights({0:1}, {0:{0:1, 1:0.5, 2:0.5}})
-        f1 = Concept(s1, 1.0, 1.0, w)
-        f2 = Concept(s2, 1.0, 1.0, w)
-        f3 = Concept(s3, 1.0, 1.0, w)
-        f4 = Concept(s4, 1.0, 1.0, w)
-        f5 = Concept(s5, 1.0, 1.0, w)
-        f6 = Concept(s6, 0.5, 5.0, w)
-        
-        self.assertAlmostEqual(f1.between(f1, f1, method="Derrac_Schockaert", n_samples=500), 1.0)
-        self.assertAlmostEqual(f1.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 1.0)
-        self.assertAlmostEqual(f3.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 1.0)
-        self.assertAlmostEqual(f3.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 1.0)
-        self.assertAlmostEqual(f4.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 0.999999555590188)
-        self.assertAlmostEqual(f4.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 0.999999555590188)
-        self.assertAlmostEqual(f5.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 0.9985999257009579)
-        self.assertAlmostEqual(f5.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 0.9985999257009579)
-        self.assertAlmostEqual(f6.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 0.9768894261848579)
-        self.assertAlmostEqual(f6.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 0.9768894261848579)
-
-    def test_between_Derrac_Schockaert_two_cuboids_2d(self):
-        doms = {0:[0,1]}       
-        cs.init(2, doms)
-        c1_1 = Cuboid([0.10,0.80],[0.40,0.90], doms)
-        c1_2 = Cuboid([0.10,0.60],[0.20,1.00], doms)
-        c2_1 = Cuboid([0.70,0.10],[0.90,0.40], doms)
-        c2_2 = Cuboid([0.80,0.30],[1.00,0.70], doms)
-        c3_1 = Cuboid([0.40,0.40],[0.70,0.50], doms)
-        c3_2 = Cuboid([0.60,0.30],[0.70,0.80], doms)
-        c4_1 = Cuboid([0.40,0.40],[0.70,0.50], doms)
-        c4_2 = Cuboid([0.60,0.30],[0.70,0.90], doms)
-        c5 = Cuboid([0.90,0.20],[1.00,0.30], doms)
-        s1 = Core([c1_1, c1_2], doms)
-        s2 = Core([c2_1, c2_2], doms)
-        s3 = Core([c3_1, c3_2], doms)
-        s4 = Core([c4_1, c4_2], doms)
-        s5 = Core([c5], doms)
-        w = Weights({0:1}, {0:{0:1, 1:2}})
-        f1 = Concept(s1, 1.0, 1.0, w)
-        f2 = Concept(s2, 1.0, 1.0, w)
-        f3 = Concept(s3, 0.9, 15.0, w)
-        f4 = Concept(s4, 0.9, 15.0, w)
-        f5 = Concept(s5, 0.9, 15.0, w)
-        
-        self.assertAlmostEqual(f1.between(f1, f1, method="Derrac_Schockaert", n_samples=500), 1.0)
-        self.assertAlmostEqual(f1.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 1.0)
-        self.assertAlmostEqual(f3.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 1.0)
-        self.assertAlmostEqual(f3.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 1.0)
-        self.assertAlmostEqual(f4.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 0.9993689077892981)
-        self.assertAlmostEqual(f4.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 0.9993689077892981)
-        self.assertAlmostEqual(f5.between(f1, f2, method="Derrac_Schockaert", n_samples=500), 0.9698658719503939)
-        self.assertAlmostEqual(f5.between(f2, f1, method="Derrac_Schockaert", n_samples=500), 0.9698658719503939)
-
-    def test_between_Derrac_Schockaert_pear_lemon(self):
+    def test_between_core_soft_properties(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
-        cs.init(3, domains)
+        dimension_names = ["hue", "round", "sweet"]
+        cs.init(3, domains, dimension_names)
         w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
-
+        
         c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
         s_pear = Core([c_pear], domains)
         w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
         pear = Concept(s_pear, 1.0, 12.0, w_pear)
- 
-        c_lemon = Cuboid([0.7, 0.45, 0.0], [0.8, 0.55, 0.1], domains)
-        s_lemon = Core([c_lemon], domains)
-        w_lemon = Weights({"color":0.5, "shape":0.5, "taste":2.0}, w_dim)
-        lemon = Concept(s_lemon, 1.0, 20.0, w_lemon)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
 
-        self.assertAlmostEqual(pear.between(lemon, lemon, method="Derrac_Schockaert", n_samples=500), 0.25433084443516624)
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.between(red, green, method="core_soft"), 1.0)     
+        self.assertAlmostEqual(pear.between(non_sweet, red, method="core_soft"), 0.0)
+        self.assertAlmostEqual(pear.between(non_sweet, green, method="core_soft"), 0.0)
+        self.assertAlmostEqual(green.between(pear, red, method="core_soft"), 0.8333333333333333)
+        self.assertAlmostEqual(red.between(pear, green, method="core_soft"), 0.29411764705882343)
+
+    def test_between_core_soft_combined_space_properties(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([float("-inf"),0.40,0.50],[float("inf"),0.70,0.50], {1:[1,2]})
+        c6 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
+        c7 = Cuboid([float("-inf"),0.70,0.10],[float("inf"),0.90,0.30], {1:[1,2]})
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {1:[1,2]})
+        s6 = Core([c6], {0:[0]})
+        s7 = Core([c7], {1:[1,2]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_b)
+        f6 = Concept(s6, 1.0, 1.0, w_c)
+        f7 = Concept(s7, 1.0, 1.0, w_b)
+        
+        self.assertAlmostEqual(f1.between(f1, f1, method="core_soft"), 1.0)
+        self.assertAlmostEqual(f3.between(f1, f2, method="core_soft"), 1.0)
+        self.assertAlmostEqual(f3.between(f2, f1, method="core_soft"), 1.0)
+        self.assertAlmostEqual(f4.between(f1, f2, method="core_soft"), 1.0)
+        self.assertAlmostEqual(f4.between(f2, f1, method="core_soft"), 1.0)
+        self.assertAlmostEqual(f5.between(f1, f2, method="core_soft"), 1.0)
+        self.assertAlmostEqual(f5.between(f2, f1, method="core_soft"), 1.0)
+        self.assertAlmostEqual(f6.between(f2, f1, method="core_soft"), 0.5555555555555556)
+        self.assertAlmostEqual(f6.between(f2, f1, method="core_soft"), 0.5555555555555556)
+        self.assertAlmostEqual(f7.between(f2, f1, method="core_soft"), 0.8765446179023859)
+        self.assertAlmostEqual(f7.between(f2, f1, method="core_soft"), 0.8765446179023859)
+
 
     # 'core_soft_avg'
     def test_between_core_soft_avg(self):
@@ -2060,13 +3180,13 @@ class TestConcept(unittest.TestCase):
         f4 = Concept(s4, 1.0, 1.0, w)
         f5 = Concept(s5, 1.0, 1.0, w)
         
-        self.assertAlmostEqual(f1.between(f1, f1, method="core_soft_avg", n_samples=500), 1.0)
-        self.assertAlmostEqual(f3.between(f1, f2, method="core_soft_avg", n_samples=500), 1.0)
-        self.assertAlmostEqual(f3.between(f2, f1, method="core_soft_avg", n_samples=500), 1.0)
-        self.assertAlmostEqual(f4.between(f1, f2, method="core_soft_avg", n_samples=500), 1.0)
-        self.assertAlmostEqual(f4.between(f2, f1, method="core_soft_avg", n_samples=500), 1.0)
-        self.assertAlmostEqual(f5.between(f1, f2, method="core_soft_avg", n_samples=500), 0.4256712666175846)
-        self.assertAlmostEqual(f5.between(f2, f1, method="core_soft_avg", n_samples=500), 0.4256712666175846)
+        self.assertAlmostEqual(f1.between(f1, f1, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f3.between(f1, f2, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f3.between(f2, f1, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f4.between(f1, f2, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f4.between(f2, f1, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f5.between(f1, f2, method="core_soft_avg"), 0.4256712666175846)
+        self.assertAlmostEqual(f5.between(f2, f1, method="core_soft_avg"), 0.4256712666175846)
 
     def test_between_core_soft_avg_two_cuboids_3d(self):
         doms = {0:[0,1,2]}       
@@ -2094,16 +3214,16 @@ class TestConcept(unittest.TestCase):
         f5 = Concept(s5, 1.0, 1.0, w)
         f6 = Concept(s6, 0.5, 5.0, w)
         
-        self.assertAlmostEqual(f1.between(f1, f1, method="core_soft_avg", n_samples=500), 1.0)
-        self.assertAlmostEqual(f1.between(f1, f2, method="core_soft_avg", n_samples=500), 1.0)
-        self.assertAlmostEqual(f3.between(f1, f2, method="core_soft_avg", n_samples=500), 1.0)
-        self.assertAlmostEqual(f3.between(f2, f1, method="core_soft_avg", n_samples=500), 1.0)
-        self.assertAlmostEqual(f4.between(f1, f2, method="core_soft_avg", n_samples=500), 0.9999839081869635)
-        self.assertAlmostEqual(f4.between(f2, f1, method="core_soft_avg", n_samples=500), 0.9999839081869635)
-        self.assertAlmostEqual(f5.between(f1, f2, method="core_soft_avg", n_samples=500), 0.9890717889974844)
-        self.assertAlmostEqual(f5.between(f2, f1, method="core_soft_avg", n_samples=500), 0.9890717889974844)
-        self.assertAlmostEqual(f6.between(f1, f2, method="core_soft_avg", n_samples=500), 0.9337296274993809)
-        self.assertAlmostEqual(f6.between(f2, f1, method="core_soft_avg", n_samples=500), 0.9337296274993809)
+        self.assertAlmostEqual(f1.between(f1, f1, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f1.between(f1, f2, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f3.between(f1, f2, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f3.between(f2, f1, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f4.between(f1, f2, method="core_soft_avg"), 0.9999839081869635)
+        self.assertAlmostEqual(f4.between(f2, f1, method="core_soft_avg"), 0.9999839081869635)
+        self.assertAlmostEqual(f5.between(f1, f2, method="core_soft_avg"), 0.9890717889974844)
+        self.assertAlmostEqual(f5.between(f2, f1, method="core_soft_avg"), 0.9890717889974844)
+        self.assertAlmostEqual(f6.between(f1, f2, method="core_soft_avg"), 0.9337296274993809)
+        self.assertAlmostEqual(f6.between(f2, f1, method="core_soft_avg"), 0.9337296274993809)
 
     def test_between_core_soft_avg_two_cuboids_2d(self):
         doms = {0:[0,1]}       
@@ -2129,14 +3249,14 @@ class TestConcept(unittest.TestCase):
         f4 = Concept(s4, 0.9, 15.0, w)
         f5 = Concept(s5, 0.9, 15.0, w)
         
-        self.assertAlmostEqual(f1.between(f1, f1, method="core_soft_avg", n_samples=500), 1.0)
-        self.assertAlmostEqual(f1.between(f1, f2, method="core_soft_avg", n_samples=500), 1.0)
-        self.assertAlmostEqual(f3.between(f1, f2, method="core_soft_avg", n_samples=500), 1.0)
-        self.assertAlmostEqual(f3.between(f2, f1, method="core_soft_avg", n_samples=500), 1.0)
-        self.assertAlmostEqual(f4.between(f1, f2, method="core_soft_avg", n_samples=500), 0.9929213004721357)
-        self.assertAlmostEqual(f4.between(f2, f1, method="core_soft_avg", n_samples=500), 0.9929213004721357)
-        self.assertAlmostEqual(f5.between(f1, f2, method="core_soft_avg", n_samples=500), 0.9829582523223912)
-        self.assertAlmostEqual(f5.between(f2, f1, method="core_soft_avg", n_samples=500), 0.9829582523223912)
+        self.assertAlmostEqual(f1.between(f1, f1, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f1.between(f1, f2, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f3.between(f1, f2, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f3.between(f2, f1, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f4.between(f1, f2, method="core_soft_avg"), 0.9929213004721357)
+        self.assertAlmostEqual(f4.between(f2, f1, method="core_soft_avg"), 0.9929213004721357)
+        self.assertAlmostEqual(f5.between(f1, f2, method="core_soft_avg"), 0.9829582523223912)
+        self.assertAlmostEqual(f5.between(f2, f1, method="core_soft_avg"), 0.9829582523223912)
 
     def test_between_core_soft_avg_pear_lemon(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -2153,7 +3273,79 @@ class TestConcept(unittest.TestCase):
         w_lemon = Weights({"color":0.5, "shape":0.5, "taste":2.0}, w_dim)
         lemon = Concept(s_lemon, 1.0, 20.0, w_lemon)
 
-        self.assertAlmostEqual(pear.between(lemon, lemon, method="core_soft_avg", n_samples=500), 0.21538461538461545)
+        self.assertAlmostEqual(pear.between(lemon, lemon, method="core_soft_avg"), 0.21538461538461545)
+
+    def test_between_core_soft_avg_properties(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        dimension_names = ["hue", "round", "sweet"]
+        cs.init(3, domains, dimension_names)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 12.0, w_pear)
+        
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
+
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        red = Concept(s_red, 1.0, 20.0, w_red)
+
+        c_green = Cuboid([0.45, float("-inf"), float("-inf")], [0.55, float("inf"), float("inf")], {"color":[0]})
+        s_green = Core([c_green], {"color":[0]})
+        w_green = Weights({"color":1.0}, {"color":{0:1.0}})
+        green = Concept(s_green, 1.0, 20.0, w_green)
+        
+        self.assertAlmostEqual(pear.between(red, green, method="core_soft_avg"), 1.0)     
+        self.assertAlmostEqual(pear.between(non_sweet, red, method="core_soft_avg"), 0.0)
+        self.assertAlmostEqual(pear.between(non_sweet, green, method="core_soft_avg"), 0.0)
+        self.assertAlmostEqual(green.between(pear, red, method="core_soft_avg"), 0.9166666666666666)
+        self.assertAlmostEqual(red.between(pear, green, method="core_soft_avg"), 0.29411764705882343)
+
+    def test_between_core_soft_avg_combined_space_properties(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([float("-inf"),0.40,0.30],[float("inf"),0.40,0.50], {1:[1,2]})
+        c4 = Cuboid([0.30,float("-inf"),float("-inf")],[0.40,float("inf"),float("inf")], {0:[0]})
+        c5 = Cuboid([float("-inf"),0.40,0.50],[float("inf"),0.70,0.50], {1:[1,2]})
+        c6 = Cuboid([1.20,float("-inf"),float("-inf")],[1.40,float("inf"),float("inf")], {0:[0]})
+        c7 = Cuboid([float("-inf"),0.70,0.10],[float("inf"),0.90,0.30], {1:[1,2]})
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], {1:[1,2]})
+        s4 = Core([c4], {0:[0]})
+        s5 = Core([c5], {1:[1,2]})
+        s6 = Core([c6], {0:[0]})
+        s7 = Core([c7], {1:[1,2]})
+        w_a = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        w_b = Weights({1:1}, {1:{1:0.75, 2:0.25}})
+        w_c = Weights({0:1}, {0:{0:1}})
+        f1 = Concept(s1, 1.0, 1.0, w_a)
+        f2 = Concept(s2, 1.0, 1.0, w_a)
+        f3 = Concept(s3, 1.0, 1.0, w_b)
+        f4 = Concept(s4, 1.0, 1.0, w_c)
+        f5 = Concept(s5, 1.0, 1.0, w_b)
+        f6 = Concept(s6, 1.0, 1.0, w_c)
+        f7 = Concept(s7, 1.0, 1.0, w_b)
+        
+        self.assertAlmostEqual(f1.between(f1, f1, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f3.between(f1, f2, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f3.between(f2, f1, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f4.between(f1, f2, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f4.between(f2, f1, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f5.between(f1, f2, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f5.between(f2, f1, method="core_soft_avg"), 1.0)
+        self.assertAlmostEqual(f6.between(f2, f1, method="core_soft_avg"), 0.5555555555555556)
+        self.assertAlmostEqual(f6.between(f2, f1, method="core_soft_avg"), 0.5555555555555556)
+        self.assertAlmostEqual(f7.between(f2, f1, method="core_soft_avg"), 0.9074084634267894)
+        self.assertAlmostEqual(f7.between(f2, f1, method="core_soft_avg"), 0.9074084634267894)
 
 
 unittest.main()
