@@ -7,6 +7,7 @@ Created on Tue Jun  6 11:56:30 2017
 
 import unittest
 import sys
+import random
 sys.path.append("..")
 from cs.core import Core
 from cs.cuboid import Cuboid
@@ -3347,5 +3348,38 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(f7.between(f2, f1, method="core_soft_avg"), 0.9074084634267894)
         self.assertAlmostEqual(f7.between(f2, f1, method="core_soft_avg"), 0.9074084634267894)
 
+    # sample()
+    def test_sample_one_dimension_one_cuboid(self):
+        random.seed(42)
+        doms = {0:[0]}
+        cs.init(1, doms)
+        s = Core([Cuboid([0.5],[0.7],doms)], doms)
+        w = Weights({0:1}, {0:{0:1}})
+        f = Concept(s, 1.0, 10.0, w)    
+        
+        expected_samples = [[0.8205106003073817], [0.4765153714885756], [1.0893800654543875], [0.3473480357360961], 
+                            [0.9235408035519259], [0.3946845714812346], [0.6900689273941277], [0.1714756921447516], 
+                            [0.697056837377988], [0.440896762692208], [0.6009269677135154], [0.7723419529504013], 
+                            [0.2955737618046804], [0.5609078189852715], [0.47843872817402455], [0.6621487706978224], 
+                            [0.5021021223612736], [0.5567778328095853], [0.4791356905517389], [0.4459905858967407]]
+        samples = f.sample(20)
+        self.assertEqual(samples, expected_samples)
+        
+    def test_sample_one_dimension_one_cuboid_scaled(self):
+        random.seed(42)
+        doms = {0:[0]}
+        cs.init(1, doms)
+        s = Core([Cuboid([5],[7],doms)], doms)
+        w = Weights({0:1}, {0:{0:1}})
+        f = Concept(s, 1.0, 1.0, w)    
+        
+        expected_samples = [[8.205106003073817], [4.765153714885757], [10.893800654543874], [3.4734803573609607], 
+                            [9.23540803551926], [3.946845714812346], [6.900689273941278], [1.7147569214475165], 
+                            [6.97056837377988], [4.40896762692208], [6.009269677135154], [7.723419529504014], 
+                            [2.955737618046805], [5.609078189852716], [4.784387281740246], [6.621487706978225], 
+                            [5.0210212236127365], [5.567778328095852], [4.7913569055173895], [4.459905858967407]]
+        samples = f.sample(20)
+        self.assertEqual(samples, expected_samples)
+        
 
 unittest.main()

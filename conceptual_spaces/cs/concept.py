@@ -5,7 +5,8 @@ Created on Tue Jun  6 11:54:30 2017
 @author: lbechberger
 """
 
-from math import exp, sqrt, factorial, pi, gamma, log, isnan
+from math import exp, sqrt, factorial, pi, gamma, log
+from random import uniform
 import itertools
 import scipy.optimize
 
@@ -779,6 +780,43 @@ class Concept:
 
         else:
             raise Exception("Unknown method")
+
+    def sample(self, num_samples):
+        """Samples 'num_samples' instances from the concept, based on its membership function."""
+        
+        # get probability densitiy function by dividing the membership function by the concept's size
+        # this ensures that the integral over the function is equal to one.
+        size = self.size()
+        pdf = lambda x: self.membership_of(x) / size
+        
+        samples = []
+        
+        # compute the boundaries to sample from:
+        # for each dimension, compute the intersection of membership(x) with y = 0.001
+        boundaries = []
+        for dim in range(cs._n_dim):
+            core_min = float("inf")
+            core_max = float("-inf")
+            for c in self._core._cuboids:
+                core_min = min(core_min, c._p_min[dim])
+                core_max = max(core_max, c._p_max[dim])
+            
+            dom = filter(lambda (x,y): dim in y, self._core._domains.items())[0][0]
+            difference = - log(0.001/self._mu) / (self._c * self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim]))
+            boundaries.append([core_min - difference, core_max + difference])
+        
+        # use rejection sampling to generate the expected number of samples
+        while len(samples) < num_samples:
+            
+            candidate = [i for i in range(cs._n_dim)]
+            candidate = map(lambda x: uniform(boundaries[x][0], boundaries[x][1]), candidate)
+            
+            u = uniform(0,1)
+            
+            if u * (1.1/size) <= pdf(candidate):
+                samples.append(candidate)
+        
+        return samples
 
 
 def _check_crisp_betweenness(points, first, second):

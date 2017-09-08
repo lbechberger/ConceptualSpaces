@@ -256,7 +256,7 @@ def update():
             this._axis_ranges = list(map(lambda x, y: (x[0], max(x[1], y)) if not isinf(y) else x, this._axis_ranges, cuboid._p_max))
     # add a little space in each dimensions for the plots
     widths = list(map(lambda x: x[1] - x[0], this._axis_ranges))
-    this._axis_ranges = map(lambda x, y: (x[0] - 0.1 * y, x[1] + 0.1 * y), this._axis_ranges, widths)
+    this._axis_ranges = map(lambda x, y: (x[0] - 0.2 * y, x[1] + 0.2 * y), this._axis_ranges, widths)
 
     # grab all concepts
     standard_colors = deque(['r', 'g', 'b', 'y', 'purple', 'orange', 'brown', 'gray'])
