@@ -801,13 +801,20 @@ class Concept:
                 core_min = min(core_min, c._p_min[dim])
                 core_max = max(core_max, c._p_max[dim])
             
-            dom = filter(lambda (x,y): dim in y, self._core._domains.items())[0][0]
-            difference = - log(0.001/self._mu) / (self._c * self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim]))
-            boundaries.append([core_min - difference, core_max + difference])
+            if core_min == float("-inf") and core_max == float("inf"):
+                # concept not defined in this dimension --> use arbitrary interval [-2,+2]
+                # TODO: come up with something better
+                boundaries.append([-2, 2])
+            else:
+                # concept defined in this dimensions --> use borders of 0.001-cut
+                dom = filter(lambda (x,y): dim in y, self._core._domains.items())[0][0]
+                difference = - log(0.001/self._mu) / (self._c * self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim]))
+                boundaries.append([core_min - difference, core_max + difference])
         
         # use rejection sampling to generate the expected number of samples
         while len(samples) < num_samples:
             
+            # create a uniform sample based on the boundaries
             candidate = [i for i in range(cs._n_dim)]
             candidate = map(lambda x: uniform(boundaries[x][0], boundaries[x][1]), candidate)
             
