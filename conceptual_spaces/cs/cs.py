@@ -150,3 +150,14 @@ def round(x):
 def equal(x, y):
     """Checks whether two floating point numbers are considered to be equal under the globally set precision."""
     return abs(x - y) < this._epsilon or (isinf(x) and isinf(y) and (x>0) == (y>0))
+
+def export_concept_samples(key, num_samples, path):
+    """Samples 'num_samples' points from the concept indexed by 'key' and stores them as csv file under the given 'path'."""
+    
+    concept = this._concepts[key]
+    samples = concept.sample(num_samples)
+    
+    file_name = "{0}{1}.csv".format(path, key)
+    with open(file_name, 'w') as f:
+        for sample in samples:
+            f.write("{0},{1}\n".format(key,",".join(map(str, sample))))
