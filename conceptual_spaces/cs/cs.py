@@ -151,13 +151,32 @@ def equal(x, y):
     """Checks whether two floating point numbers are considered to be equal under the globally set precision."""
     return abs(x - y) < this._epsilon or (isinf(x) and isinf(y) and (x>0) == (y>0))
 
-def export_concept_samples(key, num_samples, path):
-    """Samples 'num_samples' points from the concept indexed by 'key' and stores them as csv file under the given 'path'."""
+def export_concept_samples(num_samples = 100, path_to_file = './samples.csv', labeling_threshold = 0.9):
+    """Samples 'num_samples' points each concept, labels it with the concept with highest membership as well
+    as all concepts with a membership above the labeling_threshold (relative to the highest membership concept)
+    and stores them as csv file under the given 'path_to_file'."""
     
-    concept = this._concepts[key]
-    samples = concept.sample(num_samples)
+    # collect data points
+    samples = []
+    for concept in this._concepts.values():
+        samples += concept.sample(num_samples)
     
-    file_name = "{0}{1}.csv".format(path, key)
-    with open(file_name, 'w') as f:
-        for sample in samples:
-            f.write("{0},{1}\n".format(key,",".join(map(str, sample))))
+    # collect labels
+    labeled_samples = []
+    for sample in samples:
+        memberships = []
+        for name, concept in this._concepts.iteritems():
+            memberships.append((name, concept.membership_of(sample)))
+        memberships.sort(key = lambda x: x[1], reverse = True)
+        l_sample = list(sample)
+        l_sample.append(memberships[0][0])
+        idx = 1
+        threshold = labeling_threshold * memberships[0][1]
+        while memberships[idx][1] > threshold:
+            l_sample.append(memberships[idx][0])
+            idx += 1
+        labeled_samples.append(l_sample)
+     
+    with open(path_to_file, 'w') as f:
+        for l_sample in labeled_samples:
+            f.write("{0}\n".format(",".join(map(str, l_sample))))
