@@ -437,23 +437,13 @@ class Concept:
         
         return self.subset_of(other)
     
-    def similarity_to(self, other, method="naive"):
+    def similarity_to(self, other, method="Jaccard"):
         """Computes the similarity of this concept to the given other concept.
         
         The following methods are avaliable:
-            'naive':                  similarity of cores' midpoints (used as default)
-            'Jaccard':                Jaccard similarity index (size of intersection over size of union)
-            'subset':                 use value returned by subset_of()
-            'min_core':               similarity based on minimum distance of cores
-            'max_core':               similarity based on maximum distance of cores
-            'min_membership_core':    minimal membership of any point in self._core to other
-            'max_membership_core':    maximal membership of any point in self._core to other
-            'Hausdorff_core':         similarity based on Hausdorff distance of cores
-            'min_center':             similarity based on minimum distance of cores' central region
-            'max_center':             similarity based on maximum distance of cores' central region
-            'Hausdorff_center':       similarity based on Hausdorff distance of cores' central region
-            'min_membership_center':  minimal membership of any point in self's central region to other
-            'max_membership_center':  maximal membership of any point in self's central region to other"""
+            'Jaccard':                Jaccard similarity index (size of intersection over size of union) - used as default
+            'subset':                 degree of subsethood as computed in subset_of()
+        """
         
         # project both concepts onto their common domains to find a common ground                              
         common_domains = {}
@@ -466,170 +456,15 @@ class Concept:
         projected_self = self.project_onto(common_domains)
         projected_other = other.project_onto(common_domains)
 
-        if method == "naive":
-            self_midpoint = projected_self._core.midpoint()
-            other_midpoint = projected_other._core.midpoint()
-            
-            sim = exp(-projected_other._c * cs.distance(self_midpoint, other_midpoint, projected_other._weights))
-            return sim
-        
-        elif method == "Jaccard":
+        if method == "Jaccard":
             intersection = projected_self.intersect_with(projected_other)
             union = projected_self.unify_with(projected_other)
-
-            intersection._c = projected_other._c
-            union._c = projected_other._c
-            intersection._weights = projected_other._weights  
-            union._weights = projected_other._weights
-            
             sim = intersection.size() / union.size()
             return sim
         
         elif method == "subset":
             return projected_self.subset_of(projected_other)
             
-        elif method == "min_core":
-            min_dist = float("inf")
-            for c1 in projected_self._core._cuboids:
-                for c2 in projected_other._core._cuboids:
-                    a_range, b_range = c1.get_closest_points(c2)
-                    a = map(lambda x: x[0], a_range)
-                    b = map(lambda x: x[0], b_range)
-                    dist = cs.distance(a, b, projected_other._weights)
-                    min_dist = min(min_dist, dist)
-            sim = exp(-projected_other._c * min_dist)
-            return sim
-        
-        elif method == "max_core":
-            max_dist = 0
-            for c1 in projected_self._core._cuboids:
-                for c2 in projected_other._core._cuboids:
-                    a, b = c1.get_most_distant_points(c2)
-                    dist = cs.distance(a, b, projected_other._weights)
-                    max_dist = max(max_dist, dist)
-            sim = exp(-projected_other._c * max_dist)
-            return sim
-        
-        elif method == "Hausdorff_core":
-            self_candidates = []
-            other_candidates = []
-            for c1 in projected_self._core._cuboids:
-                for c2 in projected_other._core._cuboids:
-                    a, b = c1.get_most_distant_points(c2)
-                    self_candidates.append(a)
-                    other_candidates.append(b)
-            
-            max_dist = 0
-            for self_candidate in self_candidates:
-                min_dist = float("inf")
-                for c2 in projected_other._core._cuboids:
-                    p = c2.find_closest_point(self_candidate)
-                    min_dist = min(min_dist, cs.distance(self_candidate, p, projected_other._weights))
-                max_dist = max(max_dist, min_dist)
-            for other_candidate in other_candidates:
-                min_dist = float("inf")
-                for c1 in projected_self._core._cuboids:
-                    p = c1.find_closest_point(other_candidate)
-                    min_dist = min(min_dist, cs.distance(other_candidate, p, projected_other._weights))
-                max_dist = max(max_dist, min_dist)
-            
-            sim = exp(-projected_other._c * max_dist)
-            return sim
-        
-        elif method == "min_membership_core":
-            candidates = []
-            for c1 in projected_self._core._cuboids:
-                for c2 in projected_other._core._cuboids:
-                    a, b = c1.get_most_distant_points(c2)
-                    candidates.append(a)
-
-            min_membership = 1.0            
-            for candidate in candidates:
-                min_membership = min(min_membership, projected_other.membership_of(candidate))
-            
-            return min_membership
-        
-        elif method == "max_membership_core":
-            candidates = []
-            for c1 in projected_self._core._cuboids:
-                for c2 in projected_other._core._cuboids:
-                    a, b = c1.get_closest_points(c2)
-                    candidates.append(map(lambda x: x[0], a))
-
-            max_membership = 0.0            
-            for candidate in candidates:
-                max_membership = max(max_membership, projected_other.membership_of(candidate))
-            
-            return max_membership
-        
-        elif method == "min_center":
-            p1 = projected_self._core.get_center()
-            p2 = projected_other._core.get_center()
-            a_range, b_range = p1.get_closest_points(p2)
-            a = map(lambda x: x[0], a_range)
-            b = map(lambda x: x[0], b_range)
-            sim = exp(-projected_other._c * cs.distance(a, b, projected_other._weights))
-            return sim
-        
-        elif method == "max_center":
-            p1 = projected_self._core.get_center()
-            p2 = projected_other._core.get_center()
-            a, b = p1.get_most_distant_points(p2)
-            sim = exp(-projected_other._c * cs.distance(a, b, projected_other._weights))
-            return sim
-        
-        elif method == "Hausdorff_center":
-            p1 = projected_self._core.get_center()
-            p2 = projected_other._core.get_center()
-            a_distant, b_distant = p1.get_most_distant_points(p2)
-            a_close, b_close = p1.get_closest_points(p2)
-            
-            a = []
-            b = []                   
-            # find closest point a to b_distant and b to a_distant
-            for i in range(cs._n_dim):
-                if a_close[i][0] <= b_distant[i] <= a_close[i][1]:
-                    a.append(b_distant[i])
-                elif b_distant[i] < a_close[i][0]:
-                    a.append(a_close[i][0])
-                else:
-                    a.append(a_close[i][1])
-                if b_close[i][0] <= a_distant[i] <= b_close[i][1]:
-                    b.append(a_distant[i])
-                elif a_distant[i] < b_close[i][0]:
-                    b.append(b_close[i][0])
-                else:
-                    b.append(b_close[i][1])
-            
-            first_dist = cs.distance(a_distant, b, projected_other._weights)                  
-            second_dist = cs.distance(b_distant, a, projected_other._weights)
-            sim = exp(-projected_other._c * max(first_dist, second_dist))
-            return sim
-
-        elif method == "min_membership_center":
-            center = projected_self._core.get_center()
-            candidates = []
-            for c2 in projected_other._core._cuboids:
-                a, b = center.get_most_distant_points(c2)
-                candidates.append(a)
-            
-            min_membership = 1.0
-            for candidate in candidates:
-                min_membership = min(min_membership, projected_other.membership_of(candidate))
-            return min_membership
-        
-        elif method == "max_membership_center":
-            center = projected_self._core.get_center()
-            candidates = []
-            for c2 in projected_other._core._cuboids:
-                a, b = center.get_closest_points(c2)
-                candidates.append(map(lambda x: x[0], a))
-            
-            max_membership = 0.0
-            for candidate in candidates:
-                max_membership = max(max_membership, projected_other.membership_of(candidate))
-            return max_membership
-        
         else:
             raise Exception("Unknown method")
 
