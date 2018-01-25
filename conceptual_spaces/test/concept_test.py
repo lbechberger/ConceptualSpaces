@@ -1002,6 +1002,99 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(f_orange.subset_of(f_lemon), 0.00024392897777777777)
 
 
+    # crisp_subset_of()
+    def test_crisp_subset_of_granny_smith_apple(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        c_granny_smith = Cuboid([0.55, 0.70, 0.35], [0.6, 0.8, 0.45], domains)
+        s_granny_smith = Core([c_granny_smith], domains)
+        w_granny_smith = Weights({"color":1.0, "shape":1.0, "taste":1.0}, w_dim)
+        f_granny_smith = Concept(s_granny_smith, 1.0, 25.0, w_granny_smith)
+        
+        c_apple_1 = Cuboid([0.5, 0.65, 0.35], [0.8, 0.8, 0.5], domains)
+        c_apple_2 = Cuboid([0.65, 0.65, 0.4], [0.85, 0.8, 0.55], domains)
+        c_apple_3 = Cuboid([0.7, 0.65, 0.45], [1.0, 0.8, 0.6], domains)
+        s_apple = Core([c_apple_1, c_apple_2, c_apple_3], domains)
+        w_apple = Weights({"color":0.50, "shape":1.50, "taste":1.00}, w_dim)
+        f_apple = Concept(s_apple, 1.0, 5.0, w_apple)
+        
+        self.assertTrue(f_granny_smith.crisp_subset_of(f_apple))
+        self.assertFalse(f_apple.crisp_subset_of(f_granny_smith))
+
+    def test_crisp_subset_of_pear_apple(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        f_pear = Concept(s_pear, 1.0, 10.0, w_pear)
+        
+        c_apple_1 = Cuboid([0.5, 0.65, 0.35], [0.8, 0.8, 0.5], domains)
+        c_apple_2 = Cuboid([0.65, 0.65, 0.4], [0.85, 0.8, 0.55], domains)
+        c_apple_3 = Cuboid([0.7, 0.65, 0.45], [1.0, 0.8, 0.6], domains)
+        s_apple = Core([c_apple_1, c_apple_2, c_apple_3], domains)
+        w_apple = Weights({"color":0.50, "shape":1.50, "taste":1.00}, w_dim)
+        f_apple = Concept(s_apple, 1.0, 5.0, w_apple)
+        
+        self.assertFalse(f_pear.crisp_subset_of(f_apple))
+        self.assertFalse(f_apple.crisp_subset_of(f_pear))
+
+    def test_crisp_subset_of_orange_lemon(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        c_orange = Cuboid([0.8, 0.9, 0.6], [0.9, 1.0, 0.7], domains)
+        s_orange = Core([c_orange], domains)
+        w_orange = Weights({"color":1.0, "shape":1.0, "taste":1.0}, w_dim)
+        f_orange = Concept(s_orange, 1.0, 15.0, w_orange)
+
+        c_lemon = Cuboid([0.7, 0.45, 0.0], [0.8, 0.55, 0.1], domains)
+        s_lemon = Core([c_lemon], domains)
+        w_lemon = Weights({"color":0.5, "shape":0.5, "taste":2.0}, w_dim)
+        f_lemon = Concept(s_lemon, 1.0, 20.0, w_lemon)
+        
+        self.assertFalse(f_orange.crisp_subset_of(f_lemon))
+        self.assertFalse(f_lemon.crisp_subset_of(f_orange))
+    
+    def test_crisp_subset_of_artificial_examples(self):
+        domains = {0:[0,1], 1:[2]}
+        cs.init(3, domains)
+        
+        c1 = Cuboid([0,0,0], [0.5,0.5,0.5], domains)
+        s1 = Core([c1], domains)
+        w1 = Weights({0:1, 1:1}, {0:{0:0.5, 1:0.5}, 1:{2:1}})
+        f1 = Concept(s1, 1.0, 5.0, w1)
+        
+        f2 = Concept(s1, 0.9, 5.0, w1)
+        f3 = Concept(s1, 1.0, 4.0, w1)
+        
+        w4 = Weights({0:0.5, 1:1.5}, {0:{0:0.5, 1:0.5}, 1:{2:1}})
+        f4 = Concept(s1, 1.0, 5.0, w4)
+        w5 = Weights({0:1, 1:1}, {0:{0:0.75, 1:0.25}, 1:{2:1}})
+        f5 = Concept(s1, 1.0, 5.0, w5)
+        f6 = Concept(s1, 1.0, 10.0, w5)
+        
+        c2 = Cuboid([0.5,0.5,0.5], [0.5, 0.5, 0.55], domains)
+        s2 = Core([c2], domains)
+        f7 = Concept(s2, 0.5, 5.0, w1)
+        
+        self.assertTrue(f2.crisp_subset_of(f1))
+        self.assertFalse(f1.crisp_subset_of(f2))
+        self.assertFalse(f3.crisp_subset_of(f1))
+        self.assertTrue(f1.crisp_subset_of(f3))
+        self.assertFalse(f4.crisp_subset_of(f1))
+        self.assertFalse(f1.crisp_subset_of(f4))
+        self.assertFalse(f5.crisp_subset_of(f1))
+        self.assertFalse(f1.crisp_subset_of(f5))
+        self.assertTrue(f6.crisp_subset_of(f1))
+        self.assertFalse(f1.crisp_subset_of(f6))
+        self.assertTrue(f7.crisp_subset_of(f1))
+        self.assertFalse(f1.crisp_subset_of(f7))
+        
+
+
     # implies()
     def test_implies_granny_smith_apple(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}

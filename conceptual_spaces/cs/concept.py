@@ -432,6 +432,49 @@ class Concept:
         subsethood = intersection.size() / projected_self.size()
         return subsethood
 
+    def crisp_subset_of(self, other):
+        """Checks whether this concept is a crisp subset of the given other concept."""
+
+        # self._mu must not be greater than other._mu
+        if self._mu > other._mu:
+            return False
+
+        # core of self must be subset of other's alpha-cut with alpha = self._mu
+        corner_points = []
+        self_dims = [dim for dims in self._core._domains.values() for dim in dims]
+        
+        for cuboid in self._core._cuboids:
+            binary_vecs = itertools.product([False, True], repeat = len(self_dims))
+            for vec in binary_vecs:
+                point = []
+                j = 0
+                for i in range(cs._n_dim):
+                    if i in self_dims:
+                        point.append(cuboid._p_max[i] if vec[j] else cuboid._p_min[i])
+                        j += 1
+                    else:
+                        point.append(0.0)
+                corner_points.append(point)
+        
+        for point in corner_points:
+            if other.membership_of(point) < self._mu:
+                return False
+        
+        # domains on which other is defined must be subset of domains on which self is defined
+        for dom, dims in other._core._domains.iteritems():
+            if not (dom in self._core._domains and self._core._domains[dom] == dims):
+                return False
+
+        # for all dimensions: c * w_dom * sqrt(dim) must not be larger for other than for self
+        for dom, dims in other._core._domains.iteritems():
+            for dim in dims:
+                other_value = other._c * other._weights._domain_weights[dom] * other._weights._dimension_weights[dom][dim]
+                self_value = self._c * self._weights._domain_weights[dom] * self._weights._dimension_weights[dom][dim]
+                if other_value > self_value:
+                    return False
+        
+        return True
+
     def implies(self, other):
         """Computes the degree of implication between this concept and a given other concept."""
         
