@@ -468,8 +468,8 @@ class Concept:
         # for all dimensions: c * w_dom * sqrt(dim) must not be larger for other than for self
         for dom, dims in other._core._domains.iteritems():
             for dim in dims:
-                other_value = other._c * other._weights._domain_weights[dom] * other._weights._dimension_weights[dom][dim]
-                self_value = self._c * self._weights._domain_weights[dom] * self._weights._dimension_weights[dom][dim]
+                other_value = other._c * other._weights._domain_weights[dom] * sqrt(other._weights._dimension_weights[dom][dim])
+                self_value = self._c * self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim])
                 if other_value > self_value:
                     return False
         
@@ -548,13 +548,13 @@ class Concept:
             for dom, dims in first._core._domains.iteritems():
                 for dim in dims:
                     other_value = first._c * first._weights._domain_weights[dom] * first._weights._dimension_weights[dom][dim]
-                    self_value = self._c * self._weights._domain_weights[dom] * self._weights._dimension_weights[dom][dim]
+                    self_value = self._c * self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim])
                     if other_value > self_value:
                         return 0.0
             for dom, dims in second._core._domains.iteritems():
                 for dim in dims:
                     other_value = second._c * second._weights._domain_weights[dom] * second._weights._dimension_weights[dom][dim]
-                    self_value = self._c * self._weights._domain_weights[dom] * self._weights._dimension_weights[dom][dim]
+                    self_value = self._c * self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim])
                     if other_value > self_value:
                         return 0.0
 
@@ -614,15 +614,11 @@ class Concept:
             if self.crisp_subset_of(first) or self.crisp_subset_of(second):
                 return 1.0
 
-            self_point = self._core.midpoint()
-            first_point = first._core.midpoint()
-            second_point = second._core.midpoint()            
-            
             alphas = [0.1*i for i in range(1,11)]
             intermediate_results = []
             
             for alpha in alphas:
-                
+
                 if alpha > self._mu:                    # alpha-cut of self is empty --> define as 1.0
                     intermediate_results.append(1.0)
                     continue
@@ -631,44 +627,48 @@ class Concept:
                     intermediate_results.append(0.0)        # --> define as 0.0
                     continue
 
-                self_point = self._core.midpoint()
-                first_point = first._core.midpoint()
-                second_point = second._core.midpoint()            
+                corners_min = [c._p_min for c in self._core._cuboids] 
+                corners_max = [c._p_max for c in self._core._cuboids]
                 
-                outer_x = self_point
-                outer_constraints = ({'type':'ineq', 'fun': lambda x: self.membership_of(x) - alpha})  # y in alpha-cut of self
-                                     
-                inner_x = first_point + second_point
+                difference = [0]*cs._n_dim
+                for dom, dims in self._core._domains.iteritems():
+                    for dim in dims:
+                        difference[dim] = (-1.0 / (self._c * self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim]))) * log(alpha / self._mu)
+
+                # walk away from each corner as much as possible to get candidate points
+                candidates = []                
+                for corner in corners_min:
+                    candidates.append(map(lambda x, y: x - y, corner, difference))
+                for corner in corners_max:
+                    candidates.append(map(lambda x, y: x + y, corner, difference))
                 
-                def neg_betweenness(x_inner,x_outer):
-                    x = x_inner[:cs._n_dim]                
-                    y = x_outer
-                    z = x_inner[cs._n_dim:]
+                betweenness_values = []
+                for candidate in candidates:
                     
-                    return -1.0 * cs.between(x, y, z, self._weights, method='soft')
-                
-                # maximizing over x in first and z in third; for convenience, do this at the same time
-                def inner_optimization(y):
-                    tolerance = 0.005
-    #                print 'one', y
-                    inner_constraints = [{'type':'ineq', 'fun': lambda x: first.membership_of(x[:cs._n_dim]) - alpha - tolerance}, # x in alpha-cut of first
-                                         {'type':'ineq', 'fun': lambda x: second.membership_of(x[cs._n_dim:]) - alpha - tolerance}]  # z in alpha-cut of second
-                    opt = scipy.optimize.minimize(neg_betweenness, inner_x, args=(y,), method='COBYLA', constraints=inner_constraints, options={'catol':2*tolerance, 'tol':cs._epsilon, 'maxiter':1000, 'rhobeg':0.01})
-                    if not opt.success and opt.status != 2:
+                    # find closest point in alpha-cut to given candidate point
+                    to_optimize = lambda x: (alpha - self.membership_of(x))**2
+                    opt = scipy.optimize.minimize(to_optimize, candidate, method='Nelder-Mead')
+                    if not opt.success:
                         print opt
-    #                    print 'three', y, inner_x, opt.x, opt.fun
                         raise Exception("optimization failed: {0}".format(opt.message))
-    #                print 'two', y, opt.x, opt.fun
-    #                print first.membership_of(opt.x[:cs._n_dim]) , y[-1]
-                    return opt
-            
-            
-                to_minimize_y = lambda y: -1 * inner_optimization(y).fun
-                opt = scipy.optimize.minimize(to_minimize_y, outer_x, method='COBYLA', constraints=outer_constraints, options={'tol':cs._epsilon, 'maxiter':1000, 'rhobeg':0.01})
-                if not opt.success:
-                    print opt
-                    raise Exception("optimization failed: {0}".format(opt.message))
-                intermediate_results.append(opt.fun)
+                    
+                    self_point = opt.x
+                    
+                    # compute maximal betweenness for any points x,z in alpha-cut of first and third
+                    x_start = first._core.midpoint() + second._core.midpoint()
+                    tolerance = 0.002
+                    constr = [{'type':'ineq', 'fun': lambda x: first.membership_of(x[:cs._n_dim]) - alpha - tolerance}, # x in alpha-cut of first
+                                         {'type':'ineq', 'fun': lambda x: second.membership_of(x[cs._n_dim:]) - alpha - tolerance}]  # z in alpha-cut of second
+                    def neg_betweenness(x):
+                        return -1.0 * cs.between(x[:cs._n_dim], self_point, x[cs._n_dim:], self._weights, method='soft')
+                    opt = scipy.optimize.minimize(neg_betweenness, x_start, constraints=constr, method='COBYLA', options={'catol':2*tolerance, 'maxiter':10000, 'rhobeg':0.01})
+                    if not opt.success and not opt.status == 2:
+                        print opt
+                        raise Exception("optimization failed: {0}".format(opt.message))
+                    betweenness_values.append(-opt.fun)
+                
+                # minimum over all candidate points in alpha-cut of self
+                intermediate_results.append(min(betweenness_values))
 
             return sum(intermediate_results) / len(alphas)
 
