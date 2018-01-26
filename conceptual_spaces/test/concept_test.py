@@ -1550,6 +1550,8 @@ class TestConcept(unittest.TestCase):
         
         self.assertAlmostEqual(f3.between(f2, f1, method='integral'), 0.9)
         self.assertAlmostEqual(f4.between(f2, f1, method='integral'), 0.79788686987950952)
+        self.assertAlmostEqual(f4.between(f2, f1, method='integral', num_alpha_cuts=100), 0.76282890323933739)
+        self.assertAlmostEqual(f4.between(f2, f1, method='integral', num_alpha_cuts=1000), 0.75910654438485314)
 
     # 'naive'
     def test_between_naive(self):

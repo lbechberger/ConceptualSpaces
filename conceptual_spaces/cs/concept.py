@@ -511,7 +511,7 @@ class Concept:
         else:
             raise Exception("Unknown method")
 
-    def between(self, first, second, method="minimum"):
+    def between(self, first, second, method="minimum", num_alpha_cuts = 10):
         """Computes the degree to which this concept is between the other two given concepts.
         
         The following methods are avaliable:
@@ -614,7 +614,8 @@ class Concept:
             if self.crisp_subset_of(first) or self.crisp_subset_of(second):
                 return 1.0
 
-            alphas = [0.1*i for i in range(1,11)]
+            step_size = 1.0 / num_alpha_cuts
+            alphas = [step_size*i for i in range(1,num_alpha_cuts+1)]
             intermediate_results = []
             
             for alpha in alphas:
