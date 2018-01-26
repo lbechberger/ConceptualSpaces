@@ -511,10 +511,12 @@ class Concept:
         else:
             raise Exception("Unknown method")
 
-    def between(self, first, second, method="naive"):
+    def between(self, first, second, method="minimum"):
         """Computes the degree to which this concept is between the other two given concepts.
         
         The following methods are avaliable:
+            'minimum':      minimum over all alpha-cuts
+            'integral':     coarse approximation of the integral over all alpha-cuts
             'naive':                  crisp betweenness of cores' midpoints (used as default)
             'naive_soft':             soft betweenness of cores' midpoints
             'subset':                 self.subset_of(first.unify_with(second))
@@ -523,6 +525,154 @@ class Concept:
             'core_soft_avg':          average betweenness (in soft sense) of self's corner points wrt. cores of first and second
                                       Btw_3^R proposed by Derrac & Schockaert in 'Enriching Taxonomies of Place Types Using Flickr'"""
         
+
+        if method == "minimum":
+            # if either first or third is defined on more domains than this concept, we already know that the membership is zero
+            for dom, dims in first._core._domains.iteritems():
+                if not (dom in self._core._domains and self._core._domains[dom] == dims):
+                    return 0.0
+            for dom, dims in second._core._domains.iteritems():
+                if not (dom in self._core._domains and self._core._domains[dom] == dims):
+                    return 0.0
+
+            # also, if self._mu is greater than any of first and second, the result is automatically zero
+            if self._mu > first._mu or self._mu > second._mu:
+                return 0.0
+                
+            # if self is a crisp subset of either of first or second, the result is automatically one
+            if self.crisp_subset_of(first) or self.crisp_subset_of(second):
+                return 1.0
+
+            # for all dimensions: c * w_dom * sqrt(dim) must not be larger for first or second than for self
+            # TODO: back this up with some theory!
+            for dom, dims in first._core._domains.iteritems():
+                for dim in dims:
+                    other_value = first._c * first._weights._domain_weights[dom] * first._weights._dimension_weights[dom][dim]
+                    self_value = self._c * self._weights._domain_weights[dom] * self._weights._dimension_weights[dom][dim]
+                    if other_value > self_value:
+                        return 0.0
+            for dom, dims in second._core._domains.iteritems():
+                for dim in dims:
+                    other_value = second._c * second._weights._domain_weights[dom] * second._weights._dimension_weights[dom][dim]
+                    self_value = self._c * self._weights._domain_weights[dom] * self._weights._dimension_weights[dom][dim]
+                    if other_value > self_value:
+                        return 0.0
+
+            self_point = self._core.midpoint()
+            first_point = first._core.midpoint()
+            second_point = second._core.midpoint()            
+            
+            outer_x = self_point + [max(self._mu - 0.1, self._mu/2)]
+            outer_constraints = ({'type':'ineq', 'fun': lambda x: self._mu - x[-1]},                    # alpha < self._mu
+                                 {'type':'ineq', 'fun': lambda x: x[-1]},                               # alpha > 0
+                                 {'type':'ineq', 'fun': lambda x: self.membership_of(x[:-1]) - x[-1]})  # y in alpha-cut of self
+                                 
+            inner_x = first_point + second_point
+            
+            def neg_betweenness(x_inner,x_outer):
+                x = x_inner[:cs._n_dim]                
+                y = x_outer[:-1]
+                z = x_inner[cs._n_dim:]
+                
+                return -1.0 * cs.between(x, y, z, self._weights, method='soft')
+            
+            # maximizing over x in first and z in third; for convenience, do this at the same time
+            def inner_optimization(y):
+                alpha = y[-1]
+                tolerance = 0.005
+#                print 'one', y
+                inner_constraints = [{'type':'ineq', 'fun': lambda x: first.membership_of(x[:cs._n_dim]) - alpha - tolerance}, # x in alpha-cut of first
+                                     {'type':'ineq', 'fun': lambda x: second.membership_of(x[cs._n_dim:]) - alpha - tolerance}]  # z in alpha-cut of second
+                opt = scipy.optimize.minimize(neg_betweenness, inner_x, args=(y,), method='COBYLA', constraints=inner_constraints, options={'catol':2*tolerance, 'tol':cs._epsilon, 'maxiter':1000, 'rhobeg':0.01})
+                if not opt.success and opt.status != 2:
+                    print opt
+#                    print 'three', y, inner_x, opt.x, opt.fun
+                    raise Exception("optimization failed: {0}".format(opt.message))
+#                print 'two', y, opt.x, opt.fun
+#                print first.membership_of(opt.x[:cs._n_dim]) , y[-1]
+                return opt
+        
+        
+            to_minimize_y = lambda y: -1 * inner_optimization(y).fun
+            opt = scipy.optimize.minimize(to_minimize_y, outer_x, method='COBYLA', constraints=outer_constraints, options={'tol':cs._epsilon, 'maxiter':1000, 'rhobeg':0.01})
+            if not opt.success:
+                print opt
+                raise Exception("optimization failed: {0}".format(opt.message))
+            return opt.fun
+            
+
+        elif method == "integral":
+            # if either first or third is defined on more domains than this concept, we already know that the membership is zero
+            for dom, dims in first._core._domains.iteritems():
+                if not (dom in self._core._domains and self._core._domains[dom] == dims):
+                    return 0.0
+            for dom, dims in second._core._domains.iteritems():
+                if not (dom in self._core._domains and self._core._domains[dom] == dims):
+                    return 0.0
+
+            # if self is a crisp subset of either of first or second, the result is automatically one
+            if self.crisp_subset_of(first) or self.crisp_subset_of(second):
+                return 1.0
+
+            self_point = self._core.midpoint()
+            first_point = first._core.midpoint()
+            second_point = second._core.midpoint()            
+            
+            alphas = [0.1*i for i in range(1,11)]
+            intermediate_results = []
+            
+            for alpha in alphas:
+                
+                if alpha > self._mu:                    # alpha-cut of self is empty --> define as 1.0
+                    intermediate_results.append(1.0)
+                    continue
+                
+                if alpha > first._mu or alpha > second._mu: # alpha-cut of self is not empty, but one of the others is empty
+                    intermediate_results.append(0.0)        # --> define as 0.0
+                    continue
+
+                self_point = self._core.midpoint()
+                first_point = first._core.midpoint()
+                second_point = second._core.midpoint()            
+                
+                outer_x = self_point
+                outer_constraints = ({'type':'ineq', 'fun': lambda x: self.membership_of(x) - alpha})  # y in alpha-cut of self
+                                     
+                inner_x = first_point + second_point
+                
+                def neg_betweenness(x_inner,x_outer):
+                    x = x_inner[:cs._n_dim]                
+                    y = x_outer
+                    z = x_inner[cs._n_dim:]
+                    
+                    return -1.0 * cs.between(x, y, z, self._weights, method='soft')
+                
+                # maximizing over x in first and z in third; for convenience, do this at the same time
+                def inner_optimization(y):
+                    tolerance = 0.005
+    #                print 'one', y
+                    inner_constraints = [{'type':'ineq', 'fun': lambda x: first.membership_of(x[:cs._n_dim]) - alpha - tolerance}, # x in alpha-cut of first
+                                         {'type':'ineq', 'fun': lambda x: second.membership_of(x[cs._n_dim:]) - alpha - tolerance}]  # z in alpha-cut of second
+                    opt = scipy.optimize.minimize(neg_betweenness, inner_x, args=(y,), method='COBYLA', constraints=inner_constraints, options={'catol':2*tolerance, 'tol':cs._epsilon, 'maxiter':1000, 'rhobeg':0.01})
+                    if not opt.success and opt.status != 2:
+                        print opt
+    #                    print 'three', y, inner_x, opt.x, opt.fun
+                        raise Exception("optimization failed: {0}".format(opt.message))
+    #                print 'two', y, opt.x, opt.fun
+    #                print first.membership_of(opt.x[:cs._n_dim]) , y[-1]
+                    return opt
+            
+            
+                to_minimize_y = lambda y: -1 * inner_optimization(y).fun
+                opt = scipy.optimize.minimize(to_minimize_y, outer_x, method='COBYLA', constraints=outer_constraints, options={'tol':cs._epsilon, 'maxiter':1000, 'rhobeg':0.01})
+                if not opt.success:
+                    print opt
+                    raise Exception("optimization failed: {0}".format(opt.message))
+                intermediate_results.append(opt.fun)
+
+            return sum(intermediate_results) / len(alphas)
+
+
         # project all concepts onto their common domains to find a common ground                              
         common_domains = {}
         common_dims = []
@@ -538,7 +688,7 @@ class Concept:
         projected_self = self.project_onto(common_domains)
         projected_first = first.project_onto(common_domains)
         projected_second = second.project_onto(common_domains)
-
+            
         if method == "naive":        
             self_point = projected_self._core.midpoint()
             first_point = projected_first._core.midpoint()
