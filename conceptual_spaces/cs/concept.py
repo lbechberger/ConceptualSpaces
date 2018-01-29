@@ -510,19 +510,13 @@ class Concept:
         else:
             raise Exception("Unknown method")
 
-    def between(self, first, second, method="minimum", num_alpha_cuts = 20):
+    def between(self, first, second, method="integral", num_alpha_cuts = 20):
         """Computes the degree to which this concept is between the other two given concepts.
         
         The following methods are avaliable:
-            'minimum':      minimum over all alpha-cuts
-            'integral':     coarse approximation of the integral over all alpha-cuts
-            'naive':                  crisp betweenness of cores' midpoints (used as default)
-            'naive_soft':             soft betweenness of cores' midpoints
-            'subset':                 self.subset_of(first.unify_with(second))
-            'core':                   core of self is between (in crisp sense) cores of first and second
-            'core_soft':              core of self is between (in soft sense) cores of first and second (min over all corner points of self)
-            'core_soft_avg':          average betweenness (in soft sense) of self's corner points wrt. cores of first and second
-                                      Btw_3^R proposed by Derrac & Schockaert in 'Enriching Taxonomies of Place Types Using Flickr'"""
+            'minimum':  minimum over all alpha-cuts
+            'integral': coarse approximation of the integral over all alpha-cuts
+        """
         
         # if the three concepts are not defined on the exact same set of domains, we return zero
         if len(self._core._domains.keys()) != len(first._core._domains.keys()):
