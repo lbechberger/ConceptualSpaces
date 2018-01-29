@@ -511,7 +511,7 @@ class Concept:
         else:
             raise Exception("Unknown method")
 
-    def between(self, first, second, method="minimum", num_alpha_cuts = 10):
+    def between(self, first, second, method="minimum", num_alpha_cuts = 20):
         """Computes the degree to which this concept is between the other two given concepts.
         
         The following methods are avaliable:
