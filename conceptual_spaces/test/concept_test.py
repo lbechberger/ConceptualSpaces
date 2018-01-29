@@ -1405,8 +1405,8 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(f3.between(f2, f1, method="minimum"), 1.0)
         self.assertAlmostEqual(f4.between(f1, f2, method="minimum"), 1.0)
         self.assertAlmostEqual(f4.between(f2, f1, method="minimum"), 1.0)
-        self.assertAlmostEqual(f5.between(f1, f2, method="minimum"), 0.48883901815297531)
-        self.assertAlmostEqual(f5.between(f2, f1, method="minimum"), 0.49310095389333708)
+        self.assertAlmostEqual(f5.between(f1, f2, method="minimum"), 0.3412278522916869)
+        self.assertAlmostEqual(f5.between(f2, f1, method="minimum"), 0.33953746924206296)
         
     def test_between_minimum_fruit(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -1435,8 +1435,8 @@ class TestConcept(unittest.TestCase):
         
         self.assertAlmostEqual(banana.between(apple, orange, method='minimum'), 0.0)
         self.assertAlmostEqual(banana.between(orange, apple, method='minimum'), 0.0)
-        self.assertAlmostEqual(orange.between(apple, banana, method='minimum'), 0.77725050503553617)
-        self.assertAlmostEqual(orange.between(banana, apple, method='minimum'), 0.77527365516185442)
+        self.assertAlmostEqual(orange.between(apple, banana, method='minimum'), 0.71155474223676474)
+        self.assertAlmostEqual(orange.between(banana, apple, method='minimum'), 0.71406901432319769)
         self.assertAlmostEqual(apple.between(orange, banana, method='minimum'), 0.0)
         self.assertAlmostEqual(apple.between(banana, orange, method='minimum'), 0.0)
         self.assertAlmostEqual(apple.between(apple, banana, method='minimum'), 1.0)

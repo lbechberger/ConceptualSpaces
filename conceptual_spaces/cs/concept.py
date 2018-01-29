@@ -549,62 +549,74 @@ class Concept:
                     if first_value > self_value and second_value > self_value:
                         return 0.0
             
-            self_point = self._core.midpoint()
             first_point = first._core.midpoint()
             second_point = second._core.midpoint()            
             
-            outer_x = self_point + [max(self._mu - 0.1, self._mu/2)]
-            outer_constraints = ({'type':'ineq', 'fun': lambda x: self._mu - x[-1]},                    # alpha < self._mu
-                                 {'type':'ineq', 'fun': lambda x: x[-1]},                               # alpha > 0
-                                 {'type':'ineq', 'fun': lambda x: self.membership_of(x[:-1]) - x[-1]})  # y in alpha-cut of self
-                                 
-            inner_x = first_point + second_point
+            # start at each corner of each cuboid to get a good estimation of minimum over all points in self
+            corners_min = [c._p_min for c in self._core._cuboids] 
+            corners_max = [c._p_max for c in self._core._cuboids]
             
-            def neg_betweenness(x_inner,x_outer):
-                x = x_inner[:cs._n_dim]                
-                y = x_outer[:-1]
-                z = x_inner[cs._n_dim:]
+            candidates = [(point, 'min') for point in corners_min] + [(point, 'max') for point in corners_max]                        
+            
+            candidate_results = []
+            tolerance = 0.005   # tolerance with respect to constraint violation, needed to ensure convergence
+            for candidate in candidates:
                 
-                return -1.0 * cs.between(x, y, z, self._weights, method='soft')
+                # push the points a bit over the edge to ensure we have some sort of gradient in the beginning
+                if candidate[1] == 'min':
+                    cand = list(map(lambda x: x - cs._epsilon, candidate[0]))
+                else:
+                    cand = list(map(lambda x: x + cs._epsilon, candidate[0]))
+                
+                # start with three different values of alpha to get a good estimate over the minmum over all alphas
+                alpha_candidates = [0.05 * self._mu, 0.5 * self._mu, 0.95 * self._mu]
+                
+                for alpha in alpha_candidates:
+                    
+                    # inner optimization: point in first and point in second (maximizing over both)                     
+                    inner_x = first_point + second_point
+                    
+                    # function to minimize in inner optimization
+                    def neg_betweenness(x_inner,x_outer):
+                        x = x_inner[:cs._n_dim]                
+                        y = x_outer[:-1]
+                        z = x_inner[cs._n_dim:]
+                        
+                        return -1.0 * cs.between(x, y, z, self._weights, method='soft')
+                    
+                    def inner_optimization(y):
+                        alpha = y[-1]
+                        
+                        inner_constraints = [{'type':'ineq', 'fun': lambda x: first.membership_of(x[:cs._n_dim]) - alpha - tolerance}, # x in alpha-cut of first
+                                             {'type':'ineq', 'fun': lambda x: second.membership_of(x[cs._n_dim:]) - alpha - tolerance}]  # z in alpha-cut of second
+                        opt = scipy.optimize.minimize(neg_betweenness, inner_x, args=(y,), method='COBYLA', constraints=inner_constraints, options={'catol':2*tolerance, 'tol':cs._epsilon, 'maxiter':1000, 'rhobeg':0.01})
+                        if not opt.success and opt.status != 2: # opt.status = 2 means that we reached the iteration limit
+                            print opt
+                            raise Exception("optimization failed: {0}".format(opt.message))
+                        return opt
+                
+                    # outer optimization: point in self and alpha (minimizing over both)
+                    outer_x = cand + [alpha]
+                    outer_constraints = ({'type':'ineq', 'fun': lambda x: self._mu - x[-1]},                                # alpha < self._mu
+                                         {'type':'ineq', 'fun': lambda x: x[-1]},                                           # alpha > 0
+                                         {'type':'ineq', 'fun': lambda x: self.membership_of(x[:-1]) - x[-1] - tolerance})  # y in alpha-cut of self
+                    to_minimize_y = lambda y: -1 * inner_optimization(y).fun
+                    opt = scipy.optimize.minimize(to_minimize_y, outer_x, method='COBYLA', constraints=outer_constraints, options={'catol':2*tolerance, 'tol':cs._epsilon, 'maxiter':1000, 'rhobeg':0.01})
+                    if not opt.success and opt.status != 2: # opt.status = 2 means that we reached the iteration limit
+                        print opt
+                        raise Exception("optimization failed: {0}".format(opt.message))
+                    candidate_results.append(opt.fun)
             
-            # maximizing over x in first and z in third; for convenience, do this at the same time
-            def inner_optimization(y):
-                alpha = y[-1]
-                tolerance = 0.005
-#                print 'one', y
-                inner_constraints = [{'type':'ineq', 'fun': lambda x: first.membership_of(x[:cs._n_dim]) - alpha - tolerance}, # x in alpha-cut of first
-                                     {'type':'ineq', 'fun': lambda x: second.membership_of(x[cs._n_dim:]) - alpha - tolerance}]  # z in alpha-cut of second
-                opt = scipy.optimize.minimize(neg_betweenness, inner_x, args=(y,), method='COBYLA', constraints=inner_constraints, options={'catol':2*tolerance, 'tol':cs._epsilon, 'maxiter':1000, 'rhobeg':0.01})
-                if not opt.success and opt.status != 2:
-                    print opt
-#                    print 'three', y, inner_x, opt.x, opt.fun
-                    raise Exception("optimization failed: {0}".format(opt.message))
-#                print 'two', y, opt.x, opt.fun
-#                print first.membership_of(opt.x[:cs._n_dim]) , y[-1]
-                return opt
-        
-        
-            to_minimize_y = lambda y: -1 * inner_optimization(y).fun
-            opt = scipy.optimize.minimize(to_minimize_y, outer_x, method='COBYLA', constraints=outer_constraints, options={'tol':cs._epsilon, 'maxiter':1000, 'rhobeg':0.01})
-            if not opt.success:
-                print opt
-                raise Exception("optimization failed: {0}".format(opt.message))
-            return opt.fun
+            return min(candidate_results)
             
 
         elif method == "integral":
-            # if either first or third is defined on more domains than this concept, we already know that the membership is zero
-            for dom, dims in first._core._domains.iteritems():
-                if not (dom in self._core._domains and self._core._domains[dom] == dims):
-                    return 0.0
-            for dom, dims in second._core._domains.iteritems():
-                if not (dom in self._core._domains and self._core._domains[dom] == dims):
-                    return 0.0
-
+           
             # if self is a crisp subset of either of first or second, the result is automatically one
             if self.crisp_subset_of(first) or self.crisp_subset_of(second):
                 return 1.0
 
+            # create list of alpha cuts that we want to compute
             step_size = 1.0 / num_alpha_cuts
             alphas = [step_size*i for i in range(1,num_alpha_cuts+1)]
             intermediate_results = []
@@ -619,9 +631,11 @@ class Concept:
                     intermediate_results.append(0.0)        # --> define as 0.0
                     continue
 
+                # start with all corner points of all cuboids to get a good estimate of min
                 corners_min = [c._p_min for c in self._core._cuboids] 
                 corners_max = [c._p_max for c in self._core._cuboids]
                 
+                # compute the maximal allowable difference to the core wrt each dimension
                 difference = [0]*cs._n_dim
                 for dom, dims in self._core._domains.iteritems():
                     for dim in dims:
@@ -649,12 +663,12 @@ class Concept:
                     # compute maximal betweenness for any points x,z in alpha-cut of first and third
                     x_start = first._core.midpoint() + second._core.midpoint()
                     tolerance = 0.002
-                    constr = [{'type':'ineq', 'fun': lambda x: first.membership_of(x[:cs._n_dim]) - alpha - tolerance}, # x in alpha-cut of first
-                                         {'type':'ineq', 'fun': lambda x: second.membership_of(x[cs._n_dim:]) - alpha - tolerance}]  # z in alpha-cut of second
+                    constr = [{'type':'ineq', 'fun': lambda x: first.membership_of(x[:cs._n_dim]) - alpha - tolerance},   # x in alpha-cut of first
+                              {'type':'ineq', 'fun': lambda x: second.membership_of(x[cs._n_dim:]) - alpha - tolerance}]  # z in alpha-cut of second
                     def neg_betweenness(x):
                         return -1.0 * cs.between(x[:cs._n_dim], self_point, x[cs._n_dim:], self._weights, method='soft')
                     opt = scipy.optimize.minimize(neg_betweenness, x_start, constraints=constr, method='COBYLA', options={'catol':2*tolerance, 'maxiter':10000, 'rhobeg':0.01})
-                    if not opt.success and not opt.status == 2:
+                    if not opt.success and not opt.status == 2: # opt.status = 2 means that we reached the iteration limit
                         print opt
                         raise Exception("optimization failed: {0}".format(opt.message))
                     betweenness_values.append(-opt.fun)
@@ -662,6 +676,7 @@ class Concept:
                 # minimum over all candidate points in alpha-cut of self
                 intermediate_results.append(min(betweenness_values))
 
+            # compute average of alpha-cuts to approximate the overall integral
             return sum(intermediate_results) / len(alphas)
 
         else:
