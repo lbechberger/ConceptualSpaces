@@ -45,7 +45,6 @@ class Concept:
         if not isinstance(other, Concept):
             return False
         if not (self._core == other._core and cs.equal(self._mu, other._mu) and cs.equal(self._c, other._c) and self._weights == other._weights):
-#        if self._core != other._core or self._mu != other._mu or self._c != other._c or self._weights != other._weights:
             return False
         return True
     
@@ -525,17 +524,21 @@ class Concept:
             'core_soft_avg':          average betweenness (in soft sense) of self's corner points wrt. cores of first and second
                                       Btw_3^R proposed by Derrac & Schockaert in 'Enriching Taxonomies of Place Types Using Flickr'"""
         
+        # if the three concepts are not defined on the exact same set of domains, we return zero
+        if len(self._core._domains.keys()) != len(first._core._domains.keys()):
+            return 0.0
+        if len(self._core._domains.keys()) != len(second._core._domains.keys()):
+            return 0.0
+        # now we know that the number of domains is the same --> check whether the domains themselves are the same
+        for dom, dims in self._core._domains.iteritems():
+            if not (dom in first._core._domains and first._core._domains[dom] == dims):
+                return 0.0
+            if not (dom in second._core._domains and second._core._domains[dom] == dims):
+                return 0.0
 
         if method == "minimum":
-            # if either first or third is defined on more domains than this concept, we already know that the membership is zero
-            for dom, dims in first._core._domains.iteritems():
-                if not (dom in self._core._domains and self._core._domains[dom] == dims):
-                    return 0.0
-            for dom, dims in second._core._domains.iteritems():
-                if not (dom in self._core._domains and self._core._domains[dom] == dims):
-                    return 0.0
-
-            # also, if self._mu is greater than any of first and second, the result is automatically zero
+            
+            # if self._mu is greater than any of first and second, the result is automatically zero
             if self._mu > first._mu or self._mu > second._mu:
                 return 0.0
                 
@@ -666,140 +669,6 @@ class Concept:
                 intermediate_results.append(min(betweenness_values))
 
             return sum(intermediate_results) / len(alphas)
-
-
-        # project all concepts onto their common domains to find a common ground                              
-        common_domains = {}
-        common_dims = []
-        for dom, dims in self._core._domains.iteritems():
-            if dom in first._core._domains and first._core._domains[dom] == dims and dom in second._core._domains and second._core._domains[dom] == dims:
-                common_domains[dom] = dims
-                common_dims = common_dims + dims
-        common_dims = sorted(common_dims)
-        n_common_dims = len(common_dims)
-        if len(common_domains) == 0:
-            # can't really compare them because they have no common domains --> return 0.0
-            return 0.0
-        projected_self = self.project_onto(common_domains)
-        projected_first = first.project_onto(common_domains)
-        projected_second = second.project_onto(common_domains)
-            
-        if method == "naive":        
-            self_point = projected_self._core.midpoint()
-            first_point = projected_first._core.midpoint()
-            second_point = projected_second._core.midpoint()
-            return cs.between(first_point, self_point, second_point, self._weights, method="crisp")
-        
-        elif method == "naive_soft":
-            self_point = projected_self._core.midpoint()
-            first_point = projected_first._core.midpoint()
-            second_point = projected_second._core.midpoint()
-            return cs.between(first_point, self_point, second_point, self._weights, method="soft")
-
-        elif method == "subset":
-            return projected_self.subset_of(projected_first.unify_with(projected_second))
-
-        elif method == "core" or method == "core_soft" or method == "core_soft_avg":
-            # create all corner points of all cuboids of this concept
-            corner_points = []
-            corner_bounds = []
-            for cuboid in projected_self._core._cuboids:
-                binary_vecs = itertools.product([False, True], repeat = n_common_dims)
-                cuboid_bounds = zip(cuboid._p_min, cuboid._p_max)
-                for vec in binary_vecs:
-                    point = []
-                    j = 0
-                    for i in range(cs._n_dim):
-                        if i in common_dims:
-                            point.append(cuboid._p_max[i] if vec[j] else cuboid._p_min[i])
-                            j += 1
-                        else:
-                            point.append(0.0)
-                    corner_points.append(point)
-                    corner_bounds.append(cuboid_bounds)
-
-            # remove all corners that are already between in a crisp sense
-            crisp_betweenness = _check_crisp_betweenness(corner_points, projected_first, projected_second)
-            to_keep = map(lambda x: not x, crisp_betweenness)
-            remaining_corners = list(itertools.compress(corner_points, to_keep))
-            remaining_bounds = list(itertools.compress(corner_bounds, to_keep))
-
-            # completely between in crisp sense: can safely return 1.0
-            if len(remaining_corners) == 0:
-                return 1.0
-
-            # if not completely in crisp sense: return 0.0 for 'core'
-            if method == "core":
-                return 0.0
-
-            # store the maximum betweenness value we have found starting from the ith corner point
-            max_betweenness = [0.0]*len(remaining_corners)            
-            
-            for c1 in projected_first._core._cuboids:
-                for c2 in projected_second._core._cuboids:
-                    
-                    if not c1._compatible(c2):
-                        raise Exception("Incompatible cuboids")
-                        
-                    x_bounds = []
-                    x_start = []
-                    for i in common_dims:
-                        x_bounds.append((c1._p_min[i], c1._p_max[i]))
-                        x_start.append(0.5 * c1._p_min[i] + 0.5 * c1._p_max[i])
-                    for i in common_dims:
-                        x_bounds.append((c2._p_min[i], c2._p_max[i]))
-                        x_start.append(0.5 * c2._p_min[i] + 0.5 * c2._p_max[i])
-                    # if x=z then btw = 0 and no gradient --> fix that
-                    if x_start[:cs._n_dim] == x_start[-cs._n_dim:]: 
-                        x_start = map(lambda x, y: x + y, x_start, [-0.001]*n_common_dims + [0.001]*n_common_dims)
-                    
-                    def neg_betweenness(x,y):
-                        x_new = []
-                        y_new = []
-                        z_new = []
-                        j = 0
-                        for i in range(cs._n_dim):
-                            if i in common_dims:
-                                x_new.append(x[j])
-                                y_new.append(y[j])
-                                z_new.append(x[len(x)/2 + j])
-                                j += 1
-                            else:
-                                x_new.append(0)
-                                y_new.append(0)
-                                z_new.append(0)
-                        return -1.0 * cs.between(x_new, y_new, z_new, projected_self._weights, method='soft')
-                    
-                    # maximizing over x in c1 and z in c2; for convenience, do this at the same time
-                    def inner_optimization(y):
-                        opt = scipy.optimize.minimize(neg_betweenness, x_start, args=(y,), bounds=x_bounds, options={'gtol':cs._epsilon})
-                        if not opt.success:
-                            raise Exception("optimization failed")
-                        return opt
-                
-                    # minimizing over y in self
-                    for i in range(len(remaining_corners)):
-                        corner = remaining_corners[i]
-                        bounds = remaining_bounds[i]
-
-                        modified_corner = []
-                        modified_bounds = []
-                        for j in common_dims:
-                            modified_corner.append(corner[j])
-                            modified_bounds.append(bounds[j])
-                        
-                        to_minimize_y = lambda y: -1 * inner_optimization(y).fun
-                        opt = scipy.optimize.minimize(to_minimize_y, modified_corner, bounds=modified_bounds, options={'gtol':cs._epsilon, 'eps':cs._epsilon})
-                        if not opt.success:
-                            raise Exception("optimization failed")
-                        max_betweenness[i] = max(max_betweenness[i], opt.fun)
-            
-            if method == "core_soft":
-                # return the minimum over all corner points
-                return min(max_betweenness)
-            else: # method == "core_soft_avg"
-                # return the average over all corner points (note that max_betweenness contains only values for points not crisply between)
-                return (sum(max_betweenness) + 1.0*crisp_betweenness.count(True)) / len(corner_points)
 
         else:
             raise Exception("Unknown method")
