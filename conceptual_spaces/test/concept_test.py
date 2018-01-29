@@ -1379,90 +1379,90 @@ class TestConcept(unittest.TestCase):
     # between()
 
     # 'minimum'
-#    def test_between_minimum(self):
-#        doms = {0:[0],1:[1,2]}       
-#        cs.init(3, doms)
-#        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
-#        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
-#        c3 = Cuboid([0.30,0.40,0.30],[0.40,0.40,0.50], doms)
-#        c4 = Cuboid([0.30,0.30,0.30],[0.40,0.40,0.50], doms)
-#        c5_1 = Cuboid([0.8, 1.1, 0.8],[2.0, 1.6, 1.4], doms)
-#        c5_2 = Cuboid([1.4, 0.9, 1.3],[2.9, 1.5, 2.0], doms)
-#        s1 = Core([c1], doms)
-#        s2 = Core([c2], doms)
-#        s3 = Core([c3], doms)
-#        s4 = Core([c4], doms)
-#        s5 = Core([c5_1,c5_2],doms)
-#        w = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
-#        f1 = Concept(s1, 1.0, 1.0, w)
-#        f2 = Concept(s2, 1.0, 1.0, w)
-#        f3 = Concept(s3, 1.0, 1.0, w)
-#        f4 = Concept(s4, 1.0, 1.0, w)
-#        f5 = Concept(s5, 1.0, 1.0, w)
-#        
-#        self.assertAlmostEqual(f1.between(f1, f1, method="minimum"), 1.0)
-#        self.assertAlmostEqual(f3.between(f1, f2, method="minimum"), 1.0)
-#        self.assertAlmostEqual(f3.between(f2, f1, method="minimum"), 1.0)
-#        self.assertAlmostEqual(f4.between(f1, f2, method="minimum"), 1.0)
-#        self.assertAlmostEqual(f4.between(f2, f1, method="minimum"), 1.0)
-#        self.assertAlmostEqual(f5.between(f1, f2, method="minimum"), 0.48883901815297531)
-#        self.assertAlmostEqual(f5.between(f2, f1, method="minimum"), 0.49310095389333708)
-#        
-#    def test_between_minimum_fruit(self):
-#        domains = {"color":[0], "shape":[1], "taste":[2]}
-#        dimension_names = ["hue", "round", "sweet"]
-#        cs.init(3, domains, dimension_names)
-#        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
-#        
-#        c_orange = Cuboid([0.8, 0.9, 0.6], [0.9, 1.0, 0.7], domains)
-#        s_orange = Core([c_orange], domains)
-#        w_orange = Weights({"color":1.0, "shape":1.0, "taste":1.0}, w_dim)
-#        orange = Concept(s_orange, 1.0, 15.0, w_orange)
-#        
-#        c_apple_1 = Cuboid([0.5, 0.65, 0.35], [0.8, 0.8, 0.5], domains)
-#        c_apple_2 = Cuboid([0.65, 0.65, 0.4], [0.85, 0.8, 0.55], domains)
-#        c_apple_3 = Cuboid([0.7, 0.65, 0.45], [1.0, 0.8, 0.6], domains)
-#        s_apple = Core([c_apple_1, c_apple_2, c_apple_3], domains)
-#        w_apple = Weights({"color":0.50, "shape":1.50, "taste":1.00}, w_dim)
-#        apple = Concept(s_apple, 1.0, 10.0, w_apple)
-#        
-#        c_banana_1 = Cuboid([0.5, 0.1, 0.35], [0.75, 0.30, 0.55], domains)
-#        c_banana_2 = Cuboid([0.7, 0.1, 0.5], [0.8, 0.3, 0.7], domains)
-#        c_banana_3 = Cuboid([0.75, 0.1, 0.5], [0.85, 0.3, 1.00], domains)
-#        s_banana = Core([c_banana_1, c_banana_2, c_banana_3], domains)
-#        w_banana = Weights({"color":0.75, "shape":1.50, "taste":0.75}, w_dim)
-#        banana = Concept(s_banana, 1.0, 10.0, w_banana)
-#        
-#        self.assertAlmostEqual(banana.between(apple, orange, method='minimum'), 0.0)
-#        self.assertAlmostEqual(banana.between(orange, apple, method='minimum'), 0.0)
-#        self.assertAlmostEqual(orange.between(apple, banana, method='minimum'), 0.77725050503553617)
-#        self.assertAlmostEqual(orange.between(banana, apple, method='minimum'), 0.77527365516185442)
-#        self.assertAlmostEqual(apple.between(orange, banana, method='minimum'), 0.0)
-#        self.assertAlmostEqual(apple.between(banana, orange, method='minimum'), 0.0)
-#        self.assertAlmostEqual(apple.between(apple, banana, method='minimum'), 1.0)
-#        self.assertAlmostEqual(apple.between(orange, apple, method='minimum'), 1.0)
-#      
-#    def test_between_minimum_pathological(self):
-#        domains = {0:[0]}
-#        cs.init(1, domains)
-#        
-#        c1 = Cuboid([0],[0], domains)
-#        c2 = Cuboid([0.5],[0.5], domains)
-#        c3 = Cuboid([1],[1], domains)
-#        
-#        s1 = Core([c1], domains)
-#        s2 = Core([c2], domains)
-#        s3 = Core([c3], domains)
-#
-#        w = Weights({0:1}, {0:{0:1}})        
-#        
-#        f1 = Concept(s1, 0.9, 10.0, w)
-#        f2 = Concept(s3, 0.9, 10.0, w)
-#        f3 = Concept(s2, 1.0, 10.0, w)
-#        f4 = Concept(s2, 0.9, 1.0, w)
-#        
-#        self.assertAlmostEqual(f3.between(f2, f1, method='minimum'), 0.0)
-#        self.assertAlmostEqual(f4.between(f2, f1, method='minimum'), 0.0)
+    def test_between_minimum(self):
+        doms = {0:[0],1:[1,2]}       
+        cs.init(3, doms)
+        c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
+        c2 = Cuboid([0.60,0.60,0.60],[1.00,1.00,1.00], doms)
+        c3 = Cuboid([0.30,0.40,0.30],[0.40,0.40,0.50], doms)
+        c4 = Cuboid([0.30,0.30,0.30],[0.40,0.40,0.50], doms)
+        c5_1 = Cuboid([0.8, 1.1, 0.8],[2.0, 1.6, 1.4], doms)
+        c5_2 = Cuboid([1.4, 0.9, 1.3],[2.9, 1.5, 2.0], doms)
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        s3 = Core([c3], doms)
+        s4 = Core([c4], doms)
+        s5 = Core([c5_1,c5_2],doms)
+        w = Weights({0:0.25, 1:1.75}, {0:{0:1}, 1:{1:0.5, 2:0.5}})
+        f1 = Concept(s1, 1.0, 1.0, w)
+        f2 = Concept(s2, 1.0, 1.0, w)
+        f3 = Concept(s3, 1.0, 1.0, w)
+        f4 = Concept(s4, 1.0, 1.0, w)
+        f5 = Concept(s5, 1.0, 1.0, w)
+        
+        self.assertAlmostEqual(f1.between(f1, f1, method="minimum"), 1.0)
+        self.assertAlmostEqual(f3.between(f1, f2, method="minimum"), 1.0)
+        self.assertAlmostEqual(f3.between(f2, f1, method="minimum"), 1.0)
+        self.assertAlmostEqual(f4.between(f1, f2, method="minimum"), 1.0)
+        self.assertAlmostEqual(f4.between(f2, f1, method="minimum"), 1.0)
+        self.assertAlmostEqual(f5.between(f1, f2, method="minimum"), 0.48883901815297531)
+        self.assertAlmostEqual(f5.between(f2, f1, method="minimum"), 0.49310095389333708)
+        
+    def test_between_minimum_fruit(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        dimension_names = ["hue", "round", "sweet"]
+        cs.init(3, domains, dimension_names)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_orange = Cuboid([0.8, 0.9, 0.6], [0.9, 1.0, 0.7], domains)
+        s_orange = Core([c_orange], domains)
+        w_orange = Weights({"color":1.0, "shape":1.0, "taste":1.0}, w_dim)
+        orange = Concept(s_orange, 1.0, 15.0, w_orange)
+        
+        c_apple_1 = Cuboid([0.5, 0.65, 0.35], [0.8, 0.8, 0.5], domains)
+        c_apple_2 = Cuboid([0.65, 0.65, 0.4], [0.85, 0.8, 0.55], domains)
+        c_apple_3 = Cuboid([0.7, 0.65, 0.45], [1.0, 0.8, 0.6], domains)
+        s_apple = Core([c_apple_1, c_apple_2, c_apple_3], domains)
+        w_apple = Weights({"color":0.50, "shape":1.50, "taste":1.00}, w_dim)
+        apple = Concept(s_apple, 1.0, 10.0, w_apple)
+        
+        c_banana_1 = Cuboid([0.5, 0.1, 0.35], [0.75, 0.30, 0.55], domains)
+        c_banana_2 = Cuboid([0.7, 0.1, 0.5], [0.8, 0.3, 0.7], domains)
+        c_banana_3 = Cuboid([0.75, 0.1, 0.5], [0.85, 0.3, 1.00], domains)
+        s_banana = Core([c_banana_1, c_banana_2, c_banana_3], domains)
+        w_banana = Weights({"color":0.75, "shape":1.50, "taste":0.75}, w_dim)
+        banana = Concept(s_banana, 1.0, 10.0, w_banana)
+        
+        self.assertAlmostEqual(banana.between(apple, orange, method='minimum'), 0.0)
+        self.assertAlmostEqual(banana.between(orange, apple, method='minimum'), 0.0)
+        self.assertAlmostEqual(orange.between(apple, banana, method='minimum'), 0.77725050503553617)
+        self.assertAlmostEqual(orange.between(banana, apple, method='minimum'), 0.77527365516185442)
+        self.assertAlmostEqual(apple.between(orange, banana, method='minimum'), 0.0)
+        self.assertAlmostEqual(apple.between(banana, orange, method='minimum'), 0.0)
+        self.assertAlmostEqual(apple.between(apple, banana, method='minimum'), 1.0)
+        self.assertAlmostEqual(apple.between(orange, apple, method='minimum'), 1.0)
+      
+    def test_between_minimum_pathological(self):
+        domains = {0:[0]}
+        cs.init(1, domains)
+        
+        c1 = Cuboid([0],[0], domains)
+        c2 = Cuboid([0.5],[0.5], domains)
+        c3 = Cuboid([1],[1], domains)
+        
+        s1 = Core([c1], domains)
+        s2 = Core([c2], domains)
+        s3 = Core([c3], domains)
+
+        w = Weights({0:1}, {0:{0:1}})        
+        
+        f1 = Concept(s1, 0.9, 10.0, w)
+        f2 = Concept(s3, 0.9, 10.0, w)
+        f3 = Concept(s2, 1.0, 10.0, w)
+        f4 = Concept(s2, 0.9, 1.0, w)
+        
+        self.assertAlmostEqual(f3.between(f2, f1, method='minimum'), 0.0)
+        self.assertAlmostEqual(f4.between(f2, f1, method='minimum'), 0.0)
 
     # 'integral'
     def test_between_integral(self):

@@ -544,25 +544,14 @@ class Concept:
                 return 1.0
 
             # for all dimensions: c * w_dom * sqrt(dim) must not be larger for first and second than for self
-            weight_condition = False
-            for dom, dims in first._core._domains.iteritems():
+            for dom, dims in self._core._domains.iteritems():
                 for dim in dims:
-                    other_value = first._c * first._weights._domain_weights[dom] * first._weights._dimension_weights[dom][dim]
+                    first_value = first._c * first._weights._domain_weights[dom] * sqrt(first._weights._dimension_weights[dom][dim])
                     self_value = self._c * self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim])
-                    if other_value > self_value:
-                        weight_condition = True
-                        break
-                if weight_condition:
-                    break
+                    second_value = second._c * second._weights._domain_weights[dom] * sqrt(second._weights._dimension_weights[dom][dim])
+                    if first_value > self_value and second_value > self_value:
+                        return 0.0
             
-            if weight_condition:
-                for dom, dims in second._core._domains.iteritems():
-                    for dim in dims:
-                        other_value = second._c * second._weights._domain_weights[dom] * second._weights._dimension_weights[dom][dim]
-                        self_value = self._c * self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim])
-                        if other_value > self_value:
-                            return 0.0
-
             self_point = self._core.midpoint()
             first_point = first._core.midpoint()
             second_point = second._core.midpoint()            
