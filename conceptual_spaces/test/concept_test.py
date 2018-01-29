@@ -1491,8 +1491,8 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(f3.between(f2, f1, method="integral"), 1.0)
         self.assertAlmostEqual(f4.between(f1, f2, method="integral"), 1.0)
         self.assertAlmostEqual(f4.between(f2, f1, method="integral"), 1.0)
-        self.assertAlmostEqual(f5.between(f1, f2, method="integral"), 0.50294595103274664)#0.51514926984719733)#0.48849015180180944)
-        self.assertAlmostEqual(f5.between(f2, f1, method="integral"), 0.50299498186204539)#0.51448880549075027)#0.48805918629074896)
+        self.assertAlmostEqual(f5.between(f1, f2, method="integral"), 0.50294595103274664)
+        self.assertAlmostEqual(f5.between(f2, f1, method="integral"), 0.50299498186204539)
 
     def test_between_integral_fruit(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -1519,19 +1519,12 @@ class TestConcept(unittest.TestCase):
         w_banana = Weights({"color":0.75, "shape":1.50, "taste":0.75}, w_dim)
         banana = Concept(s_banana, 1.0, 10.0, w_banana)
 
-#        print banana.between(apple, orange, method='integral')
-#        print banana.between(orange, apple, method='integral')        
-#        print orange.between(apple, banana, method='integral')
-#        print orange.between(banana, apple, method='integral')
-#        print apple.between(orange, banana, method='integral')
-#        print apple.between(banana, orange, method='integral')
-
-        self.assertAlmostEqual(banana.between(apple, orange, method='integral'), 0.402884037397)#0.40868025394845992)#0.39759337171072107)
-        self.assertAlmostEqual(banana.between(orange, apple, method='integral'), 0.400124134173)#0.40769690760272748)#0.39332758542863538)
-        self.assertAlmostEqual(orange.between(apple, banana, method='integral'), 0.827804293413)#0.84206906481)#0.8165949270164109)
-        self.assertAlmostEqual(orange.between(banana, apple, method='integral'), 0.847810946248)#0.862481106312)#0.83610170755360413)
-        self.assertAlmostEqual(apple.between(orange, banana, method='integral'), 0.902365939022)#0.90027464091)#0.91166135202584564)
-        self.assertAlmostEqual(apple.between(banana, orange, method='integral'), 0.900008223549)#0.899592039763)#0.90745883313853037)
+        self.assertAlmostEqual(banana.between(apple, orange, method='integral'), 0.402884037397)
+        self.assertAlmostEqual(banana.between(orange, apple, method='integral'), 0.400124134173)
+        self.assertAlmostEqual(orange.between(apple, banana, method='integral'), 0.827804293413)
+        self.assertAlmostEqual(orange.between(banana, apple, method='integral'), 0.847810946248)
+        self.assertAlmostEqual(apple.between(orange, banana, method='integral'), 0.902365939022)
+        self.assertAlmostEqual(apple.between(banana, orange, method='integral'), 0.900008223549)
         self.assertAlmostEqual(apple.between(apple, banana, method='integral'), 1.0)
         self.assertAlmostEqual(apple.between(orange, apple, method='integral'), 1.0)
 
@@ -1555,7 +1548,7 @@ class TestConcept(unittest.TestCase):
         f4 = Concept(s2, 0.9, 1.0, w)
         
         self.assertAlmostEqual(f3.between(f2, f1, method='integral'), 0.9)
-        self.assertAlmostEqual(f4.between(f2, f1, method='integral'), 0.77840165792441829)#0.76282890323933739)#0.79788686987950952)
+        self.assertAlmostEqual(f4.between(f2, f1, method='integral'), 0.77840165792441829)
         self.assertAlmostEqual(f4.between(f2, f1, method='integral', num_alpha_cuts=100), 0.76282890323933739)
         self.assertAlmostEqual(f4.between(f2, f1, method='integral', num_alpha_cuts=1000), 0.75910654438485314)
 

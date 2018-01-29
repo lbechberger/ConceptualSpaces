@@ -543,20 +543,25 @@ class Concept:
             if self.crisp_subset_of(first) or self.crisp_subset_of(second):
                 return 1.0
 
-            # for all dimensions: c * w_dom * sqrt(dim) must not be larger for first or second than for self
-            # TODO: back this up with some theory!
+            # for all dimensions: c * w_dom * sqrt(dim) must not be larger for first and second than for self
+            weight_condition = False
             for dom, dims in first._core._domains.iteritems():
                 for dim in dims:
                     other_value = first._c * first._weights._domain_weights[dom] * first._weights._dimension_weights[dom][dim]
                     self_value = self._c * self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim])
                     if other_value > self_value:
-                        return 0.0
-            for dom, dims in second._core._domains.iteritems():
-                for dim in dims:
-                    other_value = second._c * second._weights._domain_weights[dom] * second._weights._dimension_weights[dom][dim]
-                    self_value = self._c * self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim])
-                    if other_value > self_value:
-                        return 0.0
+                        weight_condition = True
+                        break
+                if weight_condition:
+                    break
+            
+            if weight_condition:
+                for dom, dims in second._core._domains.iteritems():
+                    for dim in dims:
+                        other_value = second._c * second._weights._domain_weights[dom] * second._weights._dimension_weights[dom][dim]
+                        self_value = self._c * self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim])
+                        if other_value > self_value:
+                            return 0.0
 
             self_point = self._core.midpoint()
             first_point = first._core.midpoint()
