@@ -1441,6 +1441,33 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(apple.between(banana, orange, method='minimum'), 0.0)
         self.assertAlmostEqual(apple.between(apple, banana, method='minimum'), 1.0)
         self.assertAlmostEqual(apple.between(orange, apple, method='minimum'), 1.0)
+
+    def test_between_minimum_banana(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        dimension_names = ["hue", "round", "sweet"]
+        cs.init(3, domains, dimension_names)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 24.0, w_pear)
+
+        c_granny_smith = Cuboid([0.55, 0.70, 0.35], [0.6, 0.8, 0.45], domains)
+        s_granny_smith = Core([c_granny_smith], domains)
+        w_granny_smith = Weights({"color":1.0, "shape":1.0, "taste":1.0}, w_dim)
+        granny_smith = Concept(s_granny_smith, 1.0, 50.0, w_granny_smith)
+
+        c_banana_1 = Cuboid([0.5, 0.1, 0.35], [0.75, 0.30, 0.55], domains)
+        c_banana_2 = Cuboid([0.7, 0.1, 0.5], [0.8, 0.3, 0.7], domains)
+        c_banana_3 = Cuboid([0.75, 0.1, 0.5], [0.85, 0.3, 1.00], domains)
+        s_banana = Core([c_banana_1, c_banana_2, c_banana_3], domains)
+        w_banana = Weights({"color":0.75, "shape":1.50, "taste":0.75}, w_dim)
+        banana = Concept(s_banana, 1.0, 20.0, w_banana)
+
+        self.assertAlmostEqual(banana.between(pear, granny_smith, method='minimum'), 0.0)
+        self.assertAlmostEqual(banana.between(granny_smith, pear, method='minimum'), 0.0)  
+
       
     def test_between_minimum_pathological(self):
         domains = {0:[0]}
@@ -1527,6 +1554,32 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(apple.between(banana, orange, method='integral'), 0.900008223549)
         self.assertAlmostEqual(apple.between(apple, banana, method='integral'), 1.0)
         self.assertAlmostEqual(apple.between(orange, apple, method='integral'), 1.0)
+
+    def test_between_integral_banana(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        dimension_names = ["hue", "round", "sweet"]
+        cs.init(3, domains, dimension_names)
+        w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
+        
+        c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
+        s_pear = Core([c_pear], domains)
+        w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
+        pear = Concept(s_pear, 1.0, 24.0, w_pear)
+
+        c_granny_smith = Cuboid([0.55, 0.70, 0.35], [0.6, 0.8, 0.45], domains)
+        s_granny_smith = Core([c_granny_smith], domains)
+        w_granny_smith = Weights({"color":1.0, "shape":1.0, "taste":1.0}, w_dim)
+        granny_smith = Concept(s_granny_smith, 1.0, 50.0, w_granny_smith)
+
+        c_banana_1 = Cuboid([0.5, 0.1, 0.35], [0.75, 0.30, 0.55], domains)
+        c_banana_2 = Cuboid([0.7, 0.1, 0.5], [0.8, 0.3, 0.7], domains)
+        c_banana_3 = Cuboid([0.75, 0.1, 0.5], [0.85, 0.3, 1.00], domains)
+        s_banana = Core([c_banana_1, c_banana_2, c_banana_3], domains)
+        w_banana = Weights({"color":0.75, "shape":1.50, "taste":0.75}, w_dim)
+        banana = Concept(s_banana, 1.0, 20.0, w_banana)
+
+        self.assertAlmostEqual(banana.between(pear, granny_smith, method='integral'), 0.43349194116382528)
+        self.assertAlmostEqual(banana.between(granny_smith, pear, method='integral'), 0.43811732667337056)  
 
     def test_between_integral_pathological(self):
         domains = {0:[0]}

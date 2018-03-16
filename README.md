@@ -44,7 +44,7 @@ c_pear = Cuboid([0.5, 0.4, 0.35], [0.7, 0.6, 0.45], domains)
 s_pear = Core([c_pear], domains)
 w_dim = {"color":{0:1}, "shape":{1:1}, "taste":{2:1}}
 w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
-pear = Concept(s_pear, 1.0, 12.0, w_pear)
+pear = Concept(s_pear, 1.0, 24.0, w_pear)
 ```
 The first line defines a cuboid with the support points `p_min = [0.5, 0.4, 0.35]` and `p_max = [0.7, 0.6, 0.45]`. Note that this cuboid is defined on the whole space, as there are values for all three dimensions. This is also the reason why we pass the overall domain structure as a second argument - the cuboid is defined on all domains.
 
@@ -54,7 +54,7 @@ The third line defines a set of weights for the dimensions. As the sum of dimens
 
 The fourth line defines the domain weights and the overall weights parameter. As one can see, the 'shape' and the 'taste' domain are weighted higher than the 'color' domain in this case. Note that the sum of the domain weights must equal the number of domains. If the provided numbers don't add up, the constructor of the Weights class will normalize them automatically.
 
-Finally, the fifth line creates the 'pear' concept. We use the core defined in line 2 and the weights defined in line 4. The maximal membership is set to 1.0 and the sensitivity parameter (which controls the rate of the membership function's exponential decay) is set to 12.
+Finally, the fifth line creates the 'pear' concept. We use the core defined in line 2 and the weights defined in line 4. The maximal membership is set to 1.0 and the sensitivity parameter (which controls the rate of the membership function's exponential decay) is set to 24.
 
 For convenience, the conceptual space also contains a dictionary for storing concepts. We can add our newly created concept to this dictionary under the identifier 'pear' as follows:
 ```python
@@ -70,10 +70,10 @@ The folder `conceptual_spaces/demo/images/` contains some 2D and 3D visualizatio
 
 We can display a concept by simply printing it:
 ```python
-print pear
+print(pear)
     core: {[0.5, 0.4, 0.35]-[0.7, 0.6, 0.45]}
     mu: 1.0
-    c: 12.0
+    c: 24.0
     weights: <{'color': 0.5, 'taste': 1.25, 'shape': 1.25},{'color': {0: 1.0}, 'taste': {2: 1.0}, 'shape': {1: 1.0}}>
 ```
 ### Operations on Concepts
@@ -90,61 +90,79 @@ We can execute the following operations on a concept `c`:
 - `c.similarity_to(d)`: computes the degree of similarity between the concept `c` and the concept `d`.
 - `c.between(d, e)`: decides whether the concept `c` is between the concepts `d` and `e`.
 
-Let us illustrate these operations with some examples.
+Let us illustrate these operations with some examples:
 
 ```python
 pear.membership_of([0.6, 0.5, 0.4])
     1.0
 pear.membership_of([0.3, 0.2, 0.1])
-    0.0003526621646282561
-print pear.intersect_with(apple)
+    1.243706023602872e-07
+print(pear.intersect_with(apple))
     core: {[0.5, 0.625, 0.35]-[0.7, 0.625, 0.45]}
-    mu: 0.6872892788
-    c: 10.0
+    mu: 0.4723665527
+    c: 20.0
     weights: <{'color': 0.5, 'taste': 1.125, 'shape': 1.375},{'color': {0: 1.0}, 'taste': {2: 1.0}, 'shape': {1: 1.0}}>
-print pear.unify_with(apple)
+print(pear.unify_with(apple))
     core: {[0.5, 0.4, 0.35]-[0.7125, 0.6687500000000001, 0.45625000000000004], [0.5, 0.65, 0.35]-[0.8, 0.8, 0.5], [0.65, 0.65, 0.4]-[0.85, 0.8, 0.55], [0.7, 0.65, 0.45]-[1.0, 0.8, 0.6]}
     mu: 1.0
-    c: 10.0
+    c: 20.0
     weights: <{'color': 0.5, 'taste': 1.125, 'shape': 1.375},{'color': {0: 1.0}, 'taste': {2: 1.0}, 'shape': {1: 1.0}}>
-print pear.project_onto({'color':[0]})
+print(pear.project_onto({'color':[0]}))
     core: {[0.5, -inf, -inf]-[0.7, inf, inf]}
     mu: 1.0
-    c: 12.0
+    c: 24.0
     weights: <{'color': 1.0},{'color': {0: 1.0}}>
 first, second = pear.cut_at(1, 0.5)
-print first
+print(first)
     core: {[0.5, 0.4, 0.35]-[0.7, 0.5, 0.45]}
     mu: 1.0
-    c: 12.0
+    c: 24.0
     weights: <{'color': 0.5, 'taste': 1.25, 'shape': 1.25},{'color': {0: 1.0}, 'taste': {2: 1.0}, 'shape': {1: 1.0}}>
-print second
+print(second)
     core: {[0.5, 0.5, 0.35]-[0.7, 0.6, 0.45]}
     mu: 1.0
-    c: 12.0
+    c: 24.0
     weights: <{'color': 0.5, 'taste': 1.25, 'shape': 1.25},{'color': {0: 1.0}, 'taste': {2: 1.0}, 'shape': {1: 1.0}}>
 apple.size()
-    0.10483333333333335
+    0.0455
 lemon.size()
-    0.013500000000000003
+    0.005000000000000002
 granny_smith.subset_of(apple)
     1.0
 apple.subset_of(granny_smith)
-    0.11709107083287003
+    0.07635041551246535
+granny_smith.crisp_subset_of(apple)
+    True
+apple.crisp_subset_of(granny_smith)
+    False
 apple.implies(red)
-    0.3333333333333332
+    0.2727272727272726
 lemon.implies(non_sweet)
     1.0
 apple.similarity_to(pear)
-    0.004516580942612666
+    0.0398322124027715
 pear.similarity_to(apple)
-    0.007635094218859955
+    0.0398322124027715
 granny_smith.similarity_to(apple)
-    0.1353352832366129
-apple.between(lemon, orange)
+    0.1537267080745342
+apple.similarity_to(pear, method='subset')
+    0.05043467196991022
+pear.similarity_to(apple, method='subset')
+    0.118091638175
+granny_smith.similarity_to(apple, method='subset')
     1.0
+apple.between(lemon, orange)
+    0.87552874038096906
 banana.between(granny_smith, pear)
+    0.43811732667337056
+granny_smith.between(lemon, orange)
+    0.8789129336237107
+apple.between(lemon, orange, method='minimum')
     0.0
+banana.between(granny_smith, pear, method='minimum')
+    0.0
+granny_smith.between(lemon, orange, method='minimum')
+    0.82471568013506558
 ```
 
 ### Visualization

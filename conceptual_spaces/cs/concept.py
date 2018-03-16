@@ -621,14 +621,18 @@ class Concept:
             alphas = [step_size*i for i in range(1,num_alpha_cuts+1)]
             intermediate_results = []
             
+            num_successful_cuts = 0            
+            
             for alpha in alphas:
 
                 if alpha > self._mu:                    # alpha-cut of self is empty --> define as 1.0
                     intermediate_results.append(1.0)
+                    num_successful_cuts += 1
                     continue
                 
                 if alpha > first._mu or alpha > second._mu: # alpha-cut of self is not empty, but one of the others is empty
                     intermediate_results.append(0.0)        # --> define as 0.0
+                    num_successful_cuts += 1
                     continue
 
                 # start with all corner points of all cuboids to get a good estimate of min
@@ -655,8 +659,7 @@ class Concept:
                     to_optimize = lambda x: (alpha - self.membership_of(x))**2
                     opt = scipy.optimize.minimize(to_optimize, candidate, method='Nelder-Mead')
                     if not opt.success:
-                        print opt
-                        raise Exception("optimization failed: {0}".format(opt.message))
+                        continue
                     
                     self_point = opt.x
                     
@@ -669,15 +672,18 @@ class Concept:
                         return -1.0 * cs.between(x[:cs._n_dim], self_point, x[cs._n_dim:], self._weights, method='soft')
                     opt = scipy.optimize.minimize(neg_betweenness, x_start, constraints=constr, method='COBYLA', options={'catol':2*tolerance, 'maxiter':10000, 'rhobeg':0.01})
                     if not opt.success and not opt.status == 2: # opt.status = 2 means that we reached the iteration limit
-                        print opt
-                        raise Exception("optimization failed: {0}".format(opt.message))
+                        continue
                     betweenness_values.append(-opt.fun)
                 
                 # minimum over all candidate points in alpha-cut of self
-                intermediate_results.append(min(betweenness_values))
+                if len(betweenness_values) > 0:
+                    intermediate_results.append(min(betweenness_values))
+                    num_successful_cuts += 1
 
             # compute average of alpha-cuts to approximate the overall integral
-            return sum(intermediate_results) / len(alphas)
+            if num_successful_cuts < 0.8 * num_alpha_cuts:
+                raise Exception("Could compute only {0} of {1} alpha cuts!".format(num_successful_cuts, num_alpha_cuts))
+            return sum(intermediate_results) / num_successful_cuts
 
         else:
             raise Exception("Unknown method")
