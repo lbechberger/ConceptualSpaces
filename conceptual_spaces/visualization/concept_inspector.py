@@ -13,6 +13,7 @@ from matplotlib.widgets import RadioButtons, CheckButtons
 from collections import deque
 from math import log, sqrt, isinf
 import shapely.geometry
+import numpy as np
 
 import sys
 sys.path.append("..")
@@ -42,20 +43,20 @@ def _cuboid_data_3d(p_min, p_max):
     b = this._current_3d_indices[1]
     c = this._current_3d_indices[2]    
     
-    x = [[p_min[a], p_max[a], p_max[a], p_min[a], p_min[a]],  # bottom
-         [p_min[a], p_max[a], p_max[a], p_min[a], p_min[a]],  # top
-         [p_min[a], p_max[a], p_max[a], p_min[a], p_min[a]],  # front
-         [p_min[a], p_max[a], p_max[a], p_min[a], p_min[a]]]  # back
+    x = np.array([[p_min[a], p_max[a], p_max[a], p_min[a], p_min[a]],  # bottom
+                 [p_min[a], p_max[a], p_max[a], p_min[a], p_min[a]],  # top
+                 [p_min[a], p_max[a], p_max[a], p_min[a], p_min[a]],  # front
+                 [p_min[a], p_max[a], p_max[a], p_min[a], p_min[a]]])  # back
          
-    y = [[p_min[b], p_min[b], p_max[b], p_max[b], p_min[b]],  # bottom
-         [p_min[b], p_min[b], p_max[b], p_max[b], p_min[b]],  # top
-         [p_min[b], p_min[b], p_min[b], p_min[b], p_min[b]],  # front
-         [p_max[b], p_max[b], p_max[b], p_max[b], p_max[b]]]  # back
+    y = np.array([[p_min[b], p_min[b], p_max[b], p_max[b], p_min[b]],  # bottom
+                 [p_min[b], p_min[b], p_max[b], p_max[b], p_min[b]],  # top
+                 [p_min[b], p_min[b], p_min[b], p_min[b], p_min[b]],  # front
+                 [p_max[b], p_max[b], p_max[b], p_max[b], p_max[b]]])  # back
          
-    z = [[p_min[c], p_min[c], p_min[c], p_min[c], p_min[c]],  # bottom
-         [p_max[c], p_max[c], p_max[c], p_max[c], p_max[c]],  # top
-         [p_min[c], p_min[c], p_max[c], p_max[c], p_min[c]],  # front
-         [p_min[c], p_min[c], p_max[c], p_max[c], p_min[c]]]  # back
+    z = np.array([[p_min[c], p_min[c], p_min[c], p_min[c], p_min[c]],  # bottom
+                 [p_max[c], p_max[c], p_max[c], p_max[c], p_max[c]],  # top
+                 [p_min[c], p_min[c], p_max[c], p_max[c], p_min[c]],  # front
+                 [p_min[c], p_min[c], p_max[c], p_max[c], p_min[c]]])  # back
     
     return x, y, z
 
