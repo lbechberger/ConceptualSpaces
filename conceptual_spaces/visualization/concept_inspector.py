@@ -73,7 +73,13 @@ def _path_for_core(cuboids, d1, d2):
         else:
             polygon = polygon.union(cub)
     
-    verts = list(polygon.exterior.coords)
+    if isinstance(polygon, shapely.geometry.MultiPolygon):
+        print("beep")
+        verts = []
+        for p in polygon:
+            verts += list(p.exterior.coords)
+    else:
+        verts = list(polygon.exterior.coords)
     codes = [Path.LINETO] * len(verts)
     codes[0] = Path.MOVETO
     codes[-1] = Path.CLOSEPOLY
