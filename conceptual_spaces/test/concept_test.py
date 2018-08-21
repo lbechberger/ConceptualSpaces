@@ -1268,6 +1268,21 @@ class TestConcept(unittest.TestCase):
         self.assertAlmostEqual(f5.similarity_to(f2, method="Jaccard"), 0.646312441429)
         self.assertAlmostEqual(f2.similarity_to(f5, method="Jaccard"), 0.646312441429)
 
+    def test_similarity_Jaccard_concepts(self):
+
+        doms = {0:[0], 1:[1], 2:[2]}
+        cs.init(3, doms)
+        c1 = Cuboid([0.55, 0.70, 0.35], [0.6, 0.8, 0.45], doms)
+        c2 = Cuboid([0.8, 0.9, 0.6], [0.9, 1.0, 0.7], doms)
+        s1 = Core([c1], doms)
+        s2 = Core([c2], doms)
+        w = Weights({0:1, 1:1, 2:1}, {0:{0:1}, 1:{1:1}, 2:{2:1}})
+        f1 = Concept(s1, 1.0, 50.0, w)
+        f2 = Concept(s2, 1.0, 30.0, w)
+
+        self.assertAlmostEqual(f2.similarity_to(f1, "Jaccard"), 1.822855656988948e-05)  
+        self.assertAlmostEqual(f1.similarity_to(f2, "Jaccard"), 2.567299731605737e-06)  
+        
 
     # 'subset'
     def test_similarity_subset(self):

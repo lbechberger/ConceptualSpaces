@@ -221,6 +221,7 @@ class Concept:
                             to_minimize = lambda x: max(epsilon_difference(x, a, self._weights, epsilon_1)**2, epsilon_difference(x, b, other._weights, epsilon_2)**2)
                             
                             opt = scipy.optimize.minimize(to_minimize, first_guess) #tol = 0.000001
+
                             if opt.success:
                                 dist1 = epsilon_difference(opt.x, a, self._weights, epsilon_1)
                                 dist2 = epsilon_difference(opt.x, b, other._weights, epsilon_2)
@@ -232,7 +233,7 @@ class Concept:
                                         break
                                     k += 1
                                 # must be between a and b on all free dimensions AND must be a sufficiently good solution
-                                if dist1 < 0.00001 and dist2 < 0.00001 and between:
+                                if dist1 < 0.0001 and dist2 < 0.0001 and between:
                                     point = []
                                     i = 0
                                     j = 0
