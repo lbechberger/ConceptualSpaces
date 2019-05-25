@@ -12,6 +12,8 @@ import cs.cs
 from timeit import default_timer as timer
 import random
 from math import sqrt
+import numpy as np
+from scipy.integrate import nquad
 
 def random_cuboid(dimensions, domains, min_val, max_val):
     p_min = []
@@ -62,7 +64,7 @@ def runtime_intersection(n, num_samples, max_dim_per_domain):
         f2 = cs.concept.Concept(cs.core.Core([random_cuboid(dimensions, domains, 0.0, 1.0)], domains), 1.00, random.uniform(1.0, 50.0), w)
 
         start = timer()
-        f1.intersect(f2)
+        f1.intersect_with(f2)
         end = timer()
         duration = end-start
         times.append(duration)
@@ -74,8 +76,8 @@ def runtime_intersection(n, num_samples, max_dim_per_domain):
 
     print("{0},{1},{2},{3},{4}".format(n, min_time*1000, max_time*1000, mean_time*1000, std_time*1000))
 
-def runtime_hypervolume(n, num_samples, max_dim_per_domain):
-    """Computes runtime statistics for the hypervolume operation of concepts.
+def runtime_size(n, num_samples, max_dim_per_domain):
+    """Computes runtime statistics for the size operation of concepts.
     
     Parameters: n = number of dimensions, num_samples: number of samples to draw, max_dim_per_domain: maximal number of dimensions per domain."""
     dimensions = range(n)
@@ -101,7 +103,7 @@ def runtime_hypervolume(n, num_samples, max_dim_per_domain):
         f = cs.concept.Concept(cs.core.Core([random_cuboid(dimensions, domains, 0.0, 1.0)], domains), random.uniform(0.01, 1.0), random.uniform(1.0, 50.0), random_weights(domains))
 
         start = timer()
-        f.hypervolume()
+        f.size()
         end = timer()
         duration = end-start
         times.append(duration)
@@ -112,12 +114,55 @@ def runtime_hypervolume(n, num_samples, max_dim_per_domain):
     std_time = sqrt(sum(map(lambda x: (x - mean_time)**2, times))/num_samples)
 
     print("{0},{1},{2},{3},{4}".format(n, min_time*1000, max_time*1000, mean_time*1000, std_time*1000))
+
+def runtime_size_approx(n, num_samples, max_dim_per_domain):
+    """Computes runtime statistics for numerically approximating the size of a concept.
+    
+    Parameters: n = number of dimensions, num_samples: number of samples to draw, max_dim_per_domain: maximal number of dimensions per domain."""
+    dimensions = range(n)
+    random.seed(1)
+    
+    times = []
+    for i in range(num_samples):
+        # create a  random domain structure
+        domains = {}
+        dimensions_left = dimensions
+        j = 0
+        while len(dimensions_left)  > 0:
+            num_dims = random.randint(1, min(len(dimensions_left), max_dim_per_domain))
+            dims = random.sample(dimensions_left, num_dims)
+            domains[j] = list(dims)
+            dimensions_left = [dim for dim in dimensions_left if dim not in dims]
+            j+= 1
+           
+        # make the conceptual space
+        cs.cs.init(n, domains)
+        
+        # create a concept with random weights, random cuboids, random mu and random c
+        f = cs.concept.Concept(cs.core.Core([random_cuboid(dimensions, domains, 0.0, 1.0)], domains), random.uniform(0.01, 1.0), random.uniform(1.0, 50.0), random_weights(domains))
+        borders = [[-np.inf,np.inf]]*n 
+        def membership(*args):
+            return f.membership_of(args)
+        start = timer()
+        nquad(membership, borders)
+        end = timer()
+        duration = end-start
+        times.append(duration)
+    
+    min_time = min(times)
+    max_time = max(times)
+    mean_time = sum(times) / num_samples
+    std_time = sqrt(sum(map(lambda x: (x - mean_time)**2, times))/num_samples)
+
+    print("{0},{1},{2},{3},{4}".format(n, min_time*1000, max_time*1000, mean_time*1000, std_time*1000))
+    
   
 ####################################################################################################################################  
 # MAIN: here we select what to run at all
 run_intersection = False
-run_hypervolume = False
-list_of_n = [1,2,4,8,16,32,64,128,256,512]
+run_size = False
+run_size_approx = True
+list_of_n = [1,2,4,8,16,32,64,128]
 
 if run_intersection: 
     print("INTERSECTION")
@@ -125,8 +170,15 @@ if run_intersection:
     for n in list_of_n:
         runtime_intersection(n, 10000, 5)
 
-if run_hypervolume: 
-    print("HYPERVOLUME")
+if run_size: 
+    print("SIZE")
     print("n, min_time, max_time, mean_time, std_time")
     for n in list_of_n:
-        runtime_hypervolume(n, 10000, 5)
+        runtime_size(n, 10000, 5)
+
+
+if run_size_approx: 
+    print("SIZE APPROX")
+    print("n, min_time, max_time, mean_time, std_time")
+    for n in list_of_n:
+        runtime_size_approx(n, 10000, 5)
