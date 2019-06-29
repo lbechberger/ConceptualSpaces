@@ -12,6 +12,7 @@ Relevant publications about this implementation and its underlying mathematical 
 - Lucas Bechberger and Kai-Uwe Kühnberger. "Measuring Relations Between Concepts In Conceptual Spaces". 37th SGAI International Conference on Artificial Intelligence, 2017. [Paper](https://link.springer.com/chapter/10.1007%2F978-3-319-71078-5_7) [Preprint](https://arxiv.org/abs/1707.02292)
 - Lucas Bechberger and Kai-Uwe Kühnberger. "A Comprehensive Implementation of Conceptual Spaces". 5th International Workshop on Artificial Intelligence and Cognition, 2017. [Paper](http://ceur-ws.org/Vol-2090/) [Preprint](https://arxiv.org/abs/1707.05165)
 - Lucas Bechberger and Kai-Uwe Kühnberger. "Formal Ways for Measuring Relations between Concepts in Conceptual Spaces". Expert Systems, 2018. [Paper](https://doi.org/10.1111/exsy.12348) [Preprint](https://arxiv.org/abs/1804.02393)
+- Lucas Bechberger and Kai-Uwe Kühnberger. "Formalized Conceptual Spaces with a Geometric Representation of Correlations". In: Mauri Kaipainen, Antti Hautamäki, Peter Gärdenfors, and Frank Zenker: “Conceptual Spaces: Elaborations and Applications”. Synthese Library. [Paper](https://link.springer.com/chapter/10.1007%2F978-3-030-12800-5_3) [Preprint](https://arxiv.org/abs/1801.03929)
 
 If you find this implementation or its underlying formalization useful and plan to use it in your own work, please cite one of the above papers. Thank you!
 
