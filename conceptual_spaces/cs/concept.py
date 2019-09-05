@@ -541,7 +541,7 @@ class Concept:
             if self.crisp_subset_of(first) or self.crisp_subset_of(second):
                 return 1.0
 
-            # for all dimensions: c * w_dom * sqrt(dim) must not be larger for first and second than for self
+            # for all dimensions: c * w_dom * sqrt(w_dim) must not be larger for first and second than for self
             for dom, dims in self._core._domains.iteritems():
                 for dim in dims:
                     first_value = first._c * first._weights._domain_weights[dom] * sqrt(first._weights._dimension_weights[dom][dim])
@@ -560,7 +560,7 @@ class Concept:
             candidates = [(point, 'min') for point in corners_min] + [(point, 'max') for point in corners_max]                        
             
             candidate_results = []
-            tolerance = 0.005   # tolerance with respect to constraint violation, needed to ensure convergence
+            tolerance = 0.01   # tolerance with respect to constraint violation, needed to ensure convergence
             for candidate in candidates:
                 
                 # push the points a bit over the edge to ensure we have some sort of gradient in the beginning
@@ -593,7 +593,7 @@ class Concept:
                         opt = scipy.optimize.minimize(neg_betweenness, inner_x, args=(y,), method='COBYLA', constraints=inner_constraints, options={'catol':2*tolerance, 'tol':cs._epsilon, 'maxiter':1000, 'rhobeg':0.01})
                         if not opt.success and opt.status != 2: # opt.status = 2 means that we reached the iteration limit
                             print opt
-                            raise Exception("optimization failed: {0}".format(opt.message))
+                            raise Exception("inner optimization failed: {0}".format(opt.message))
                         return opt
                 
                     # outer optimization: point in self and alpha (minimizing over both)
@@ -605,7 +605,7 @@ class Concept:
                     opt = scipy.optimize.minimize(to_minimize_y, outer_x, method='COBYLA', constraints=outer_constraints, options={'catol':2*tolerance, 'tol':cs._epsilon, 'maxiter':1000, 'rhobeg':0.01})
                     if not opt.success and opt.status != 2: # opt.status = 2 means that we reached the iteration limit
                         print opt
-                        raise Exception("optimization failed: {0}".format(opt.message))
+                        raise Exception("outer optimization failed: {0}".format(opt.message))
                     candidate_results.append(opt.fun)
             
             return min(candidate_results)
@@ -671,7 +671,7 @@ class Concept:
                               {'type':'ineq', 'fun': lambda x: second.membership_of(x[cs._n_dim:]) - alpha - tolerance}]  # z in alpha-cut of second
                     def neg_betweenness(x):
                         return -1.0 * cs.between(x[:cs._n_dim], self_point, x[cs._n_dim:], self._weights, method='soft')
-                    opt = scipy.optimize.minimize(neg_betweenness, x_start, constraints=constr, method='COBYLA', options={'catol':2*tolerance, 'maxiter':10000, 'rhobeg':0.01})
+                    opt = scipy.optimize.minimize(neg_betweenness, x_start, constraints=constr, method='COBYLA', options={'catol':2*tolerance, 'tol':cs._epsilon, 'maxiter':1000, 'rhobeg':0.01})
                     if not opt.success and not opt.status == 2: # opt.status = 2 means that we reached the iteration limit
                         continue
                     betweenness_values.append(-opt.fun)
