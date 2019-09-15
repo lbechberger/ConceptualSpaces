@@ -38,10 +38,10 @@ def runtime(n_dims, cuboids_per_concept, alpha, method, num_samples, max_dim_per
     """Computes runtime statistics for the givenoperation of concepts.
     
     Parameters: 
-        n_dims = number of dimensions
+        n_dims: number of dimensions
         cuboids_per_concept: number of cuboids per concept
-        alpha = number of alpha cuts to use
-        method = method of computation to use
+        alpha: number of alpha cuts to use
+        method: method of computation to use
         num_samples: number of samples to draw
         max_dim_per_domain: maximal number of dimensions per domain
         operation: operation to time"""
