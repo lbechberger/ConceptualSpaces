@@ -97,6 +97,9 @@ def scatter(n_dims, cuboids_per_concept, params, num_samples, max_dim_per_domain
             results[key].append(res)
         counter += 1
         
+        if counter % 50 == 0:
+            print("{0}/{1} ...".format(counter, fails))
+        
     print("ran {0} examples, failed {1} times".format(counter, fails))
 
     # all pairs of configurations
@@ -122,18 +125,18 @@ def scatter(n_dims, cuboids_per_concept, params, num_samples, max_dim_per_domain
       
 ####################################################################################################################################  
 # MAIN: here we select what to run at all
-config_to_run = 'similarity'
+config_to_run = 'betweenness'
 
 params = {}
-params['similarity'] = {'subset': {'method': 'subset'},
-                         'Jaccard': {'method': 'Jaccard'}}
-params['betweenness'] = {'minimum': {'method': 'minimum'},
-                         'integral_20': {'method': 'integral', 'num_alpha_cuts': 20},
-                         'integral_100': {'method': 'integral', 'num_alpha_cuts': 100}}
+params['similarity'] = {r'$Sim_S$': {'method': 'subset'},
+                         r'$Sim_J$': {'method': 'Jaccard'}}
+params['betweenness'] = {r'$B_{soft}$': {'method': 'minimum'},
+                         r'$B_{soft}^{integral}$ (20 alpha cuts)': {'method': 'integral', 'num_alpha_cuts': 20},
+                         r'$B_{soft}^{integral}$ (100 alpha cuts)': {'method': 'integral', 'num_alpha_cuts': 100}}
 
 config = {}
-config['similarity'] = {'number_of_samples': 1000, 'number_of_dimensions': 4, 'max_dim_per_dom': 5, 'number_of_cuboids_per_concept': 2}
-config['betweenness'] = {'number_of_samples': 100, 'number_of_dimensions': 4, 'max_dim_per_dom': 5, 'number_of_cuboids_per_concept': 2}
+config['similarity'] = {'number_of_samples': 1000, 'number_of_dimensions': 4, 'max_dim_per_dom': 4, 'number_of_cuboids_per_concept': 2}
+config['betweenness'] = {'number_of_samples': 1000, 'number_of_dimensions': 4, 'max_dim_per_dom': 4, 'number_of_cuboids_per_concept': 2}
 
 
 operations = {'similarity': lambda x,y,z,p: x.similarity_to(y,**p),
