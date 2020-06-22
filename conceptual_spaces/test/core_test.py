@@ -205,13 +205,13 @@ class TestCore(unittest.TestCase):
         self.assertTrue(s != s2)
         self.assertFalse(s == s2)
 
-    # unify_with()
+    # union_with()
     def test_unify_no_core(self):
         cs.init(3, {0:[0,1,2]})
         c = Cuboid([1,2,3],[7,8,9], {0:[0,1,2]})
         s = Core([c], {0:[0,1,2]})
         with self.assertRaises(Exception):
-            s.unify_with(42)
+            s.union_with(42)
     
     def test_unify_no_repair(self):
         cs.init(3, {0:[0,1,2]})
@@ -220,8 +220,8 @@ class TestCore(unittest.TestCase):
         s1 = Core([c1], {0:[0,1,2]})
         s2 = Core([c2], {0:[0,1,2]})
         s_result = Core([c1, c2], {0:[0,1,2]})
-        self.assertEqual(s1.unify_with(s2), s_result)
-        self.assertEqual(s1.unify_with(s2), s2.unify_with(s1))
+        self.assertEqual(s1.union_with(s2), s_result)
+        self.assertEqual(s1.union_with(s2), s2.union_with(s1))
     
     def test_unify_repair(self):
         cs.init(3, {0:[0,1,2]})
@@ -232,8 +232,8 @@ class TestCore(unittest.TestCase):
         c1_result = Cuboid([1,2,3],[3.25,4,4.75], {0:[0,1,2]})
         c2_result = Cuboid([3,4,4.75],[7,7,7], {0:[0,1,2]})
         s_result = Core([c1_result, c2_result], {0:[0,1,2]})
-        self.assertEqual(s1.unify_with(s2), s_result)
-        self.assertEqual(s1.unify_with(s2), s2.unify_with(s1))
+        self.assertEqual(s1.union_with(s2), s_result)
+        self.assertEqual(s1.union_with(s2), s2.union_with(s1))
     
     def test_unify_not_full_dims_different_dims(self):
         cs.init(3, {0:[0,1], 1:[2]})
@@ -242,7 +242,7 @@ class TestCore(unittest.TestCase):
         s1 = Core([c1], {0:[0,1], 1:[2]})
         s2 = Core([c2], {0:[0,1]})
         with self.assertRaises(Exception):
-            s1.unify_with(s2)
+            s1.union_with(s2)
  
     def test_unify_not_full_dims_same_dims(self):
         cs.init(3, {0:[0,1], 1:[2]})
@@ -251,8 +251,8 @@ class TestCore(unittest.TestCase):
         s1 = Core([c1], {0:[0,1]})
         s2 = Core([c2], {0:[0,1]})
         s_result = Core([c1, c2], {0:[0,1]})
-        self.assertEqual(s1.unify_with(s2), s_result)
-        self.assertEqual(s1.unify_with(s2), s2.unify_with(s1))
+        self.assertEqual(s1.union_with(s2), s_result)
+        self.assertEqual(s1.union_with(s2), s2.union_with(s1))
         
     # cut_at()
     def test_cut_above(self):

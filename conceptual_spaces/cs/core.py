@@ -67,7 +67,7 @@ class Core:
         
         return map(lambda c: c.find_closest_point(point), self._cuboids)
     
-    def unify_with(self, other):
+    def union_with(self, other):
         """Computes the union of this core with another core."""
         
         if not isinstance(other, Core):
