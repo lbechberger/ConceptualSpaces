@@ -85,7 +85,7 @@ print(pear)
 We can execute the following operations on a concept `c`:
 - `c.membership_of(x)`: computes the membership of a point `x` to the concept `c`.
 - `c.intersect_with(d)`: computes the intersection of the concepts `c` and `d`.
-- `c.unify_with(d)`: computes the unification of the two concepts `c` and `d`.
+- `c.union_with(d)`: computes the unification of the two concepts `c` and `d`.
 - `c.project_onto(domains)`: projects the concept `c` onto the given domains.
 - `c.cut_at(dimension, value)`: cuts the concept `c` into two parts. The cut is placed at the given value on the given dimension.
 - `c.size()`: computes the size of the concept `c`.
@@ -106,7 +106,7 @@ print(pear.intersect_with(apple))
     mu: 0.4723665527
     c: 20.0
     weights: <{'color': 0.5, 'taste': 1.125, 'shape': 1.375},{'color': {0: 1.0}, 'taste': {2: 1.0}, 'shape': {1: 1.0}}>
-print(pear.unify_with(apple))
+print(pear.union_with(apple))
     core: {[0.5, 0.4, 0.35]-[0.7125, 0.6687500000000001, 0.45625000000000004], [0.5, 0.65, 0.35]-[0.8, 0.8, 0.5], [0.65, 0.65, 0.4]-[0.85, 0.8, 0.55], [0.7, 0.65, 0.45]-[1.0, 0.8, 0.6]}
     mu: 1.0
     c: 20.0

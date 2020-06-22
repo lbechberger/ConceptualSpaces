@@ -180,7 +180,7 @@ def demo():
     print("We can execute the following operations on a concept c:")
     print("    c.membership_of(x): computes the membership of a point x to the concept c.")
     print("    c.intersect_with(d): computes the intersection of the concepts c and d.")
-    print("    c.unify_with(d): computes the unification of the two concepts c and d.")
+    print("    c.union_with(d): computes the unification of the two concepts c and d.")
     print("    c.project_onto(domains): projects the concept c onto the given domains.")
     print("    c.cut_at(dimension, value): cuts the concept c into two parts. The cut is placed at the given value on the given dimension.")
     print("    c.size(): computes the size of the concept c.")
@@ -205,7 +205,7 @@ def demo():
     print("        weights: <{'color': 0.5, 'taste': 1.125, 'shape': 1.375},{'color': {0: 1.0}, 'taste': {2: 1.0}, 'shape': {1: 1.0}}>")
     wait_for_user()
     
-    print("    print(pear.unify_with(apple))")
+    print("    print(pear.union_with(apple))")
     print("        core: {[0.5, 0.4, 0.35]-[0.7125, 0.6687500000000001, 0.45625000000000004], [0.5, 0.65, 0.35]-[0.8, 0.8, 0.5], [0.65, 0.65, 0.4]-[0.85, 0.8, 0.55], [0.7, 0.65, 0.45]-[1.0, 0.8, 0.6]}")
     print("        mu: 1.0")
     print("        c: 20.0")

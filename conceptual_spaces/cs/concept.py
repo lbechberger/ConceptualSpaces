@@ -308,13 +308,13 @@ class Concept:
         
         return Concept(core, mu, c, weights)
 
-    def unify_with(self, other):
+    def union_with(self, other):
         """Computes the union of two concepts."""
 
         if not isinstance(other, Concept):
             raise Exception("Not a valid concept")
         
-        core = self._core.unify_with(other._core) 
+        core = self._core.union_with(other._core) 
         mu = max(self._mu, other._mu)
         c = min(self._c, other._c)
         weights = self._weights.merge_with(other._weights, 0.5, 0.5)
@@ -501,7 +501,7 @@ class Concept:
 
         if method == "Jaccard":
             intersection = projected_self.intersect_with(projected_other)
-            union = projected_self.unify_with(projected_other)
+            union = projected_self.union_with(projected_other)
             sim = intersection.size() / union.size()
             return sim
         

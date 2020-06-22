@@ -218,7 +218,7 @@ class TestConcept(unittest.TestCase):
         self.assertFalse(f3 == f2)
         self.assertTrue(f3 != f2)
      
-    # unify_with()
+    # union_with()
     def test_unify_no_repair_no_params(self):
         cs.init(3, {0:[0], 1:[1,2]})
         c1 = Cuboid([1,2,3],[7,8,9], {0:[0], 1:[1,2]})
@@ -229,8 +229,8 @@ class TestConcept(unittest.TestCase):
         f = Concept(Core([c1], {0:[0], 1:[1,2]}), 1.0, 2.0, w) 
         f2 = Concept(Core([c2], {0:[0], 1:[1,2]}), 1.0, 2.0, w)
         f_res = Concept(Core([c1,c2], {0:[0], 1:[1,2]}), 1.0, 2.0, w)
-        self.assertEqual(f.unify_with(f2), f_res)
-        self.assertEqual(f2.unify_with(f), f_res)
+        self.assertEqual(f.union_with(f2), f_res)
+        self.assertEqual(f2.union_with(f), f_res)
 
     def test_unify_no_repair_params(self):
         cs.init(3, {0:[0], 1:[1,2]})
@@ -246,8 +246,8 @@ class TestConcept(unittest.TestCase):
         f = Concept(Core([c1], {0:[0], 1:[1,2]}), 1.0, 5.2, w) 
         f2 = Concept(Core([c2], {0:[0], 1:[1,2]}), 0.5, 2.5, w2)
         f_res = Concept(Core([c1,c2], {0:[0], 1:[1,2]}), 1.0, 2.5, w_res)
-        self.assertEqual(f.unify_with(f2), f_res)
-        self.assertEqual(f2.unify_with(f), f_res)
+        self.assertEqual(f.union_with(f2), f_res)
+        self.assertEqual(f2.union_with(f), f_res)
         
     def test_unify_repair_no_params(self):
         cs.init(3, {0:[0], 1:[1,2]})
@@ -261,8 +261,8 @@ class TestConcept(unittest.TestCase):
         f = Concept(Core([c1], {0:[0], 1:[1,2]}), 1.0, 2.0, w) 
         f2 = Concept(Core([c2], {0:[0], 1:[1,2]}), 1.0, 2.0, w)
         f_res = Concept(Core([c1_res,c2_res], {0:[0], 1:[1,2]}), 1.0, 2.0, w)
-        self.assertEqual(f.unify_with(f2), f_res)
-        self.assertEqual(f2.unify_with(f), f_res)
+        self.assertEqual(f.union_with(f2), f_res)
+        self.assertEqual(f2.union_with(f), f_res)
         
     def test_unify_identity(self):
         doms = {0:[0,1], 1:[2,3]}
@@ -272,7 +272,7 @@ class TestConcept(unittest.TestCase):
         dim = {0:{0:1, 1:1}, 1:{2:3, 3:2.0}}
         w = Weights(dom, dim)
         f = Concept(s, 1.0, 2.0, w)  
-        self.assertEqual(f, f.unify_with(f))
+        self.assertEqual(f, f.union_with(f))
     
     # cut_at()
     def test_cut_above(self):
