@@ -130,9 +130,9 @@ config_to_run = 'betweenness'
 params = {}
 params['similarity'] = {r'$Sim_S$': {'method': 'subset'},
                          r'$Sim_J$': {'method': 'Jaccard'}}
-params['betweenness'] = {r'$B_{soft}$': {'method': 'minimum'},
-                         r'$B_{soft}^{integral}$ (20 alpha cuts)': {'method': 'integral', 'num_alpha_cuts': 20},
-                         r'$B_{soft}^{integral}$ (100 alpha cuts)': {'method': 'integral', 'num_alpha_cuts': 100}}
+params['betweenness'] = {r'$B_{soft}^{min}$': {'method': 'minimum'},
+                         r'$B_{soft}^{int}$ (20 $\alpha$-cuts)': {'method': 'integral', 'num_alpha_cuts': 20},
+                         r'$B_{soft}^{int}$ (100 $\alpha$-cuts)': {'method': 'integral', 'num_alpha_cuts': 100}}
 
 config = {}
 config['similarity'] = {'number_of_samples': 1000, 'number_of_dimensions': 4, 'max_dim_per_dom': 4, 'number_of_cuboids_per_concept': 2}
