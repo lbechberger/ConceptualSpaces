@@ -90,3 +90,4 @@ for n_dims in [2,4,8]:
     for n_cuboids in [2,4,8]:
         count(n_dims,n_cuboids,num_samples,max_dim_per_domain)
         print("{0} dimensions, {1} cuboids".format(n_dims, n_cuboids))
+        print("\n\n")
