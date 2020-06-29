@@ -421,6 +421,10 @@ class Concept:
         for dom, dims in self._core._domains.iteritems():
             if dom in other._core._domains and other._core._domains[dom] == dims:
                 common_domains[dom] = dims
+        if len(common_domains) == 0:
+            # no common domains: can't be a subset
+            return 0.0
+           
         projected_self = self.project_onto(common_domains)
         projected_other = other.project_onto(common_domains)
         

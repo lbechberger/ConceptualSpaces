@@ -1001,6 +1001,25 @@ class TestConcept(unittest.TestCase):
         
         self.assertAlmostEqual(f_orange.subset_of(f_lemon), 0.00024392897777777777)
 
+    def test_subset_of_red_non_sweet(self):
+        domains = {"color":[0], "shape":[1], "taste":[2]}
+        cs.init(3, domains)
+        
+        # define nonSweet property
+        c_non_sweet = Cuboid([float("-inf"), float("-inf"), 0.0], [float("inf"), float("inf"), 0.2], {"taste":[2]})
+        s_non_sweet = Core([c_non_sweet], {"taste":[2]})
+        w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
+        f_non_sweet = Concept(s_non_sweet, 1.0, 14.0, w_non_sweet)
+        
+        # define red property
+        c_red = Cuboid([0.9, float("-inf"), float("-inf")], [1.0, float("inf"), float("inf")], {"color":[0]})
+        s_red = Core([c_red], {"color":[0]})
+        w_red = Weights({"color":1.0}, {"color":{0:1.0}})
+        f_red = Concept(s_red, 1.0, 40.0, w_red)
+        
+        self.assertEqual(f_red.subset_of(f_non_sweet), 0)
+
+
 
     # crisp_subset_of()
     def test_crisp_subset_of_granny_smith_apple(self):
