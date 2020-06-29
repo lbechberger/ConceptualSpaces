@@ -70,7 +70,9 @@ def count(n_dims, cuboids_per_concept, num_samples, max_dim_per_domain):
         try:
            if f1.subset_of(f2) > 1:
                greater_than_one += 1
-               print(f1,f2)
+               print str(f1)
+               print str(f2) 
+               print '\n'
         except Exception:
             fails += 1
             continue
@@ -87,4 +89,4 @@ max_dim_per_domain = 4
 for n_dims in [2,4,8]:
     for n_cuboids in [2,4,8]:
         count(n_dims,n_cuboids,num_samples,max_dim_per_domain)
-        print(n_dims, n_cuboids)
+        print("{0} dimensions, {1} cuboids".format(n_dims, n_cuboids))
