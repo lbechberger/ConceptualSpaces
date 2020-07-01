@@ -64,30 +64,26 @@ def count(n_dims, cuboids_per_concept, num_samples, max_dim_per_domain):
         s1 = cs.core.from_cuboids(c1_list, domains)
         s2 = cs.core.from_cuboids(c2_list, domains)
         
-        f1 = cs.concept.Concept(s1, random.uniform(0.01, 1.0), random.uniform(1.0, 50.0), w1)
-        f2 = cs.concept.Concept(s2, random.uniform(0.01, 1.0), random.uniform(1.0, 50.0), w2)
+        f1 = cs.concept.Concept(s1, 1.0, random.uniform(1.0, 50.0), w1)
+        f2 = cs.concept.Concept(s2, 1.0, random.uniform(1.0, 50.0), w2)
     
         try:
-           if f1.subset_of(f2) > 1:
-               greater_than_one += 1
-               print str(f1)
-               print str(f2) 
-               print '\n'
+            if f1.subset_of(f2) > 1:
+                greater_than_one += 1
         except Exception:
             fails += 1
             continue
         
         counter += 1
                 
-    print("ran {0} examples, failed {1} times, found {2} cases with subsethood > 1".format(counter, fails, greater_than_one))
     return greater_than_one
 
 
 num_samples = 10000
 max_dim_per_domain = 4
 
-for n_dims in [2,4,8]:
-    for n_cuboids in [2,4,8]:
-        count(n_dims,n_cuboids,num_samples,max_dim_per_domain)
-        print("{0} dimensions, {1} cuboids".format(n_dims, n_cuboids))
-        print("\n\n")
+for n_dims, n_cuboids in [(2,2),(2,4),(4,2),(8,2),(4,4)]:
+    violations = count(n_dims,n_cuboids,num_samples,max_dim_per_domain)
+    print("{0} dimensions, {1} cuboids, {2} of {3} greater than one".format(n_dims, n_cuboids, violations, num_samples))
+    print("\n\n")
+    sys.stdout.flush()
