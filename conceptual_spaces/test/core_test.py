@@ -57,7 +57,7 @@ class TestCore(unittest.TestCase):
         c1 = Cuboid([float("-inf"),2,3],[float("inf"),5,6], {1:[1,2]})
         c2 = Cuboid([float("-inf"),3,4],[float("inf"),6,7], {1:[1,2]})
         s = Core([c1, c2], {1:[1,2]})
-        self.assertEquals(s._cuboids, [c1, c2])
+        self.assertEqual(s._cuboids, [c1, c2])
 
     # check
     def test_check_true(self):

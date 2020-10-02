@@ -105,7 +105,7 @@ def demo():
     
     def wait_for_user():
         print("\nPress Enter to continue...")
-        raw_input()
+        input()
         print("----------------------------\n")
     
     print("\nWelcome to the demo tour.\n")

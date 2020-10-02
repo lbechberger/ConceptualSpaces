@@ -4,10 +4,11 @@ Created on Tue Jun  6 10:50:58 2017
 
 @author: lbechberger
 """
-import cuboid as cub
-import cs
+from . import cuboid as cub
+from . import cs
 from itertools import compress
 from math import isnan
+from functools import reduce
 
 class Core:
     """A concept's core, consisting of a set of cuboids with nonempty intersection.
@@ -65,7 +66,7 @@ class Core:
     def find_closest_point_candidates(self, point):
         """Returns a list that contains for each cuboid the closest point in the cuboid to the given point."""
         
-        return map(lambda c: c.find_closest_point(point), self._cuboids)
+        return [c.find_closest_point(point) for c in self._cuboids]
     
     def union_with(self, other):
         """Computes the union of this core with another core."""
@@ -110,10 +111,10 @@ class Core:
     def project_onto(self, new_domains):
         """Projects this core onto the given set of new domains (must be a subset of the core's current domains)."""
         
-        if not all(dom in self._domains.items() for dom in new_domains.items()):
+        if not all(dom in list(self._domains.items()) for dom in list(new_domains.items())):
             raise Exception("Illegal set of new domains!")
         
-        projected_cuboids = map(lambda c: c.project_onto(new_domains), self._cuboids)
+        projected_cuboids = [c.project_onto(new_domains) for c in self._cuboids]
         
         return Core(projected_cuboids, new_domains)
 
@@ -122,8 +123,8 @@ class Core:
         
         Fills in 0 for all dimensions on which this core is not defined."""
         central_region = self.get_center()
-        midpoint = map(lambda x, y: 0.5*(x + y), central_region._p_min, central_region._p_max)
-        midpoint = map(lambda x: 0.0 if isnan(x) else x, midpoint)
+        midpoint = list(map(lambda x, y: 0.5*(x + y), central_region._p_min, central_region._p_max))
+        midpoint = [0.0 if isnan(x) else x for x in midpoint]
         return midpoint
         
     def get_center(self):
@@ -143,7 +144,7 @@ def check(cuboids, domains):
         if intersection == None:
             return False
 
-    if not all(dom in cs._domains.items() for dom in domains.items()):
+    if not all(dom in list(cs._domains.items()) for dom in list(domains.items())):
         return False
     
     for c in cuboids:
@@ -164,16 +165,16 @@ def from_cuboids(cuboids, domains):
     # need to perform repair mechanism        
     midpoints = []
     for cuboid in cubs: # midpoint of each cuboid
-        midpoints.append(map(lambda x, y: 0.5*(x + y), cuboid._p_min, cuboid._p_max))
+        midpoints.append(list(map(lambda x, y: 0.5*(x + y), cuboid._p_min, cuboid._p_max)))
     # sum up all midpoints & divide by number of cuboids
-    midpoint = reduce(lambda x, y: map(lambda a,b: a+b, x, y), midpoints)
-    midpoint = map(lambda x: x/len(cubs), midpoint)
+    midpoint = reduce(lambda x, y: list(map(lambda a,b: a+b, x, y)), midpoints)
+    midpoint = [x/len(cubs) for x in midpoint]
             
     # extend cuboids
     modified_cuboids = []
     for cuboid in cubs:
-        p_min = map(min, cuboid._p_min, midpoint)
-        p_max = map(max, cuboid._p_max, midpoint)
+        p_min = list(map(min, cuboid._p_min, midpoint))
+        p_max = list(map(max, cuboid._p_max, midpoint))
         modified_cuboids.append(cub.Cuboid(p_min, p_max, cuboid._domains))
     
     return Core(modified_cuboids, domains)

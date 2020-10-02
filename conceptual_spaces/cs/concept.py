@@ -10,10 +10,11 @@ from random import uniform
 import itertools
 import scipy.optimize
 
-import core as cor
-import cuboid as cub
-import weights as wghts
-import cs
+from . import core as cor
+from . import cuboid as cub
+from . import weights as wghts
+from . import cs
+from functools import reduce
 
 class Concept:
     """A concept, implementation of the Fuzzy Simple Star-Shaped Set (FSSSS)."""
@@ -54,7 +55,7 @@ class Concept:
     def membership_of(self, point):
         """Computes the membership of the point in this concept."""
         
-        min_distance = reduce(min, map(lambda x: cs.distance(x, point, self._weights), self._core.find_closest_point_candidates(point)))
+        min_distance = reduce(min, [cs.distance(x, point, self._weights) for x in self._core.find_closest_point_candidates(point)])
         
         return self._mu * exp(-self._c * min_distance)
     
@@ -86,8 +87,8 @@ class Concept:
                     y.append(opt.x[i])
         
         # arrange entries in b and y to make p_min and p_max; make sure we don't fall out of c2
-        p_min = map(max, map(min, b, y), c2._p_min)
-        p_max = map(min, map(max, b, y), c2._p_max)
+        p_min = list(map(max, list(map(min, b, y)), c2._p_min))
+        p_max = list(map(min, list(map(max, b, y)), c2._p_max))
         
         # take the unification of domains
         return p_min, p_max
@@ -105,9 +106,9 @@ class Concept:
         
         # get ranges of closest points, store which dimensions need to be extruded, pick example points
         a_range, b_range = c1.get_closest_points(c2)
-        a = map(lambda x: x[0], a_range)
-        b = map(lambda x: x[0], b_range)
-        extrude = map(lambda x: x[0] != x[1], a_range)
+        a = [x[0] for x in a_range]
+        b = [x[0] for x in b_range]
+        extrude = [x[0] != x[1] for x in a_range]
         
         mu = None
         p_min = None
@@ -140,7 +141,7 @@ class Concept:
             for dim in range(cs._n_dim):
                 if not extrude[dim]:
                     bounds.append((min(a[dim], b[dim]), max(a[dim], b[dim])))
-            first_guess = map(lambda (x, y): (x + y)/2.0, bounds)
+            first_guess = [(x_y3[0] + x_y3[1])/2.0 for x_y3 in bounds]
             to_minimize = lambda x: -membership(x, a, self._mu, self._c, self._weights)
             constr = [{"type":"eq", "fun":(lambda x: abs(membership(x, a, self._mu, self._c, self._weights) - membership(x, b, other._mu, other._c, other._weights)))}]
             opt = scipy.optimize.minimize(to_minimize, first_guess, constraints = constr, bounds = bounds, options = {"eps":cs._epsilon}) #, "maxiter":500
@@ -167,7 +168,7 @@ class Concept:
             
             t = None
             weights_dependent = True
-            for (dom, dims) in relevant_domains.items():
+            for (dom, dims) in list(relevant_domains.items()):
                 for dim in dims:
                     if t is None:
                         # initialize
@@ -181,7 +182,7 @@ class Concept:
                 if not weights_dependent:
                     break
             
-            if weights_dependent and len(relevant_domains.keys()) > 1:   
+            if weights_dependent and len(list(relevant_domains.keys())) > 1:   
                 # weights are linearly dependent and at least two domains are involved
                 # --> need to find all possible corner points of resulting cuboid
                 epsilon_1 = - log(mu / self._mu) / self._c
@@ -217,7 +218,7 @@ class Concept:
                             bounds = []
                             for dim in free_dims:
                                 bounds.append((min(a[dim], b[dim]), max(a[dim], b[dim])))
-                            first_guess = map(lambda (x, y): (x + y)/2.0, bounds)
+                            first_guess = [(x_y[0] + x_y[1])/2.0 for x_y in bounds]
                             to_minimize = lambda x: max(epsilon_difference(x, a, self._weights, epsilon_1)**2, epsilon_difference(x, b, other._weights, epsilon_2)**2)
                             
                             opt = scipy.optimize.minimize(to_minimize, first_guess) #tol = 0.000001
@@ -255,8 +256,8 @@ class Concept:
                         p_min = []
                         p_max = []
                         for i in range(cs._n_dim):
-                            p_min.append(max(min(a[i],b[i]), reduce(min, map(lambda x: x[i], points))))
-                            p_max.append(min(max(a[i],b[i]), reduce(max, map(lambda x: x[i], points))))
+                            p_min.append(max(min(a[i],b[i]), reduce(min, [x[i] for x in points])))
+                            p_max.append(min(max(a[i],b[i]), reduce(max, [x[i] for x in points])))
                         break
                 
                 if p_min == None or p_max == None:  
@@ -271,8 +272,8 @@ class Concept:
         
         # round everything, because we only found approximate solutions anyways
         mu = cs.round(mu)
-        p_min = map(cs.round, p_min)
-        p_max = map(cs.round, p_max)
+        p_min = list(map(cs.round, p_min))
+        p_max = list(map(cs.round, p_max))
                                                    
         # extrude in remaining dimensions
         for i in range(len(extrude)):
@@ -296,8 +297,8 @@ class Concept:
             for c2 in other._core._cuboids:
                 candidates.append(self._intersect_fuzzy_cuboids(c1, c2, other))
         
-        mu = reduce(max, map(lambda x: x[0], candidates))
-        cuboids = map(lambda x: x[1], filter(lambda y: cs.equal(y[0],mu), candidates))        
+        mu = reduce(max, [x[0] for x in candidates])
+        cuboids = [x[1] for x in [y for y in candidates if cs.equal(y[0],mu)]]        
         
         # create a repaired core
         core = cor.from_cuboids(cuboids, cuboids[0]._domains)
@@ -345,7 +346,7 @@ class Concept:
         """Reduces the domain structure such that only the given dimensions are still contained."""
         new_domains = {}
 
-        for (dom, dims) in domains.items():
+        for (dom, dims) in list(domains.items()):
             filtered_dims = [dim for dim in set(dims) & set(dimensions)]
             if len(filtered_dims) > 0:
                 new_domains[dom] = filtered_dims
@@ -355,13 +356,13 @@ class Concept:
     def _hypervolume_couboid(self, cuboid):
         """Computes the hypervolume of a single fuzzified cuboid."""
 
-        all_dims = [dim for domain in self._core._domains.values() for dim in domain]
+        all_dims = [dim for domain in list(self._core._domains.values()) for dim in domain]
         n = len(all_dims)
 
         # calculating the factor in front of the sum
         weight_product = 1.0
-        for (dom, dom_weight) in self._weights._domain_weights.items():
-            for (dim, dim_weight) in self._weights._dimension_weights[dom].items():
+        for (dom, dom_weight) in list(self._weights._domain_weights.items()):
+            for (dim, dim_weight) in list(self._weights._dimension_weights[dom].items()):
                 weight_product *= dom_weight * sqrt(dim_weight)
         factor = self._mu / (self._c**n * weight_product)
 
@@ -375,7 +376,7 @@ class Concept:
                 # first product
                 first_product = 1.0
                 for dim in set(all_dims) - set(subset):
-                    dom = filter(lambda (x,y): dim in y, self._core._domains.items())[0][0]
+                    dom = [x_y1 for x_y1 in list(self._core._domains.items()) if dim in x_y1[1]][0][0]
                     w_dom = self._weights._domain_weights[dom]
                     w_dim = self._weights._dimension_weights[dom][dim]
                     b = cuboid._p_max[dim] - cuboid._p_min[dim]
@@ -384,7 +385,7 @@ class Concept:
                 # second product
                 second_product = 1.0
                 reduced_domain_structure = self._reduce_domains(self._core._domains, subset)
-                for (dom, dims) in reduced_domain_structure.items():
+                for (dom, dims) in list(reduced_domain_structure.items()):
                     n_domain = len(dims)
                     second_product *= factorial(n_domain) * (pi ** (n_domain/2.0))/(gamma((n_domain/2.0) + 1))
                 
@@ -418,7 +419,7 @@ class Concept:
         """Computes the degree of subsethood between this concept and a given other concept."""
 
         common_domains = {}
-        for dom, dims in self._core._domains.iteritems():
+        for dom, dims in self._core._domains.items():
             if dom in other._core._domains and other._core._domains[dom] == dims:
                 common_domains[dom] = dims
         if len(common_domains) == 0:
@@ -445,7 +446,7 @@ class Concept:
 
         # core of self must be subset of other's alpha-cut with alpha = self._mu
         corner_points = []
-        self_dims = [dim for dims in self._core._domains.values() for dim in dims]
+        self_dims = [dim for dims in list(self._core._domains.values()) for dim in dims]
         
         for cuboid in self._core._cuboids:
             binary_vecs = itertools.product([False, True], repeat = len(self_dims))
@@ -465,12 +466,12 @@ class Concept:
                 return False
         
         # domains on which other is defined must be subset of domains on which self is defined
-        for dom, dims in other._core._domains.iteritems():
+        for dom, dims in other._core._domains.items():
             if not (dom in self._core._domains and self._core._domains[dom] == dims):
                 return False
 
         # for all dimensions: c * w_dom * sqrt(dim) must not be larger for other than for self
-        for dom, dims in other._core._domains.iteritems():
+        for dom, dims in other._core._domains.items():
             for dim in dims:
                 other_value = other._c * other._weights._domain_weights[dom] * sqrt(other._weights._dimension_weights[dom][dim])
                 self_value = self._c * self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim])
@@ -494,7 +495,7 @@ class Concept:
         
         # project both concepts onto their common domains to find a common ground                              
         common_domains = {}
-        for dom, dims in self._core._domains.iteritems():
+        for dom, dims in self._core._domains.items():
             if dom in other._core._domains and other._core._domains[dom] == dims:
                 common_domains[dom] = dims
         if len(common_domains) == 0:
@@ -524,12 +525,12 @@ class Concept:
         """
         
         # if the three concepts are not defined on the exact same set of domains, we return zero
-        if len(self._core._domains.keys()) != len(first._core._domains.keys()):
+        if len(list(self._core._domains.keys())) != len(list(first._core._domains.keys())):
             return 0.0
-        if len(self._core._domains.keys()) != len(second._core._domains.keys()):
+        if len(list(self._core._domains.keys())) != len(list(second._core._domains.keys())):
             return 0.0
         # now we know that the number of domains is the same --> check whether the domains themselves are the same
-        for dom, dims in self._core._domains.iteritems():
+        for dom, dims in self._core._domains.items():
             if not (dom in first._core._domains and first._core._domains[dom] == dims):
                 return 0.0
             if not (dom in second._core._domains and second._core._domains[dom] == dims):
@@ -546,7 +547,7 @@ class Concept:
                 return 1.0
 
             # for all dimensions: c * w_dom * sqrt(w_dim) must not be larger for first and second than for self
-            for dom, dims in self._core._domains.iteritems():
+            for dom, dims in self._core._domains.items():
                 for dim in dims:
                     first_value = first._c * first._weights._domain_weights[dom] * sqrt(first._weights._dimension_weights[dom][dim])
                     self_value = self._c * self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim])
@@ -569,9 +570,9 @@ class Concept:
                 
                 # push the points a bit over the edge to ensure we have some sort of gradient in the beginning
                 if candidate[1] == 'min':
-                    cand = list(map(lambda x: x - cs._epsilon, candidate[0]))
+                    cand = list([x - cs._epsilon for x in candidate[0]])
                 else:
-                    cand = list(map(lambda x: x + cs._epsilon, candidate[0]))
+                    cand = list([x + cs._epsilon for x in candidate[0]])
                 
                 # start with three different values of alpha to get a good estimate over the minmum over all alphas
                 alpha_candidates = [0.05 * self._mu, 0.5 * self._mu, 0.95 * self._mu]
@@ -596,7 +597,7 @@ class Concept:
                                              {'type':'ineq', 'fun': lambda x: second.membership_of(x[cs._n_dim:]) - alpha - tolerance}]  # z in alpha-cut of second
                         opt = scipy.optimize.minimize(neg_betweenness, inner_x, args=(y,), method='COBYLA', constraints=inner_constraints, options={'catol':2*tolerance, 'tol':cs._epsilon, 'maxiter':1000, 'rhobeg':0.01})
                         if not opt.success and opt.status != 2: # opt.status = 2 means that we reached the iteration limit
-                            print opt
+                            print(opt)
                             raise Exception("inner optimization failed: {0}".format(opt.message))
                         return opt
                 
@@ -608,7 +609,7 @@ class Concept:
                     to_minimize_y = lambda y: -1 * inner_optimization(y).fun
                     opt = scipy.optimize.minimize(to_minimize_y, outer_x, method='COBYLA', constraints=outer_constraints, options={'catol':2*tolerance, 'tol':cs._epsilon, 'maxiter':1000, 'rhobeg':0.01})
                     if not opt.success and opt.status != 2: # opt.status = 2 means that we reached the iteration limit
-                        print opt
+                        print(opt)
                         raise Exception("outer optimization failed: {0}".format(opt.message))
                     candidate_results.append(opt.fun)
             
@@ -646,16 +647,16 @@ class Concept:
                 
                 # compute the maximal allowable difference to the core wrt each dimension
                 difference = [0]*cs._n_dim
-                for dom, dims in self._core._domains.iteritems():
+                for dom, dims in self._core._domains.items():
                     for dim in dims:
                         difference[dim] = (-1.0 / (self._c * self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim]))) * log(alpha / self._mu)
 
                 # walk away from each corner as much as possible to get candidate points
                 candidates = []                
                 for corner in corners_min:
-                    candidates.append(map(lambda x, y: x - y, corner, difference))
+                    candidates.append(list(map(lambda x, y: x - y, corner, difference)))
                 for corner in corners_max:
-                    candidates.append(map(lambda x, y: x + y, corner, difference))
+                    candidates.append(list(map(lambda x, y: x + y, corner, difference)))
                 
                 betweenness_values = []
                 for candidate in candidates:
@@ -719,7 +720,7 @@ class Concept:
                 boundaries.append([-2, 2])
             else:
                 # concept defined in this dimensions --> use borders of 0.001-cut
-                dom = filter(lambda (x,y): dim in y, self._core._domains.items())[0][0]
+                dom = [x_y2 for x_y2 in list(self._core._domains.items()) if dim in x_y2[1]][0][0]
                 difference = - log(0.001/self._mu) / (self._c * self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim]))
                 boundaries.append([core_min - difference, core_max + difference])
         
@@ -728,7 +729,7 @@ class Concept:
             
             # create a uniform sample based on the boundaries
             candidate = [i for i in range(cs._n_dim)]
-            candidate = map(lambda x: uniform(boundaries[x][0], boundaries[x][1]), candidate)
+            candidate = [uniform(boundaries[x][0], boundaries[x][1]) for x in candidate]
             
             u = uniform(0,1)
             
@@ -749,8 +750,8 @@ def _check_crisp_betweenness(points, first, second):
             
             if not c1._compatible(c2):
                 raise Exception("Incompatible cuboids")
-            p_min = map(min, c1._p_min, c2._p_min)
-            p_max = map(max, c1._p_max, c2._p_max)
+            p_min = list(map(min, c1._p_min, c2._p_min))
+            p_max = list(map(max, c1._p_max, c2._p_max))
             dom_union = dict(c1._domains)
             dom_union.update(c2._domains)         
             bounding_box = cub.Cuboid(p_min, p_max, dom_union)
@@ -764,7 +765,7 @@ def _check_crisp_betweenness(points, first, second):
                 continue
             
             # check additional contraints for each domain
-            for domain in dom_union.values():
+            for domain in list(dom_union.values()):
                 if len(domain) < 2: # we can safely ignore one-dimensional domains
                     continue
                 
@@ -814,7 +815,7 @@ def _check_crisp_betweenness(points, first, second):
                 if not reduce(lambda x, y: x or y, local_betweenness):
                             break
                         
-            betweenness = map(lambda x, y: x or y, betweenness, local_betweenness)
+            betweenness = list(map(lambda x, y: x or y, betweenness, local_betweenness))
             if reduce(lambda x, y: x and y, betweenness):
                 return betweenness
     

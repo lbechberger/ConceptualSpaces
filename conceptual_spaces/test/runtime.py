@@ -26,7 +26,7 @@ def random_cuboid(dimensions, domains, min_val, max_val):
 def random_weights(domains):
     dim_weights = {}
     dom_weights = {}
-    for dom, dims in domains.iteritems():
+    for dom, dims in domains.items():
         dom_weights[dom] = random.uniform(0.01, 1.0)
         local_dim_weights = {}
         for dim in dims:
@@ -46,7 +46,7 @@ def runtime(n_dims, cuboids_per_concept, alpha, method, num_samples, max_dim_per
         max_dim_per_domain: maximal number of dimensions per domain
         operation: operation to time"""
 
-    dimensions = range(n_dims)
+    dimensions = list(range(n_dims))
     random.seed(42)
     
     times = []
@@ -99,9 +99,9 @@ def runtime(n_dims, cuboids_per_concept, alpha, method, num_samples, max_dim_per
     min_time = min(times)
     max_time = max(times)
     mean_time = sum(times) / num_samples
-    std_time = sqrt(sum(map(lambda x: (x - mean_time)**2, times))/num_samples)
+    std_time = sqrt(sum([(x - mean_time)**2 for x in times])/num_samples)
 
-    print("{0},{1},{2},{3},{4},{5},{6},{7},{8}".format(n_dims, cuboids_per_concept, alpha, method, min_time*1000, max_time*1000, mean_time*1000, std_time*1000, fails))
+    print(("{0},{1},{2},{3},{4},{5},{6},{7},{8}".format(n_dims, cuboids_per_concept, alpha, method, min_time*1000, max_time*1000, mean_time*1000, std_time*1000, fails)))
       
 ####################################################################################################################################  
 # MAIN: here we select what to run at all
@@ -131,7 +131,7 @@ operations = {'intersection': lambda x,y,z,n,c,m,a: x.intersect_with(y),
               'betweenness': lambda x,y,z,n,c,m,a: x.between(y,z, method=m, num_alpha_cuts=a)}
 
 for param_set in params[config_to_run]:
-    print("\n{0} - {1} repetitions".format(config_to_run, param_set['r']))
+    print(("\n{0} - {1} repetitions".format(config_to_run, param_set['r'])))
     print("n,c,alpha,method,min_time,max_time,mean_time,std_time,fails")
     for n in param_set['n']:
         for c in param_set['c']:

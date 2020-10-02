@@ -5,7 +5,8 @@ Created on Thu Jun  1 13:51:31 2017
 @author: lbechberger
 """
 
-import cs
+from . import cs
+from functools import reduce
 
 class Cuboid:
     """Single cuboid that is used to define a concept's core."""
@@ -29,7 +30,7 @@ class Cuboid:
         if not len(self._p_min) == len(point):
             raise Exception("point has illegal dimensionality")
                 
-        return reduce(lambda x, y: x and y, map(lambda x,y,z: x <= y <= z, self._p_min, point, self._p_max))
+        return reduce(lambda x, y: x and y, list(map(lambda x,y,z: x <= y <= z, self._p_min, point, self._p_max)))
         
     def find_closest_point(self, point):
         """Finds the point in the cuboid that is closest to the given point"""
@@ -45,7 +46,7 @@ class Cuboid:
             else:
                 return z
         
-        return map(helper, self._p_min, point, self._p_max)
+        return list(map(helper, self._p_min, point, self._p_max))
 
     def get_closest_points(self, other):
         """Computes closest points a in this and b in the other cuboid."""
@@ -93,8 +94,8 @@ class Cuboid:
 
     def __eq__(self, other):
         if isinstance(other, Cuboid):
-            p_min_equal = reduce(lambda x,y: x and y, map(cs.equal, self._p_min, other._p_min))
-            p_max_equal = reduce(lambda x,y: x and y, map(cs.equal, self._p_max, other._p_max))
+            p_min_equal = reduce(lambda x,y: x and y, list(map(cs.equal, self._p_min, other._p_min)))
+            p_max_equal = reduce(lambda x,y: x and y, list(map(cs.equal, self._p_max, other._p_max)))
             return p_min_equal and p_max_equal and self._domains == other._domains
         return False
     
@@ -119,7 +120,7 @@ class Cuboid:
         
         dom_union = dict(self._domains)
         dom_union.update(other._domains)
-        return all(dom in cs._domains.items() for dom in dom_union.items())
+        return all(dom in list(cs._domains.items()) for dom in list(dom_union.items()))
     
     def intersect_with(self, other):
         """Intersects this cuboid with another one and returns the result as a new cuboid. Returns None if intersection is empty"""
@@ -144,11 +145,11 @@ class Cuboid:
     def project_onto(self, new_domains):
         """Projects this cuboid onto the given domains (which must be a subset of the cuboid's current domains)."""
         
-        if not all(dom in self._domains.items() for dom in new_domains.items()):
+        if not all(dom in list(self._domains.items()) for dom in list(new_domains.items())):
             raise Exception("Illegal set of new domains!")
         
         # remove all domains that became irrelevant by replacing the p_min and p_max entries with -inf and inf, respectively
-        relevant_dims = [dim for domain in new_domains.values() for dim in domain]
+        relevant_dims = [dim for domain in list(new_domains.values()) for dim in domain]
         p_min = []
         p_max = []
         for i in range(len(self._p_min)):
@@ -166,7 +167,7 @@ def check(p_min, p_max, domains):
     that both are defined on the correct set of dimensions, 
     and that the given domains are compatible with the overall domain structure of the conceptual space."""
     
-    dims = [dim for domain in domains.values() for dim in domain]        
+    dims = [dim for domain in list(domains.values()) for dim in domain]        
     
     if not len(p_min) == len(p_max) == cs._n_dim:
         return False
@@ -177,8 +178,8 @@ def check(p_min, p_max, domains):
         if i not in dims and (p_max[i] != float("inf") or p_min[i] != float("-inf")):
             return False
 
-    if not all(dom in cs._domains.items() for dom in domains.items()):
+    if not all(dom in list(cs._domains.items()) for dom in list(domains.items())):
         return False
     
-    return reduce(lambda x, y: x and y, map(lambda y,z: y <= z, p_min, p_max))
+    return reduce(lambda x, y: x and y, list(map(lambda y,z: y <= z, p_min, p_max)))
   
