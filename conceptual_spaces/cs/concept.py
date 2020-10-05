@@ -142,7 +142,7 @@ class Concept:
             for dim in range(cs._n_dim):
                 if not extrude[dim]:
                     bounds.append((min(a[dim], b[dim]), max(a[dim], b[dim])))
-            first_guess = [(x_y3[0] + x_y3[1])/2.0 for x_y3 in bounds]
+            first_guess = [(x + y)/2.0 for (x, y) in bounds]
             to_minimize = lambda x: -membership(x, a, self._mu, self._c, self._weights)
             def fun_jacobian(x):
                 return nd.Jacobian(lambda x: to_minimize(x))(x).ravel()
@@ -221,7 +221,7 @@ class Concept:
                             bounds = []
                             for dim in free_dims:
                                 bounds.append((min(a[dim], b[dim]), max(a[dim], b[dim])))
-                            first_guess = [(x_y[0] + x_y[1])/2.0 for x_y in bounds]
+                            first_guess = [(x + y)/2.0 for (x, y) in bounds]
                             to_minimize = lambda x: max(epsilon_difference(x, a, self._weights, epsilon_1)**2, epsilon_difference(x, b, other._weights, epsilon_2)**2)
                             def fun_jacobian(x):
                                 return nd.Jacobian(lambda x: to_minimize(x))(x).ravel()
@@ -380,7 +380,7 @@ class Concept:
                 # first product
                 first_product = 1.0
                 for dim in set(all_dims) - set(subset):
-                    dom = [x_y1 for x_y1 in list(self._core._domains.items()) if dim in x_y1[1]][0][0]
+                    dom = [x for (x, y) in list(self._core._domains.items()) if dim in y][0]
                     w_dom = self._weights._domain_weights[dom]
                     w_dim = self._weights._dimension_weights[dom][dim]
                     b = cuboid._p_max[dim] - cuboid._p_min[dim]
@@ -724,7 +724,7 @@ class Concept:
                 boundaries.append([-2, 2])
             else:
                 # concept defined in this dimensions --> use borders of 0.001-cut
-                dom = [x_y2 for x_y2 in list(self._core._domains.items()) if dim in x_y2[1]][0][0]
+                dom = [x for (x, y) in list(self._core._domains.items()) if dim in y][0]
                 difference = - log(0.001/self._mu) / (self._c * self._weights._domain_weights[dom] * sqrt(self._weights._dimension_weights[dom][dim]))
                 boundaries.append([core_min - difference, core_max + difference])
         
