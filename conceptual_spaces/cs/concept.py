@@ -8,6 +8,7 @@ Created on Tue Jun  6 11:54:30 2017
 from math import exp, sqrt, factorial, pi, gamma, log
 from random import uniform
 import itertools
+import numdifftools.nd_statsmodels as nd
 import scipy.optimize
 
 from . import core as cor
@@ -143,8 +144,10 @@ class Concept:
                     bounds.append((min(a[dim], b[dim]), max(a[dim], b[dim])))
             first_guess = [(x_y3[0] + x_y3[1])/2.0 for x_y3 in bounds]
             to_minimize = lambda x: -membership(x, a, self._mu, self._c, self._weights)
+            def fun_jacobian(x):
+                return nd.Jacobian(lambda x: to_minimize(x))(x).ravel()
             constr = [{"type":"eq", "fun":(lambda x: abs(membership(x, a, self._mu, self._c, self._weights) - membership(x, b, other._mu, other._c, other._weights)))}]
-            opt = scipy.optimize.minimize(to_minimize, first_guess, constraints = constr, bounds = bounds, options = {"eps":cs._epsilon}) #, "maxiter":500
+            opt = scipy.optimize.minimize(to_minimize, first_guess, constraints = constr, bounds = bounds, jac=fun_jacobian, options = {"eps":cs._epsilon}) #, "maxiter":500
             if not opt.success and abs(opt.fun - membership(opt.x, b, other._mu, other._c, other._weights)) < 1e-06:
                 # if optimizer failed to find exact solution, but managed to find approximate solution: take it
                 raise Exception("Optimizer failed!")
@@ -220,8 +223,9 @@ class Concept:
                                 bounds.append((min(a[dim], b[dim]), max(a[dim], b[dim])))
                             first_guess = [(x_y[0] + x_y[1])/2.0 for x_y in bounds]
                             to_minimize = lambda x: max(epsilon_difference(x, a, self._weights, epsilon_1)**2, epsilon_difference(x, b, other._weights, epsilon_2)**2)
-                            
-                            opt = scipy.optimize.minimize(to_minimize, first_guess) #tol = 0.000001
+                            def fun_jacobian(x):
+                                return nd.Jacobian(lambda x: to_minimize(x))(x).ravel()
+                            opt = scipy.optimize.minimize(to_minimize, first_guess, jac=fun_jacobian) #tol = 0.000001
 
                             if opt.success:
                                 dist1 = epsilon_difference(opt.x, a, self._weights, epsilon_1)
