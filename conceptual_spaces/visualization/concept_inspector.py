@@ -205,7 +205,7 @@ def init():
     # now add radio buttons for selecting dimensions
     this._fig.subplots_adjust(left=0.2, right=0.98, top=0.95, bottom=0.05)
     
-    first_dim_radios_ax = this._fig.add_axes([0.025, 0.95 - 0.03 * space._n_dim, 0.12, 0.03 * space._n_dim], axisbg='w') 
+    first_dim_radios_ax = this._fig.add_axes([0.025, 0.95 - 0.03 * space._n_dim, 0.12, 0.03 * space._n_dim], facecolor='w') 
     first_dim_radios_ax.set_title("First dimension")
     first_dim_radios = RadioButtons(first_dim_radios_ax, this._dimensions, active=0)
     def first_dim_click_handler(label):
@@ -216,7 +216,7 @@ def init():
         _repaint_everything()
     first_dim_radios.on_clicked(first_dim_click_handler)
     
-    second_dim_radios_ax = this._fig.add_axes([0.025, 0.95 - 0.06 * space._n_dim - 0.05, 0.12, 0.03 * space._n_dim], axisbg='w')
+    second_dim_radios_ax = this._fig.add_axes([0.025, 0.95 - 0.06 * space._n_dim - 0.05, 0.12, 0.03 * space._n_dim], facecolor='w')
     second_dim_radios_ax.set_title("Second dimension")
     second_dim_radios = RadioButtons(second_dim_radios_ax, this._dimensions, active=1)
     def second_dim_click_handler(label):
@@ -228,7 +228,7 @@ def init():
         this._fig.canvas.draw_idle()
     second_dim_radios.on_clicked(second_dim_click_handler)
 
-    third_dim_radios_ax = this._fig.add_axes([0.025, 0.95 - 0.09 * space._n_dim - 0.10, 0.12, 0.03 * space._n_dim], axisbg='w')
+    third_dim_radios_ax = this._fig.add_axes([0.025, 0.95 - 0.09 * space._n_dim - 0.10, 0.12, 0.03 * space._n_dim], facecolor='w')
     third_dim_radios_ax.set_title("Third dimension")
     third_dim_radios = RadioButtons(third_dim_radios_ax, this._dimensions, active=2)
     def third_dim_click_handler(label):
@@ -242,7 +242,7 @@ def init():
     this._radios = (first_dim_radios, second_dim_radios, third_dim_radios)    
     
     # add area for check boxes (concept selection)
-    this._checks_ax = this._fig.add_axes([0.025, 0.05, 0.12, 0.15], axisbg='w')
+    this._checks_ax = this._fig.add_axes([0.025, 0.05, 0.12, 0.15], facecolor='w')
 
     # load all concepts, draw everything, then display the window    
     this._initialized = True
