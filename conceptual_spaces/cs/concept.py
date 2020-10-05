@@ -600,7 +600,7 @@ class Concept:
                         inner_constraints = [{'type':'ineq', 'fun': lambda x: first.membership_of(x[:cs._n_dim]) - alpha - tolerance}, # x in alpha-cut of first
                                              {'type':'ineq', 'fun': lambda x: second.membership_of(x[cs._n_dim:]) - alpha - tolerance}]  # z in alpha-cut of second
                         opt = scipy.optimize.minimize(neg_betweenness, inner_x, args=(y,), method='COBYLA', constraints=inner_constraints, options={'catol':2*tolerance, 'tol':cs._epsilon, 'maxiter':1000, 'rhobeg':0.01})
-                        if not opt.success and opt.status != 2: # opt.status = 2 means that we reached the iteration limit
+                        if not opt.success and opt.status != 2 and opt.status != 3: # opt.status = 2 means that we reached the iteration limit, opt.status = 3 means the subroutine terminated prematurely, as the size of rounding error is becoming damaging
                             print(opt)
                             raise Exception("inner optimization failed: {0}".format(opt.message))
                         return opt
