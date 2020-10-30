@@ -26,7 +26,7 @@ def random_cuboid(dimensions, domains, min_val, max_val):
 def random_weights(domains):
     dim_weights = {}
     dom_weights = {}
-    for dom, dims in domains.iteritems():
+    for dom, dims in domains.items():
         dom_weights[dom] = random.uniform(0.01, 1.0)
         local_dim_weights = {}
         for dim in dims:
@@ -45,11 +45,11 @@ def scatter(n_dims, cuboids_per_concept, params, num_samples, max_dim_per_domain
         max_dim_per_domain: maximal number of dimensions per domain
         operation: operation to evaluate"""
 
-    dimensions = range(n_dims)
+    dimensions = list(range(n_dims))
     random.seed(42)
     
     results = {}
-    for key, value in params.iteritems():
+    for key, value in params.items():
         results[key] = []
     counter = 0
     fails = 0
@@ -87,23 +87,23 @@ def scatter(n_dims, cuboids_per_concept, params, num_samples, max_dim_per_domain
 
         local_res = {}
         try:
-            for config_name, param_dict in params.iteritems():
+            for config_name, param_dict in params.items():
                     local_res[config_name] = operation(f1, f2, f3, param_dict)
         except Exception:
             fails += 1
             continue
         
-        for key, res in local_res.iteritems():
+        for key, res in local_res.items():
             results[key].append(res)
         counter += 1
         
         if counter % 50 == 0:
-            print("{0}/{1} ...".format(counter, fails))
+            print(("{0}/{1} ...".format(counter, fails)))
         
-    print("ran {0} examples, failed {1} times".format(counter, fails))
+    print(("ran {0} examples, failed {1} times".format(counter, fails)))
 
     # all pairs of configurations
-    for first_config, second_config in combinations(results.keys(), 2):
+    for first_config, second_config in combinations(list(results.keys()), 2):
         
         # draw the plot
         fig, ax = plt.subplots(figsize=(12,12))
@@ -119,7 +119,7 @@ def scatter(n_dims, cuboids_per_concept, params, num_samples, max_dim_per_domain
         # compute the correlations
         pearson, _ = pearsonr(results[first_config], results[second_config])
         spearman, _ = spearmanr(results[first_config], results[second_config])
-        print('{0} - {1}: Pearson {2}, Spearman {3}'.format(first_config, second_config, pearson, spearman))
+        print(('{0} - {1}: Pearson {2}, Spearman {3}'.format(first_config, second_config, pearson, spearman)))
 
     
       
@@ -142,5 +142,5 @@ config['betweenness'] = {'number_of_samples': 1000, 'number_of_dimensions': 4, '
 operations = {'similarity': lambda x,y,z,p: x.similarity_to(y,**p),
               'betweenness': lambda x,y,z,p: x.between(y,z,**p)}
 
-print(config_to_run, config[config_to_run])
+print((config_to_run, config[config_to_run]))
 scatter(config[config_to_run]['number_of_dimensions'], config[config_to_run]['number_of_cuboids_per_concept'], params[config_to_run], config[config_to_run]['number_of_samples'], config[config_to_run]['max_dim_per_dom'], operations[config_to_run])

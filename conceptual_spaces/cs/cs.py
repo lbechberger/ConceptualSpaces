@@ -10,10 +10,10 @@ Created on Tue Jun  6 12:15:30 2017
 """
 
 from math import sqrt, isinf
-import concept as con
-import weights as wghts
+from . import concept as con
+from . import weights as wghts
 import sys
-import __builtin__
+import builtins
 
 this = sys.modules[__name__]
 
@@ -55,7 +55,7 @@ def init(n_dim, domains, dim_names = None):
     # construct default weights
     dim_weights = {}
     dom_weights = {}
-    for (dom, dims) in domains.items():
+    for (dom, dims) in list(domains.items()):
         dom_weights[dom] = 1.0
         local_dim_weights = {}
         for dim in dims:
@@ -66,7 +66,7 @@ def init(n_dim, domains, dim_names = None):
 def _check_domain_structure(domains, n_dim):
     """Checks whether the domain structure is valid."""
 
-    vals = [val for domain in domains.values() for val in domain] # flatten values
+    vals = [val for domain in list(domains.values()) for val in domain] # flatten values
    
     # each dimension must appear in exactly one domain
     for i in range(n_dim):
@@ -78,7 +78,7 @@ def _check_domain_structure(domains, n_dim):
         return False
     
     # there are no empty domains allowed
-    for (k,v) in domains.items():
+    for (k,v) in list(domains.items()):
         if v == []:
             return False
     
@@ -92,7 +92,7 @@ def distance(x, y, weights):
     
     distance = 0.0
 
-    for domain in this._domains.keys():
+    for domain in list(this._domains.keys()):
         inner_distance = 0.0
         if not domain in weights._domain_weights:    # don't take into account domains w/o weights
             continue
@@ -145,7 +145,7 @@ def between(first, middle, second, weights=None, method="crisp"):
 
 def round(x):
     """Rounds the given number to a globally constant precision."""
-    return __builtin__.round(x, this._precision_digits)
+    return builtins.round(x, this._precision_digits)
 
 def equal(x, y):
     """Checks whether two floating point numbers are considered to be equal under the globally set precision."""
@@ -158,14 +158,14 @@ def export_concept_samples(num_samples = 100, path_to_file = './samples.csv', la
     
     # collect data points
     samples = []
-    for concept in this._concepts.values():
+    for concept in list(this._concepts.values()):
         samples += concept.sample(num_samples)
     
     # collect labels
     labeled_samples = []
     for sample in samples:
         memberships = []
-        for name, concept in this._concepts.iteritems():
+        for name, concept in this._concepts.items():
             memberships.append((name, concept.membership_of(sample)))
         memberships.sort(key = lambda x: x[1], reverse = True)
         l_sample = list(sample)

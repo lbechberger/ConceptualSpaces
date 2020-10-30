@@ -205,7 +205,7 @@ def init():
     # now add radio buttons for selecting dimensions
     this._fig.subplots_adjust(left=0.2, right=0.98, top=0.95, bottom=0.05)
     
-    first_dim_radios_ax = this._fig.add_axes([0.025, 0.95 - 0.03 * space._n_dim, 0.12, 0.03 * space._n_dim], axisbg='w') 
+    first_dim_radios_ax = this._fig.add_axes([0.025, 0.95 - 0.03 * space._n_dim, 0.12, 0.03 * space._n_dim], facecolor='w') 
     first_dim_radios_ax.set_title("First dimension")
     first_dim_radios = RadioButtons(first_dim_radios_ax, this._dimensions, active=0)
     def first_dim_click_handler(label):
@@ -216,7 +216,7 @@ def init():
         _repaint_everything()
     first_dim_radios.on_clicked(first_dim_click_handler)
     
-    second_dim_radios_ax = this._fig.add_axes([0.025, 0.95 - 0.06 * space._n_dim - 0.05, 0.12, 0.03 * space._n_dim], axisbg='w')
+    second_dim_radios_ax = this._fig.add_axes([0.025, 0.95 - 0.06 * space._n_dim - 0.05, 0.12, 0.03 * space._n_dim], facecolor='w')
     second_dim_radios_ax.set_title("Second dimension")
     second_dim_radios = RadioButtons(second_dim_radios_ax, this._dimensions, active=1)
     def second_dim_click_handler(label):
@@ -228,7 +228,7 @@ def init():
         this._fig.canvas.draw_idle()
     second_dim_radios.on_clicked(second_dim_click_handler)
 
-    third_dim_radios_ax = this._fig.add_axes([0.025, 0.95 - 0.09 * space._n_dim - 0.10, 0.12, 0.03 * space._n_dim], axisbg='w')
+    third_dim_radios_ax = this._fig.add_axes([0.025, 0.95 - 0.09 * space._n_dim - 0.10, 0.12, 0.03 * space._n_dim], facecolor='w')
     third_dim_radios_ax.set_title("Third dimension")
     third_dim_radios = RadioButtons(third_dim_radios_ax, this._dimensions, active=2)
     def third_dim_click_handler(label):
@@ -242,7 +242,7 @@ def init():
     this._radios = (first_dim_radios, second_dim_radios, third_dim_radios)    
     
     # add area for check boxes (concept selection)
-    this._checks_ax = this._fig.add_axes([0.025, 0.05, 0.12, 0.15], axisbg='w')
+    this._checks_ax = this._fig.add_axes([0.025, 0.05, 0.12, 0.15], facecolor='w')
 
     # load all concepts, draw everything, then display the window    
     this._initialized = True
@@ -257,18 +257,18 @@ def update():
         return
     # set up the range for each of the dimensions
     this._axis_ranges = [(float('inf'), -float('inf'))] * space._n_dim
-    for concept in space._concepts.values():
+    for concept in list(space._concepts.values()):
         for cuboid in concept._core._cuboids:
             this._axis_ranges = list(map(lambda x, y: (min(x[0], y), x[1]) if not isinf(y) else x, this._axis_ranges, cuboid._p_min))
             this._axis_ranges = list(map(lambda x, y: (x[0], max(x[1], y)) if not isinf(y) else x, this._axis_ranges, cuboid._p_max))
     # add a little space in each dimensions for the plots
-    widths = list(map(lambda x: x[1] - x[0], this._axis_ranges))
-    this._axis_ranges = map(lambda x, y: (x[0] - 0.2 * y, x[1] + 0.2 * y), this._axis_ranges, widths)
+    widths = list([x[1] - x[0] for x in this._axis_ranges])
+    this._axis_ranges = list(map(lambda x, y: (x[0] - 0.2 * y, x[1] + 0.2 * y), this._axis_ranges, widths))
 
     # grab all concepts
     standard_colors = deque(['r', 'g', 'b', 'y', 'purple', 'orange', 'brown', 'gray'])
     this._concepts = {}
-    for name in space._concepts.keys():
+    for name in list(space._concepts.keys()):
         concept = space._concepts[name]
         color = None
         # take prespecified color or use next one in list
@@ -279,15 +279,15 @@ def update():
             standard_colors.append(color)
 
         # collect all cuboids and replace infinities with boundaries of the plot
-        cuboids = list(map(lambda x: (map(lambda y, z: max(y, z[0] - 0.01), x._p_min, this._axis_ranges), 
-                                      map(lambda y, z: min(y, z[1] + 0.01), x._p_max, this._axis_ranges)), concept._core._cuboids))
+        cuboids = list([(list(map(lambda y, z: max(y, z[0] - 0.01), x._p_min, this._axis_ranges)), 
+                                      list(map(lambda y, z: min(y, z[1] + 0.01), x._p_max, this._axis_ranges))) for x in concept._core._cuboids])
         
         epsilons = []
         for dim in range(space._n_dim):
             eps = - (1.0 / concept._c) * log(0.5 / concept._mu)
             w_dim = None
             w_dom = None
-            for dom, dims in concept._core._domains.items():
+            for dom, dims in list(concept._core._domains.items()):
                 if dim in dims:
                     w_dom = concept._weights._domain_weights[dom]
                     w_dim = concept._weights._dimension_weights[dom][dim]
@@ -310,10 +310,10 @@ def update():
     
     # recreate the check boxes
     this._checks_ax.clear()
-    this._checks_ax.set_position([0.025, 0.95 - 0.09 * space._n_dim - 0.15 - 0.03 * len(this._concepts.keys()), 0.12, 0.03 * len(this._concepts.keys())])
+    this._checks_ax.set_position([0.025, 0.95 - 0.09 * space._n_dim - 0.15 - 0.03 * len(list(this._concepts.keys())), 0.12, 0.03 * len(list(this._concepts.keys()))])
     this._checks_ax.set_title("Concepts")
-    this._checks = CheckButtons(this._checks_ax, list(sorted(this._concepts.keys())), list(map(lambda x: x in this._active_concepts, list(sorted(this._concepts.keys())))))
-    c = list(map(lambda x: this._concepts[x][1], list(sorted(this._concepts.keys()))))    # color them nicely
+    this._checks = CheckButtons(this._checks_ax, list(sorted(this._concepts.keys())), list([x in this._active_concepts for x in list(sorted(this._concepts.keys()))]))
+    c = list([this._concepts[x][1] for x in list(sorted(this._concepts.keys()))])    # color them nicely
     [rec.set_facecolor(c[i]) for i, rec in enumerate(this._checks.rectangles)]
     def concept_checks_click_handler(label):
         if label in this._active_concepts:

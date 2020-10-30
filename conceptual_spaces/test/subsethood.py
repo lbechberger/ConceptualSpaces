@@ -20,7 +20,7 @@ def random_cuboid(dimensions, domains, min_val, max_val):
 def random_weights(domains):
     dim_weights = {}
     dom_weights = {}
-    for dom, dims in domains.iteritems():
+    for dom, dims in domains.items():
         dom_weights[dom] = random.uniform(0.01, 1.0)
         local_dim_weights = {}
         for dim in dims:
@@ -31,7 +31,7 @@ def random_weights(domains):
 
 def count(n_dims, cuboids_per_concept, num_samples, max_dim_per_domain):
 
-    dimensions = range(n_dims)
+    dimensions = list(range(n_dims))
     random.seed(42)
     
     greater_than_one = 0
@@ -84,6 +84,6 @@ max_dim_per_domain = 4
 
 for n_dims, n_cuboids in [(2,2),(2,4),(4,2),(8,2),(4,4)]:
     violations = count(n_dims,n_cuboids,num_samples,max_dim_per_domain)
-    print("{0} dimensions, {1} cuboids, {2} of {3} greater than one".format(n_dims, n_cuboids, violations, num_samples))
+    print(("{0} dimensions, {1} cuboids, {2} of {3} greater than one".format(n_dims, n_cuboids, violations, num_samples)))
     print("\n\n")
     sys.stdout.flush()
