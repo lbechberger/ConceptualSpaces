@@ -194,6 +194,6 @@ space.init(doms, 3, ["hue", "round", "sweet"])
 If no such array of dimension names is provided, the ConceptInspector will generate names based on the indices: `dim_0, dim_1, ...`
 Finally, one can also provide for each concept the color with which it should be visualized. This happens when adding a concept to the dictionary:
 ```python
-space.add_concept(apple, 'r')
+space.add_concept('apple', apple, 'r')
 ```
-The ConceptInspector will in this example make sure that the `apple` concept is visualized in red. If no such color is given, the ConceptInspector will loop through a list of predefined colors when drawing the different concepts.
+The ConceptInspector will in this example make sure that the `apple` concept is visualized in red and labeled as `apple`. If no color is given, the ConceptInspector will loop through a list of predefined colors when drawing the different concepts.
