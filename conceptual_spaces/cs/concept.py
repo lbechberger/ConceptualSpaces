@@ -300,6 +300,7 @@ class Concept:
         for c1 in self._core._cuboids:
             for c2 in other._core._cuboids:
                 candidates.append(self._intersect_fuzzy_cuboids(c1, c2, other))
+                candidates.append(other._intersect_fuzzy_cuboids(c2, c1, self))
         
         mu = reduce(max, [x[0] for x in candidates])
         cuboids = [x[1] for x in [y for y in candidates if cs.equal(y[0],mu)]]        
