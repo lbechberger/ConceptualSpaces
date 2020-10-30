@@ -357,7 +357,7 @@ class Concept:
         
         return new_domains
 
-    def _hypervolume_couboid(self, cuboid):
+    def _hypervolume_cuboid(self, cuboid):
         """Computes the hypervolume of a single fuzzified cuboid."""
 
         all_dims = [dim for domain in list(self._core._domains.values()) for dim in domain]
@@ -413,7 +413,7 @@ class Concept:
                 intersection = subset[0]
                 for cuboid in subset:
                     intersection = intersection.intersect_with(cuboid)
-                inner_sum += self._hypervolume_couboid(intersection)
+                inner_sum += self._hypervolume_cuboid(intersection)
                 
             hypervolume += inner_sum * (-1.0)**(l+1)
         
