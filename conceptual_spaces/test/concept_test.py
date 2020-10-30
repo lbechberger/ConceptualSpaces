@@ -124,7 +124,7 @@ class TestConcept(unittest.TestCase):
         
         f = Concept(s, 1.0, 2.0, w)  
         p = [4, 4, 4, 4]
-        self.assertAlmostEqual(f.membership_of(p), 0.15173524)
+        self.assertAlmostEqual(f.membership_of(p), 0.15173524, places=4)
 
     def test_membership_outside_two_cuboids(self):
         cs.init(4, {0:[0,1], 1:[2,3]})
@@ -135,7 +135,7 @@ class TestConcept(unittest.TestCase):
         
         f = Concept(s, 1.0, 2.0, w)  
         p = [4, 4, 4, 4]
-        self.assertAlmostEqual(f.membership_of(p), 0.15173524)
+        self.assertAlmostEqual(f.membership_of(p), 0.15173524, places=4)
     
     def test_membership_inside_infinity(self):
         cs.init(4, {0:[0,1], 1:[2,3]})
@@ -157,7 +157,7 @@ class TestConcept(unittest.TestCase):
         
         f = Concept(s, 1.0, 2.0, w)  
         p = [4, 4, 10, 4]
-        self.assertAlmostEqual(f.membership_of(p), 0.15173524)
+        self.assertAlmostEqual(f.membership_of(p), 0.15173524, places=4)
         
     def test_membership_outside_two_cuboids_infinity(self):
         cs.init(4, {0:[0,1], 1:[2,3]})
@@ -168,7 +168,7 @@ class TestConcept(unittest.TestCase):
         
         f = Concept(s, 1.0, 2.0, w)  
         p = [4, 4, 10, 4]
-        self.assertAlmostEqual(f.membership_of(p), 0.18515757)
+        self.assertAlmostEqual(f.membership_of(p), 0.18515757, places=4)
     
     # __eq__(), __ne__()
     def test_eq_ne_no_concept(self):
@@ -382,7 +382,7 @@ class TestConcept(unittest.TestCase):
         w_lemon = Weights({"color":0.5, "shape":0.5, "taste":2.0}, w_dim)
         f_lemon = Concept(s_lemon, 1.0, 20.0, w_lemon)
         
-        self.assertAlmostEqual(f_lemon.size(), 54.0/4000.0)
+        self.assertAlmostEqual(f_lemon.size(), 54.0/4000.0, places=4)
 
     def test_hypervolume_single_cuboid_granny_smith(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -393,7 +393,7 @@ class TestConcept(unittest.TestCase):
         w_granny_smith = Weights({"color":1.0, "shape":1.0, "taste":1.0}, w_dim)
         f_granny_smith = Concept(s_granny_smith, 1.0, 25.0, w_granny_smith)
 
-        self.assertAlmostEqual(f_granny_smith.size(), 0.004212)
+        self.assertAlmostEqual(f_granny_smith.size(), 0.004212, places=4)
 
     def test_hypervolume_single_cuboid_pear(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -404,7 +404,7 @@ class TestConcept(unittest.TestCase):
         w_pear = Weights({"color":0.50, "shape":1.25, "taste":1.25}, w_dim)
         f_pear = Concept(s_pear, 1.0, 10.0, w_pear)
 
-        self.assertAlmostEqual(f_pear.size(), 0.0561600)
+        self.assertAlmostEqual(f_pear.size(), 0.0561600, places=4)
  
     def test_hypervolume_single_cuboid_orange(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -415,7 +415,7 @@ class TestConcept(unittest.TestCase):
         w_orange = Weights({"color":1.0, "shape":1.0, "taste":1.0}, w_dim)
         f_orange = Concept(s_orange, 1.0, 15.0, w_orange)
 
-        self.assertAlmostEqual(f_orange.size(), 0.01270370)
+        self.assertAlmostEqual(f_orange.size(), 0.01270370, places=4)
    
     def test_hypervolume_multiple_cuboids_apple(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -428,7 +428,7 @@ class TestConcept(unittest.TestCase):
         w_apple = Weights({"color":0.50, "shape":1.50, "taste":1.00}, w_dim)
         f_apple = Concept(s_apple, 1.0, 5.0, w_apple)
 
-        self.assertAlmostEqual(f_apple.size(), 0.3375000)
+        self.assertAlmostEqual(f_apple.size(), 0.3375000, places=4)
     
     # intersect_with()
     # coding: {num_cuboids}_{space_dim}_{space_type}_{intersection_type}_{mu}_{weights}_{c}_{alpha}
@@ -964,7 +964,7 @@ class TestConcept(unittest.TestCase):
         w_apple = Weights({"color":0.50, "shape":1.50, "taste":1.00}, w_dim)
         f_apple = Concept(s_apple, 1.0, 5.0, w_apple)
         
-        self.assertAlmostEqual(f_granny_smith.subset_of(f_apple), 1.00)
+        self.assertAlmostEqual(f_granny_smith.subset_of(f_apple), 1.00, places=4)
 
     def test_subset_of_pear_apple(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -982,8 +982,8 @@ class TestConcept(unittest.TestCase):
         w_apple = Weights({"color":0.50, "shape":1.50, "taste":1.00}, w_dim)
         f_apple = Concept(s_apple, 1.0, 5.0, w_apple)
         
-        self.assertAlmostEqual(f_pear.subset_of(f_apple), 0.4520373228571429)
-        self.assertAlmostEqual(f_apple.subset_of(f_pear), 0.19069907388897037)
+        self.assertAlmostEqual(f_pear.subset_of(f_apple), 0.4520373228571429, places=4)
+        self.assertAlmostEqual(f_apple.subset_of(f_pear), 0.19069907388897037, places=4)
 
     def test_subset_of_orange_lemon(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -999,7 +999,7 @@ class TestConcept(unittest.TestCase):
         w_lemon = Weights({"color":0.5, "shape":0.5, "taste":2.0}, w_dim)
         f_lemon = Concept(s_lemon, 1.0, 20.0, w_lemon)
         
-        self.assertAlmostEqual(f_orange.subset_of(f_lemon), 0.00024392897777777777)
+        self.assertAlmostEqual(f_orange.subset_of(f_lemon), 0.00024392897777777777, places=4)
 
     def test_subset_of_red_non_sweet(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -1131,8 +1131,8 @@ class TestConcept(unittest.TestCase):
         w_apple = Weights({"color":0.50, "shape":1.50, "taste":1.00}, w_dim)
         f_apple = Concept(s_apple, 1.0, 5.0, w_apple)
         
-        self.assertAlmostEqual(f_granny_smith.implies(f_apple), 1.00)
-        self.assertAlmostEqual(f_apple.implies(f_granny_smith), 0.11709107083287003)
+        self.assertAlmostEqual(f_granny_smith.implies(f_apple), 1.00, places=4)
+        self.assertAlmostEqual(f_apple.implies(f_granny_smith), 0.11709107083287003, places=4)
     
     def test_implies_lemon_nonSweet(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -1148,7 +1148,7 @@ class TestConcept(unittest.TestCase):
         w_non_sweet = Weights({"taste":1.0}, {"taste":{2:1.0}})
         f_non_sweet = Concept(s_non_sweet, 1.0, 7.0, w_non_sweet)
         
-        self.assertAlmostEqual(f_lemon.implies(f_non_sweet), 1.00)
+        self.assertAlmostEqual(f_lemon.implies(f_non_sweet), 1.00, places=4)
     
     def test_implies_apple_red(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -1166,7 +1166,7 @@ class TestConcept(unittest.TestCase):
         w_red = Weights({"color":1.0}, {"color":{0:1.0}})
         f_red = Concept(s_red, 1.0, 20.0, w_red)
         
-        self.assertAlmostEqual(f_apple.implies(f_red), 0.3333333333333333)
+        self.assertAlmostEqual(f_apple.implies(f_red), 0.3333333333333333, places=4)
 
     # similarity_to()
 
@@ -1183,8 +1183,8 @@ class TestConcept(unittest.TestCase):
         f1 = Concept(s1, 1.0, 1.0, w1)
         f2 = Concept(s2, 1.0, 2.0, w2)
         
-        self.assertAlmostEqual(f1.similarity_to(f2, "Jaccard"), 0.488486914178)
-        self.assertAlmostEqual(f2.similarity_to(f1, "Jaccard"), 0.488486914178)
+        self.assertAlmostEqual(f1.similarity_to(f2, "Jaccard"), 0.488486914178, places=4)
+        self.assertAlmostEqual(f2.similarity_to(f1, "Jaccard"), 0.488486914178, places=4)
 
     def test_similarity_Jaccard_no_overlap(self):
         doms = {0:[0],1:[1,2]}       
@@ -1198,8 +1198,8 @@ class TestConcept(unittest.TestCase):
         f1 = Concept(s1, 1.0, 1.0, w1)
         f2 = Concept(s2, 1.0, 2.0, w2)
         
-        self.assertAlmostEqual(f1.similarity_to(f2, "Jaccard"), 0.305151362666)
-        self.assertAlmostEqual(f2.similarity_to(f1, "Jaccard"), 0.305151449644)
+        self.assertAlmostEqual(f1.similarity_to(f2, "Jaccard"), 0.305151362666, places=4)
+        self.assertAlmostEqual(f2.similarity_to(f1, "Jaccard"), 0.305151449644, places=4)
     
     def test_similarity_Jaccard_identity(self):
         doms = {0:[0],1:[1,2]}       
@@ -1242,14 +1242,14 @@ class TestConcept(unittest.TestCase):
         w_green = Weights({"color":1.0}, {"color":{0:1.0}})
         green = Concept(s_green, 1.0, 20.0, w_green)
         
-        self.assertAlmostEqual(pear.similarity_to(green, "Jaccard"), 0.52)
-        self.assertAlmostEqual(green.similarity_to(pear, "Jaccard"), 0.52)
-        self.assertAlmostEqual(pear.similarity_to(red, "Jaccard"), 0.055782539925)
-        self.assertAlmostEqual(red.similarity_to(pear, "Jaccard"), 0.055782539925)
-        self.assertAlmostEqual(pear.similarity_to(non_sweet, "Jaccard"), 0.200086115262)
-        self.assertAlmostEqual(non_sweet.similarity_to(pear, "Jaccard"), 0.200086115262)
-        self.assertAlmostEqual(non_sweet.similarity_to(red, "Jaccard"), 0.0)
-        self.assertAlmostEqual(red.similarity_to(non_sweet, "Jaccard"), 0.0)
+        self.assertAlmostEqual(pear.similarity_to(green, "Jaccard"), 0.52, places=4)
+        self.assertAlmostEqual(green.similarity_to(pear, "Jaccard"), 0.52, places=4)
+        self.assertAlmostEqual(pear.similarity_to(red, "Jaccard"), 0.055782539925, places=4)
+        self.assertAlmostEqual(red.similarity_to(pear, "Jaccard"), 0.055782539925, places=4)
+        self.assertAlmostEqual(pear.similarity_to(non_sweet, "Jaccard"), 0.200086115262, places=4)
+        self.assertAlmostEqual(non_sweet.similarity_to(pear, "Jaccard"), 0.200086115262, places=4)
+        self.assertAlmostEqual(non_sweet.similarity_to(red, "Jaccard"), 0.0, places=4)
+        self.assertAlmostEqual(red.similarity_to(non_sweet, "Jaccard"), 0.0, places=4)
 
     def test_similarity_Jaccard_combined_space_properties(self):
         doms = {0:[0],1:[1,2]}       
@@ -1273,19 +1273,19 @@ class TestConcept(unittest.TestCase):
         f4 = Concept(s4, 1.0, 1.0, w_c)
         f5 = Concept(s5, 1.0, 1.0, w_c)
         
-        self.assertAlmostEqual(f1.similarity_to(f1, method="Jaccard"), 1.0)
-        self.assertAlmostEqual(f1.similarity_to(f2, method="Jaccard"), 0.410357218383)
-        self.assertAlmostEqual(f2.similarity_to(f1, method="Jaccard"), 0.410357218383)
-        self.assertAlmostEqual(f1.similarity_to(f3, method="Jaccard"), 0.842243453275)
-        self.assertAlmostEqual(f3.similarity_to(f1, method="Jaccard"), 0.842243453275)
-        self.assertAlmostEqual(f3.similarity_to(f2, method="Jaccard"), 0.7056811142505014)
-        self.assertAlmostEqual(f2.similarity_to(f3, method="Jaccard"), 0.705680932556)
-        self.assertAlmostEqual(f4.similarity_to(f1, method="Jaccard"), 0.875)
-        self.assertAlmostEqual(f1.similarity_to(f4, method="Jaccard"), 0.875)
-        self.assertAlmostEqual(f5.similarity_to(f1, method="Jaccard"), 0.394305909412)
-        self.assertAlmostEqual(f1.similarity_to(f5, method="Jaccard"), 0.394305909412)
-        self.assertAlmostEqual(f5.similarity_to(f2, method="Jaccard"), 0.646312441429)
-        self.assertAlmostEqual(f2.similarity_to(f5, method="Jaccard"), 0.646312441429)
+        self.assertAlmostEqual(f1.similarity_to(f1, method="Jaccard"), 1.0, places=4)
+        self.assertAlmostEqual(f1.similarity_to(f2, method="Jaccard"), 0.410357218383, places=4)
+        self.assertAlmostEqual(f2.similarity_to(f1, method="Jaccard"), 0.410357218383, places=4)
+        self.assertAlmostEqual(f1.similarity_to(f3, method="Jaccard"), 0.842243453275, places=4)
+        self.assertAlmostEqual(f3.similarity_to(f1, method="Jaccard"), 0.842243453275, places=4)
+        self.assertAlmostEqual(f3.similarity_to(f2, method="Jaccard"), 0.7056811142505014, places=4)
+        self.assertAlmostEqual(f2.similarity_to(f3, method="Jaccard"), 0.705680932556, places=4)
+        self.assertAlmostEqual(f4.similarity_to(f1, method="Jaccard"), 0.875, places=4)
+        self.assertAlmostEqual(f1.similarity_to(f4, method="Jaccard"), 0.875, places=4)
+        self.assertAlmostEqual(f5.similarity_to(f1, method="Jaccard"), 0.394305909412, places=4)
+        self.assertAlmostEqual(f1.similarity_to(f5, method="Jaccard"), 0.394305909412, places=4)
+        self.assertAlmostEqual(f5.similarity_to(f2, method="Jaccard"), 0.646312441429, places=4)
+        self.assertAlmostEqual(f2.similarity_to(f5, method="Jaccard"), 0.646312441429, places=4)
 
     def test_similarity_Jaccard_concepts(self):
 
@@ -1299,8 +1299,8 @@ class TestConcept(unittest.TestCase):
         f1 = Concept(s1, 1.0, 50.0, w)
         f2 = Concept(s2, 1.0, 30.0, w)
 
-        self.assertAlmostEqual(f2.similarity_to(f1, "Jaccard"), 7.359063748437519e-05)
-        self.assertAlmostEqual(f1.similarity_to(f2, "Jaccard"), 7.366064462823261e-05)
+        self.assertAlmostEqual(f2.similarity_to(f1, "Jaccard"), 7.359063748437519e-05, places=4)
+        self.assertAlmostEqual(f1.similarity_to(f2, "Jaccard"), 7.366064462823261e-05, places=4)
 
 
     # 'subset'
@@ -1320,8 +1320,8 @@ class TestConcept(unittest.TestCase):
         w_apple = Weights({"color":0.50, "shape":1.50, "taste":1.00}, w_dim)
         f_apple = Concept(s_apple, 1.0, 5.0, w_apple)
         
-        self.assertAlmostEqual(f_pear.subset_of(f_apple), 0.4520373228571429)
-        self.assertAlmostEqual(f_apple.subset_of(f_pear), 0.19069907388897037)
+        self.assertAlmostEqual(f_pear.subset_of(f_apple), 0.4520373228571429, places=4)
+        self.assertAlmostEqual(f_apple.subset_of(f_pear), 0.19069907388897037, places=4)
 
     def test_similarity_subset_identity(self):
         doms = {0:[0],1:[1,2]}       
@@ -1364,14 +1364,14 @@ class TestConcept(unittest.TestCase):
         w_green = Weights({"color":1.0}, {"color":{0:1.0}})
         green = Concept(s_green, 1.0, 20.0, w_green)
         
-        self.assertAlmostEqual(pear.similarity_to(green, "subset"), 0.5)
-        self.assertAlmostEqual(green.similarity_to(pear, "subset"), 0.8125)
-        self.assertAlmostEqual(pear.similarity_to(red, "subset"), 0.07437671989999999)
-        self.assertAlmostEqual(red.similarity_to(pear, "subset"), 0.13945635056250003)
-        self.assertAlmostEqual(pear.similarity_to(non_sweet, "subset"), 0.38164573837037025)
-        self.assertAlmostEqual(non_sweet.similarity_to(pear, "subset"), 0.23419170304545447)
-        self.assertAlmostEqual(non_sweet.similarity_to(red, "subset"), 0.0)
-        self.assertAlmostEqual(red.similarity_to(non_sweet, "subset"), 0.0)
+        self.assertAlmostEqual(pear.similarity_to(green, "subset"), 0.5, places=4)
+        self.assertAlmostEqual(green.similarity_to(pear, "subset"), 0.8125, places=4)
+        self.assertAlmostEqual(pear.similarity_to(red, "subset"), 0.07437671989999999, places=4)
+        self.assertAlmostEqual(red.similarity_to(pear, "subset"), 0.13945635056250003, places=4)
+        self.assertAlmostEqual(pear.similarity_to(non_sweet, "subset"), 0.38164573837037025, places=4)
+        self.assertAlmostEqual(non_sweet.similarity_to(pear, "subset"), 0.23419170304545447, places=4)
+        self.assertAlmostEqual(non_sweet.similarity_to(red, "subset"), 0.0, places=4)
+        self.assertAlmostEqual(red.similarity_to(non_sweet, "subset"), 0.0, places=4)
 
     def test_similarity_subset_combined_space_properties(self):
         doms = {0:[0],1:[1,2]}       
@@ -1395,19 +1395,19 @@ class TestConcept(unittest.TestCase):
         f4 = Concept(s4, 1.0, 1.0, w_c)
         f5 = Concept(s5, 1.0, 1.0, w_c)
         
-        self.assertAlmostEqual(f1.similarity_to(f1, method="subset"), 1.0)
-        self.assertAlmostEqual(f1.similarity_to(f2, method="subset"), 0.6036357034764092)
-        self.assertAlmostEqual(f2.similarity_to(f1, method="subset"), 0.6036357034764092)
-        self.assertAlmostEqual(f1.similarity_to(f3, method="subset"), 0.8573456925407419)
-        self.assertAlmostEqual(f3.similarity_to(f1, method="subset"), 0.9784616581266496)
-        self.assertAlmostEqual(f3.similarity_to(f2, method="subset"), 0.8808291122258447)
-        self.assertAlmostEqual(f2.similarity_to(f3, method="subset"), 0.7768064048632629)
-        self.assertAlmostEqual(f4.similarity_to(f1, method="subset"), 1.0)
-        self.assertAlmostEqual(f1.similarity_to(f4, method="subset"), 0.8749999999999999)
-        self.assertAlmostEqual(f5.similarity_to(f1, method="subset"), 0.6093818599999999)
-        self.assertAlmostEqual(f1.similarity_to(f5, method="subset"), 0.5586000383333333)
-        self.assertAlmostEqual(f5.similarity_to(f2, method="subset"), 0.8225794709090909)
-        self.assertAlmostEqual(f2.similarity_to(f5, method="subset"), 0.7540311816666666)
+        self.assertAlmostEqual(f1.similarity_to(f1, method="subset"), 1.0, places=4)
+        self.assertAlmostEqual(f1.similarity_to(f2, method="subset"), 0.6036357034764092, places=4)
+        self.assertAlmostEqual(f2.similarity_to(f1, method="subset"), 0.6036357034764092, places=4)
+        self.assertAlmostEqual(f1.similarity_to(f3, method="subset"), 0.8573456925407419, places=4)
+        self.assertAlmostEqual(f3.similarity_to(f1, method="subset"), 0.9784616581266496, places=4)
+        self.assertAlmostEqual(f3.similarity_to(f2, method="subset"), 0.8808291122258447, places=4)
+        self.assertAlmostEqual(f2.similarity_to(f3, method="subset"), 0.7768064048632629, places=4)
+        self.assertAlmostEqual(f4.similarity_to(f1, method="subset"), 1.0, places=4)
+        self.assertAlmostEqual(f1.similarity_to(f4, method="subset"), 0.8749999999999999, places=4)
+        self.assertAlmostEqual(f5.similarity_to(f1, method="subset"), 0.6093818599999999, places=4)
+        self.assertAlmostEqual(f1.similarity_to(f5, method="subset"), 0.5586000383333333, places=4)
+        self.assertAlmostEqual(f5.similarity_to(f2, method="subset"), 0.8225794709090909, places=4)
+        self.assertAlmostEqual(f2.similarity_to(f5, method="subset"), 0.7540311816666666, places=4)
 
     
     # between()
@@ -1434,13 +1434,13 @@ class TestConcept(unittest.TestCase):
         f4 = Concept(s4, 1.0, 1.0, w)
         f5 = Concept(s5, 1.0, 1.0, w)
         
-        self.assertAlmostEqual(f1.between(f1, f1, method="minimum"), 1.0)
-        self.assertAlmostEqual(f3.between(f1, f2, method="minimum"), 1.0)
-        self.assertAlmostEqual(f3.between(f2, f1, method="minimum"), 1.0)
-        self.assertAlmostEqual(f4.between(f1, f2, method="minimum"), 1.0)
-        self.assertAlmostEqual(f4.between(f2, f1, method="minimum"), 1.0)
-        self.assertAlmostEqual(f5.between(f1, f2, method="minimum"), 0.3381164583996061)
-        self.assertAlmostEqual(f5.between(f2, f1, method="minimum"), 0.3322584234188066)
+        self.assertAlmostEqual(f1.between(f1, f1, method="minimum"), 1.0, places=4)
+        self.assertAlmostEqual(f3.between(f1, f2, method="minimum"), 1.0, places=4)
+        self.assertAlmostEqual(f3.between(f2, f1, method="minimum"), 1.0, places=4)
+        self.assertAlmostEqual(f4.between(f1, f2, method="minimum"), 1.0, places=4)
+        self.assertAlmostEqual(f4.between(f2, f1, method="minimum"), 1.0, places=4)
+        self.assertAlmostEqual(f5.between(f1, f2, method="minimum"), 0.33831631165095066, places=4)
+        self.assertAlmostEqual(f5.between(f2, f1, method="minimum"), 0.3332521898438732, places=4)
 
     def test_between_minimum_fruit(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -1467,14 +1467,14 @@ class TestConcept(unittest.TestCase):
         w_banana = Weights({"color":0.75, "shape":1.50, "taste":0.75}, w_dim)
         banana = Concept(s_banana, 1.0, 10.0, w_banana)
         
-        self.assertAlmostEqual(banana.between(apple, orange, method='minimum'), 0.0)
-        self.assertAlmostEqual(banana.between(orange, apple, method='minimum'), 0.0)
-        self.assertAlmostEqual(orange.between(apple, banana, method='minimum'), 0.7007119104504187)
-        self.assertAlmostEqual(orange.between(banana, apple, method='minimum'), 0.7092478455695048)
-        self.assertAlmostEqual(apple.between(orange, banana, method='minimum'), 0.0)
-        self.assertAlmostEqual(apple.between(banana, orange, method='minimum'), 0.0)
-        self.assertAlmostEqual(apple.between(apple, banana, method='minimum'), 1.0)
-        self.assertAlmostEqual(apple.between(orange, apple, method='minimum'), 1.0)
+        self.assertAlmostEqual(banana.between(apple, orange, method='minimum'), 0.0, places=4)
+        self.assertAlmostEqual(banana.between(orange, apple, method='minimum'), 0.0, places=4)
+        self.assertAlmostEqual(orange.between(apple, banana, method='minimum'), 0.6987540536330815, places=4)
+        self.assertAlmostEqual(orange.between(banana, apple, method='minimum'), 0.7045928116960077, places=4)
+        self.assertAlmostEqual(apple.between(orange, banana, method='minimum'), 0.0, places=4)
+        self.assertAlmostEqual(apple.between(banana, orange, method='minimum'), 0.0, places=4)
+        self.assertAlmostEqual(apple.between(apple, banana, method='minimum'), 1.0, places=4)
+        self.assertAlmostEqual(apple.between(orange, apple, method='minimum'), 1.0, places=4)
 
     def test_between_minimum_banana(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -1499,8 +1499,8 @@ class TestConcept(unittest.TestCase):
         w_banana = Weights({"color":0.75, "shape":1.50, "taste":0.75}, w_dim)
         banana = Concept(s_banana, 1.0, 20.0, w_banana)
 
-        self.assertAlmostEqual(banana.between(pear, granny_smith, method='minimum'), 0.0)
-        self.assertAlmostEqual(banana.between(granny_smith, pear, method='minimum'), 0.0)  
+        self.assertAlmostEqual(banana.between(pear, granny_smith, method='minimum'), 0.0, places=4)
+        self.assertAlmostEqual(banana.between(granny_smith, pear, method='minimum'), 0.0, places=4)  
 
       
     def test_between_minimum_pathological(self):
@@ -1522,8 +1522,8 @@ class TestConcept(unittest.TestCase):
         f3 = Concept(s2, 1.0, 10.0, w)
         f4 = Concept(s2, 0.9, 1.0, w)
         
-        self.assertAlmostEqual(f3.between(f2, f1, method='minimum'), 0.0)
-        self.assertAlmostEqual(f4.between(f2, f1, method='minimum'), 0.0)
+        self.assertAlmostEqual(f3.between(f2, f1, method='minimum'), 0.0, places=4)
+        self.assertAlmostEqual(f4.between(f2, f1, method='minimum'), 0.0, places=4)
 
     # 'integral'
     def test_between_integral(self):
@@ -1547,13 +1547,13 @@ class TestConcept(unittest.TestCase):
         f4 = Concept(s4, 1.0, 1.0, w)
         f5 = Concept(s5, 1.0, 1.0, w)
        
-        self.assertAlmostEqual(f1.between(f1, f1, method="integral"), 1.0)
-        self.assertAlmostEqual(f3.between(f1, f2, method="integral"), 0.99691771963)
-        self.assertAlmostEqual(f3.between(f2, f1, method="integral"), 0.99666727760)
-        self.assertAlmostEqual(f4.between(f1, f2, method="integral"), 1.0)
-        self.assertAlmostEqual(f4.between(f2, f1, method="integral"), 1.0)
-        self.assertAlmostEqual(f5.between(f1, f2, method="integral"), 0.50274620900)
-        self.assertAlmostEqual(f5.between(f2, f1, method="integral"), 0.50283481169)
+        self.assertAlmostEqual(f1.between(f1, f1, method="integral"), 1.0, places=4)
+        self.assertAlmostEqual(f3.between(f1, f2, method="integral"), 0.99691771963, places=4)
+        self.assertAlmostEqual(f3.between(f2, f1, method="integral"), 0.99666727760, places=4)
+        self.assertAlmostEqual(f4.between(f1, f2, method="integral"), 1.0, places=4)
+        self.assertAlmostEqual(f4.between(f2, f1, method="integral"), 1.0, places=4)
+        self.assertAlmostEqual(f5.between(f1, f2, method="integral"), 0.5025296167624573, places=4)
+        self.assertAlmostEqual(f5.between(f2, f1, method="integral"), 0.5024501540639742, places=4)
 
     def test_between_integral_fruit(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -1580,14 +1580,14 @@ class TestConcept(unittest.TestCase):
         w_banana = Weights({"color":0.75, "shape":1.50, "taste":0.75}, w_dim)
         banana = Concept(s_banana, 1.0, 10.0, w_banana)
 
-        self.assertAlmostEqual(banana.between(apple, orange, method='integral'), 0.4030221237)
-        self.assertAlmostEqual(banana.between(orange, apple, method='integral'), 0.3990213760)
-        self.assertAlmostEqual(orange.between(apple, banana, method='integral'), 0.8257645462)
-        self.assertAlmostEqual(orange.between(banana, apple, method='integral'), 0.8478737015)
-        self.assertAlmostEqual(apple.between(orange, banana, method='integral'), 0.9022439349)
-        self.assertAlmostEqual(apple.between(banana, orange, method='integral'), 0.9000571123)
-        self.assertAlmostEqual(apple.between(apple, banana, method='integral'), 1.0)
-        self.assertAlmostEqual(apple.between(orange, apple, method='integral'), 1.0)
+        self.assertAlmostEqual(banana.between(apple, orange, method='integral'), 0.40303144681997927, places=4)
+        self.assertAlmostEqual(banana.between(orange, apple, method='integral'), 0.39930001532109527, places=4)
+        self.assertAlmostEqual(orange.between(apple, banana, method='integral'), 0.8257577766138022, places=4)
+        self.assertAlmostEqual(orange.between(banana, apple, method='integral'), 0.8478494940748152, places=4)
+        self.assertAlmostEqual(apple.between(orange, banana, method='integral'), 0.9022444674696194, places=4)
+        self.assertAlmostEqual(apple.between(banana, orange, method='integral'), 0.900057101049069, places=4)
+        self.assertAlmostEqual(apple.between(apple, banana, method='integral'), 1.0, places=4)
+        self.assertAlmostEqual(apple.between(orange, apple, method='integral'), 1.0, places=4)
 
     def test_between_integral_banana(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
@@ -1612,8 +1612,8 @@ class TestConcept(unittest.TestCase):
         w_banana = Weights({"color":0.75, "shape":1.50, "taste":0.75}, w_dim)
         banana = Concept(s_banana, 1.0, 20.0, w_banana)
 
-        self.assertAlmostEqual(banana.between(pear, granny_smith, method='integral'), 0.433516050133)
-        self.assertAlmostEqual(banana.between(granny_smith, pear, method='integral'), 0.435957783784)
+        self.assertAlmostEqual(banana.between(pear, granny_smith, method='integral'), 0.433516050133, places=4)
+        self.assertAlmostEqual(banana.between(granny_smith, pear, method='integral'), 0.435957783784, places=4)
 
     def test_between_integral_pathological(self):
         domains = {0:[0]}
@@ -1634,10 +1634,10 @@ class TestConcept(unittest.TestCase):
         f3 = Concept(s2, 1.0, 10.0, w)
         f4 = Concept(s2, 0.9, 1.0, w)
         
-        self.assertAlmostEqual(f3.between(f2, f1, method='integral'), 0.9)
-        self.assertAlmostEqual(f4.between(f2, f1, method='integral'), 0.778402196538)
-        self.assertAlmostEqual(f4.between(f2, f1, method='integral', num_alpha_cuts=100), 0.76282936062)
-        self.assertAlmostEqual(f4.between(f2, f1, method='integral', num_alpha_cuts=1000), 0.759107079965)
+        self.assertAlmostEqual(f3.between(f2, f1, method='integral'), 0.9, places=4)
+        self.assertAlmostEqual(f4.between(f2, f1, method='integral'), 0.778402196538, places=4)
+        self.assertAlmostEqual(f4.between(f2, f1, method='integral', num_alpha_cuts=100), 0.76282936062, places=4)
+        self.assertAlmostEqual(f4.between(f2, f1, method='integral', num_alpha_cuts=1000), 0.759107079965, places=4)
 
 
     # sample()
