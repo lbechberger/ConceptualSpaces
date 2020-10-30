@@ -1,6 +1,8 @@
 MIT License
 
-Copyright (c) 2017 Lucas Bechberger
+Copyright (c) 2017-2020 Lucas Bechberger.
+
+Migration from Python 2.7 to Python 3 kindly provided by Marius Pol.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
