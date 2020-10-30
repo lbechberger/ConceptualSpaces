@@ -20,7 +20,7 @@ If you find this implementation or its underlying formalization useful and plan 
 
 Our implementation uses Python 2.7 up to version 1.2 and Python 3.6 in version 1.3 (forthcoming). The migration to Python 3 has been kindly provided by [Marius Pol](https://github.com/marius-pol). Currently, our code has the following dependencies: numpy, scipy, matplotlib, Shapely, statsmodels, numdifftools. You should be able to install them by executing `pip install -r requirements.txt`. Alternatively, you can use the script `install_environment.sh` to create a conda environment called `CSpy3` using miniconda which should contain all necessary dependencies for running the code. If you have trouble getting scipy to work, please refer to the [official scipy website](https://www.scipy.org/install.html) for further assistance. Same holds for [matplotlib](https://matplotlib.org/users/installing.html).
 
-In general, the individual code files should be run from their respective directory in order to make sure that all imports work as expected. The folder `conceptual_spaces/demo/` contains two example spaces which will be used in our overview below.
+In general, the individual code files should be run from their respective directory in order to make sure that all imports work as expected. The folder `conceptual_spaces/demo/` contains two example spaces which will be used in our overview below. You can do an interactive demo by moving into this directory, calling `python` and then writing `from fruit_space import *`. The ConceptInspector will be displayed and you can execute all of the operations discussed below, updating the ConceptInspector with `ci.update()` if necessary (more details below).
 
 ## Overview
 

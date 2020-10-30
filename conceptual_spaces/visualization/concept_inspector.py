@@ -247,6 +247,7 @@ def init():
     # load all concepts, draw everything, then display the window    
     this._initialized = True
     update()
+    plt.ion()
     plt.show()
 
 
