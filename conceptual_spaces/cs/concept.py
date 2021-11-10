@@ -5,7 +5,7 @@ Created on Tue Jun  6 11:54:30 2017
 @author: lbechberger
 """
 
-from math import exp, sqrt, factorial, pi, gamma, log
+from math import exp, sqrt, factorial, pi, gamma, log, isinf
 from random import uniform
 import itertools
 import numdifftools.nd_statsmodels as nd
@@ -65,40 +65,42 @@ class Concept:
 
         def makeFun(idx): # need this in order to avoid weird results (defining lambda in loop)
             return (lambda y: y[idx] - b[idx])
+        
+        # how far away from a is the point allowed to be in order to have membership mu?
         distance = - log(mu / self._mu) / self._c
-        y = []
+        lower_bound = []
+        upper_bound = []
         for i in range(cs._n_dim):
-            if a[i] == b[i]:
-                y.append(a[i])
-            else:
-                constr = [{"type":"eq", "fun":(lambda y: cs.distance(a,y,self._weights) - distance)}]
-                for j in range(cs._n_dim):
-                    if i != j:
-                        constr.append({"type":"eq", "fun":makeFun(j)})
-                
-                if a[i] < b[i]:
-                    opt = scipy.optimize.minimize(lambda y: -y[i], b, constraints = constr)
-                    if not opt.success:
-                        raise Exception("Optimizer failed!")
-                    y.append(opt.x[i])
-                else: 
-                    opt = scipy.optimize.minimize(lambda y: y[i], b, constraints = constr)
-                    if not opt.success:
-                        raise Exception("Optimizer failed!")
-                    y.append(opt.x[i])
-        
-        # arrange entries in b and y to make p_min and p_max; make sure we don't fall out of c2
-        p_min = list(map(max, list(map(min, b, y)), c2._p_min))
-        p_max = list(map(min, list(map(max, b, y)), c2._p_max))
-        
-        # take the unification of domains
-        return p_min, p_max
+            # distance of target point should be equal to maximal distance
+            constr = [{"type":"eq", "fun":(lambda y: cs.distance(a,y,self._weights) - distance)}]
+            for j in range(cs._n_dim):
+                if i != j:
+                    # fix the coordinates that we're currently not optimizing
+                    constr.append({"type":"eq", "fun":makeFun(j)})
+            
+            # find lower bound for this dimension
+            start_lower = list(b)
+            start_lower[i] -= distance
+            opt_lower = scipy.optimize.minimize(lambda y: y[i], start_lower, constraints = constr)
+            if not opt_lower.success:
+                raise Exception("Optimizer failed!")
+            lower_bound.append(max(opt_lower.x[i], c2._p_min[i])) # don't fall out of c2
+            
+            # find upper bound for this dimension
+            start_upper = list(b)
+            start_upper[i] += distance
+            opt_upper = scipy.optimize.minimize(lambda y: -y[i], start_upper, constraints = constr)
+            if not opt_upper.success:
+                raise Exception("Optimizer failed!")
+            upper_bound.append(min(opt_upper.x[i], c2._p_max[i])) # don't fall out of c2
+            
+        return lower_bound, upper_bound
     
     def _intersect_fuzzy_cuboids(self, c1, c2, other):
         """Find the highest intersection of the two cuboids (c1 from this, c2 from the other concept)."""
         
         crisp_intersection = c1.intersect_with(c2)
-        if (crisp_intersection != None):  # crisp cuboids already intersect
+        if (self._mu == other._mu) and (crisp_intersection != None):  # crisp cuboids already intersect
             return min(self._mu, other._mu), crisp_intersection
         
         # already compute new set of domains
@@ -118,13 +120,23 @@ class Concept:
             # intersection is part of other cuboid
             mu = other._mu
             p_min, p_max = self._intersection_mu_special_case(a, c2, b, mu)
+            bounding_box = c2
         elif other._mu * exp(-other._c * cs.distance(a, b, other._weights)) >= self._mu:
             # intersection is part of this cuboid
             mu = self._mu
             p_min, p_max = other._intersection_mu_special_case(b, c1, a, mu)
+            bounding_box = c1
         else:
             # intersection is in the cuboid between a and b
             # --> find point with highest identical membership to both cuboids
+        
+            # bounding box for intersection result
+            bounding_box_p_min = []
+            bounding_box_p_max = []
+            for i in range(len(a_range)):
+                bounding_box_p_min.append(min(a_range[i][0], b_range[i][0]))
+                bounding_box_p_max.append(max(a_range[i][1], b_range[i][1]))
+            bounding_box = cub.Cuboid(bounding_box_p_min, bounding_box_p_max, new_domains)
         
             # only use the relevant dimensions in order to make optimization easier
             def membership(x, point, mu, c, weights):
@@ -282,10 +294,15 @@ class Concept:
         # extrude in remaining dimensions
         for i in range(len(extrude)):
             if extrude[i]:
-                p_max[i] = a_range[i][1]
+                if isinf(a_range[i][1]) or isinf(a_range[i][0]):
+                    # +inf - -inf = nan, hence just set it to +inf
+                    p_max[i] = a_range[i][1]
+                else:
+                    p_max[i] += a_range[i][1] - a_range[i][0]
 
-        # finally, construct a cuboid and return it along with mu
+        # finally, construct a cuboid, intersect it with the bounding box, and return it along with mu
         cuboid = cub.Cuboid(p_min, p_max, new_domains)
+        cuboid = cuboid.intersect_with(bounding_box)
         
         return mu, cuboid
 
