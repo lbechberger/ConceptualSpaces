@@ -7,8 +7,6 @@ Version 1.2.0: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1200230.svg)]
 
 Version 1.3.0: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4312823.svg)](https://doi.org/10.5281/zenodo.4312823) [Release](https://github.com/lbechberger/ConceptualSpaces/releases/tag/v1.3.0)
 
-Version 1.3.1: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5667490.svg)](https://doi.org/10.5281/zenodo.5667490) [Release](https://github.com/lbechberger/ConceptualSpaces/releases/tag/v1.3.1)
-
 This repository contains a thorough implementation of the conceptual spaces framework.
 
 Relevant publications about this implementation and its underlying mathematical formalization include:
@@ -167,11 +165,11 @@ banana.between(granny_smith, pear)
     0.43811732667337056
 granny_smith.between(lemon, orange)
     0.8789129336237107
-apple.between(lemon, orange, method='minimum')
+apple.between(lemon, orange, method='infimum')
     0.0
-banana.between(granny_smith, pear, method='minimum')
+banana.between(granny_smith, pear, method='infimum')
     0.0
-granny_smith.between(lemon, orange, method='minimum')
+granny_smith.between(lemon, orange, method='infimum')
     0.82471568013506558
 ```
 

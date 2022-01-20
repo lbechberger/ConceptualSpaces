@@ -1399,8 +1399,8 @@ class TestConcept(unittest.TestCase):
     
     # between()
 
-    # 'minimum'
-    def test_between_minimum(self):
+    # 'infimum'
+    def test_between_infimum(self):
         doms = {0:[0],1:[1,2]}       
         cs.init(3, doms)
         c1 = Cuboid([0.00,0.00,0.00],[0.40,0.40,0.40], doms)
@@ -1421,15 +1421,15 @@ class TestConcept(unittest.TestCase):
         f4 = Concept(s4, 1.0, 1.0, w)
         f5 = Concept(s5, 1.0, 1.0, w)
         
-        self.assertAlmostEqual(f1.between(f1, f1, method="minimum"), 1.0, places=4)
-        self.assertAlmostEqual(f3.between(f1, f2, method="minimum"), 1.0, places=4)
-        self.assertAlmostEqual(f3.between(f2, f1, method="minimum"), 1.0, places=4)
-        self.assertAlmostEqual(f4.between(f1, f2, method="minimum"), 1.0, places=4)
-        self.assertAlmostEqual(f4.between(f2, f1, method="minimum"), 1.0, places=4)
-        self.assertAlmostEqual(f5.between(f1, f2, method="minimum"), 0.33831631165095066, places=4)
-        self.assertAlmostEqual(f5.between(f2, f1, method="minimum"), 0.33831631165095066, places=4)
+        self.assertAlmostEqual(f1.between(f1, f1, method="infimum"), 1.0, places=4)
+        self.assertAlmostEqual(f3.between(f1, f2, method="infimum"), 1.0, places=4)
+        self.assertAlmostEqual(f3.between(f2, f1, method="infimum"), 1.0, places=4)
+        self.assertAlmostEqual(f4.between(f1, f2, method="infimum"), 1.0, places=4)
+        self.assertAlmostEqual(f4.between(f2, f1, method="infimum"), 1.0, places=4)
+        self.assertAlmostEqual(f5.between(f1, f2, method="infimum"), 0.33831631165095066, places=4)
+        self.assertAlmostEqual(f5.between(f2, f1, method="infimum"), 0.33831631165095066, places=4)
 
-    def test_between_minimum_fruit(self):
+    def test_between_infimum_fruit(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
         dimension_names = ["hue", "round", "sweet"]
         cs.init(3, domains, dimension_names)
@@ -1454,16 +1454,16 @@ class TestConcept(unittest.TestCase):
         w_banana = Weights({"color":0.75, "shape":1.50, "taste":0.75}, w_dim)
         banana = Concept(s_banana, 1.0, 10.0, w_banana)
         
-        self.assertAlmostEqual(banana.between(apple, orange, method='minimum'), 0.0, places=4)
-        self.assertAlmostEqual(banana.between(orange, apple, method='minimum'), 0.0, places=4)
-        self.assertAlmostEqual(orange.between(apple, banana, method='minimum'), 0.7045928116960077, places=4)
-        self.assertAlmostEqual(orange.between(banana, apple, method='minimum'), 0.7045928116960077, places=4)
-        self.assertAlmostEqual(apple.between(orange, banana, method='minimum'), 0.0, places=4)
-        self.assertAlmostEqual(apple.between(banana, orange, method='minimum'), 0.0, places=4)
-        self.assertAlmostEqual(apple.between(apple, banana, method='minimum'), 1.0, places=4)
-        self.assertAlmostEqual(apple.between(orange, apple, method='minimum'), 1.0, places=4)
+        self.assertAlmostEqual(banana.between(apple, orange, method='infimum'), 0.0, places=4)
+        self.assertAlmostEqual(banana.between(orange, apple, method='infimum'), 0.0, places=4)
+        self.assertAlmostEqual(orange.between(apple, banana, method='infimum'), 0.7045928116960077, places=4)
+        self.assertAlmostEqual(orange.between(banana, apple, method='infimum'), 0.7045928116960077, places=4)
+        self.assertAlmostEqual(apple.between(orange, banana, method='infimum'), 0.0, places=4)
+        self.assertAlmostEqual(apple.between(banana, orange, method='infimum'), 0.0, places=4)
+        self.assertAlmostEqual(apple.between(apple, banana, method='infimum'), 1.0, places=4)
+        self.assertAlmostEqual(apple.between(orange, apple, method='infimum'), 1.0, places=4)
 
-    def test_between_minimum_banana(self):
+    def test_between_infimum_banana(self):
         domains = {"color":[0], "shape":[1], "taste":[2]}
         dimension_names = ["hue", "round", "sweet"]
         cs.init(3, domains, dimension_names)
@@ -1486,11 +1486,11 @@ class TestConcept(unittest.TestCase):
         w_banana = Weights({"color":0.75, "shape":1.50, "taste":0.75}, w_dim)
         banana = Concept(s_banana, 1.0, 20.0, w_banana)
 
-        self.assertAlmostEqual(banana.between(pear, granny_smith, method='minimum'), 0.0, places=4)
-        self.assertAlmostEqual(banana.between(granny_smith, pear, method='minimum'), 0.0, places=4)  
+        self.assertAlmostEqual(banana.between(pear, granny_smith, method='infimum'), 0.0, places=4)
+        self.assertAlmostEqual(banana.between(granny_smith, pear, method='infimum'), 0.0, places=4)  
 
       
-    def test_between_minimum_pathological(self):
+    def test_between_infimum_pathological(self):
         domains = {0:[0]}
         cs.init(1, domains)
         
@@ -1509,8 +1509,8 @@ class TestConcept(unittest.TestCase):
         f3 = Concept(s2, 1.0, 10.0, w)
         f4 = Concept(s2, 0.9, 1.0, w)
         
-        self.assertAlmostEqual(f3.between(f2, f1, method='minimum'), 0.0, places=4)
-        self.assertAlmostEqual(f4.between(f2, f1, method='minimum'), 0.0, places=4)
+        self.assertAlmostEqual(f3.between(f2, f1, method='infimum'), 0.0, places=4)
+        self.assertAlmostEqual(f4.between(f2, f1, method='infimum'), 0.0, places=4)
 
     # 'integral'
     def test_between_integral(self):

@@ -538,8 +538,8 @@ class Concept:
         else:
             raise Exception("Unknown method")
 
-    def _between_min(self, first, second):
-        """Helper function for the minimum-based betweenness."""
+    def _between_inf(self, first, second):
+        """Helper function for the infimum-based betweenness."""
 
         # if self._mu is greater than any of first and second, the result is automatically zero
         if self._mu > first._mu or self._mu > second._mu:
@@ -699,7 +699,7 @@ class Concept:
         """Computes the degree to which this concept is between the other two given concepts.
         
         The following methods are avaliable:
-            'minimum':  minimum over all alpha-cuts
+            'infimum':  infimum over all alpha-cuts (for backwards compatibility, also accepts 'minimum')
             'integral': coarse approximation of the integral over all alpha-cuts
         """
         
@@ -715,8 +715,8 @@ class Concept:
             if not (dom in second._core._domains and second._core._domains[dom] == dims):
                 return 0.0
 
-        if method == "minimum":
-            return max(self._between_min(first, second), self._between_min(second, first))
+        if method == "infimum" or method == "minimum":
+            return max(self._between_inf(first, second), self._between_inf(second, first))
 
         elif method == "integral":
             return max(self._between_integral(first, second, num_alpha_cuts), self._between_integral(second, first, num_alpha_cuts))
