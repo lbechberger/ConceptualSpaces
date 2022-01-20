@@ -7,6 +7,11 @@ Version 1.2.0: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1200230.svg)]
 
 Version 1.3.0: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4312823.svg)](https://doi.org/10.5281/zenodo.4312823) [Release](https://github.com/lbechberger/ConceptualSpaces/releases/tag/v1.3.0)
 
+Version 1.3.1: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5667490.svg)](https://doi.org/10.5281/zenodo.5667490)
+
+Version 1.3.2: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5883567.svg)](https://doi.org/10.5281/zenodo.5883567)
+
+
 This repository contains a thorough implementation of the conceptual spaces framework.
 
 Relevant publications about this implementation and its underlying mathematical formalization include:
