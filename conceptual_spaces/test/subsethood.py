@@ -32,7 +32,7 @@ def random_weights(domains):
 def count(n_dims, cuboids_per_concept, num_samples, max_dim_per_domain):
 
     dimensions = list(range(n_dims))
-    random.seed(42)
+#    random.seed(42)
     
     greater_than_one = 0
     
@@ -75,6 +75,9 @@ def count(n_dims, cuboids_per_concept, num_samples, max_dim_per_domain):
             continue
         
         counter += 1
+        
+        if (counter % 100 == 0):
+            print(counter, greater_than_one)
                 
     return greater_than_one
 

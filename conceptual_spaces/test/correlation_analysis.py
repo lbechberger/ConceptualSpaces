@@ -107,13 +107,13 @@ def scatter(n_dims, cuboids_per_concept, params, num_samples, max_dim_per_domain
         
         # draw the plot
         fig, ax = plt.subplots(figsize=(12,12))
-        ax.tick_params(axis="x", labelsize=16)
-        ax.tick_params(axis="y", labelsize=16)
+        ax.tick_params(axis="x", labelsize=20)
+        ax.tick_params(axis="y", labelsize=20)
         ax.set_xlim(-0.01,1.01)
         ax.set_ylim(-0.01,1.01)
         ax.scatter(results[first_config], results[second_config])
-        plt.xlabel(first_config, fontsize = 20)
-        plt.ylabel(second_config, fontsize = 20)
+        plt.xlabel(first_config, fontsize = 24)
+        plt.ylabel(second_config, fontsize = 24)
         plt.show()
         
         # compute the correlations

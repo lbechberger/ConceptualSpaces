@@ -108,8 +108,8 @@ def runtime(n_dims, cuboids_per_concept, alpha, method, num_samples, max_dim_per
 config_to_run = 'betweenness'
 
 params = {}
-params['intersection'] = [{'n': [1,2,4,8,16,32,64,128,256,512], 'c': [1], 'a': [20], 'm': ['n/a'], 'r': 1000}, 
-                          {'n': [8], 'c': [2,4,8,16], 'a': [20], 'm': ['n/a'], 'r': 1000}]
+params['intersection'] = [{'n': [1,2,4,8,16,32], 'c': [1], 'a': [20], 'm': ['n/a'], 'r': 1000}, 
+                          {'n': [4], 'c': [2,4,8], 'a': [20], 'm': ['n/a'], 'r': 1000}]
 params['size'] = [{'n': [1,2,4,8,16], 'c': [1], 'a': [20], 'm': ['n/a'], 'r': 1000},
                   {'n': [4], 'c': [2,4,8], 'a': [20], 'm': ['n/a'], 'r': 1000}]
 params['size_approx'] = [{'n': [1,2], 'c': [1], 'a': [20], 'm': ['n/a'], 'r': 100}]
