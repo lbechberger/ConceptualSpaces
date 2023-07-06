@@ -1,5 +1,5 @@
 numpy==1.19.3
-scipy==1.5.3
+scipy==1.10.0
 Shapely==1.7.1
 matplotlib==3.3.2
 statsmodels==0.12.1
